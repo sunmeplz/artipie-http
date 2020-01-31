@@ -24,6 +24,7 @@
 
 package com.artipie.http;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Flow;
 
@@ -41,8 +42,9 @@ public interface Request {
      * Request line is {@code Method SP Request-URI SP HTTP-Version CRLF}.
      * </p>
      * @return Line string
+     * @throws IOException On IO failure
      */
-    String line();
+    String line() throws IOException;
 
     /**
      * General headers, request headers and entity headers.
@@ -50,8 +52,9 @@ public interface Request {
      * See 4.5, 5.3 and 7.1 sections of rfc2616.
      * </p>
      * @return Map of header values by name
+     * @throws IOException On IO failure
      */
-    Map<String, Iterable<String>> headers();
+    Map<String, Iterable<String>> headers() throws IOException;
 
     /**
      * Message body, represented as bytes flow.
@@ -59,6 +62,7 @@ public interface Request {
      * See 4.3 section of rfc2616.
      * </p>
      * @return Bytes flow
+     * @throws IOException On IO failure
      */
-    Flow.Publisher<Byte> body();
+    Flow.Publisher<Byte> body() throws IOException;
 }
