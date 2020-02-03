@@ -38,6 +38,10 @@ import org.takes.rq.RqHeaders;
 /**
  * Takes request wrapper.
  * @since 0.1
+ * @todo #3:30min Add a unit test for this class.
+ *  Unit test has to include takes dependency with `test` scope
+ *  and use `FkRequest` to construct request instance from takes.
+ *  Test should verufy request line, headers and body via publisher.
  */
 public final class TkRequest implements Request {
 
@@ -70,7 +74,7 @@ public final class TkRequest implements Request {
 
     @Override
     public Publisher<Byte> body() throws IOException {
-        return new TkRequest.BodyPublisher(this.tkreq.body());
+        return new TkRequest.InputStreamPublisher(this.tkreq.body());
     }
 
     /**
@@ -122,25 +126,25 @@ public final class TkRequest implements Request {
     }
 
     /**
-     * Flow publisher for request body.
+     * Flow publisher for input stream.
      * <p>
      * It encapsulates the {@link InputStream} and implements {@link Publisher}
      * interface from JDK9 Flow API.
      * </p>
      * @since 0.1
      */
-    private static final class BodyPublisher implements Publisher<Byte> {
+    private static final class InputStreamPublisher implements Publisher<Byte> {
 
         /**
-         * Request input stream.
+         * The input stream.
          */
         private final InputStream stream;
 
         /**
          * Publisher from request stream.
-         * @param stream Request stream
+         * @param stream Input stream
          */
-        BodyPublisher(final InputStream stream) {
+        InputStreamPublisher(final InputStream stream) {
             this.stream = stream;
         }
 
