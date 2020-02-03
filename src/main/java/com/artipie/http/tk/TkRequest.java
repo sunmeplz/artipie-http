@@ -108,16 +108,38 @@ public final class TkRequest implements Request {
 
         @Override
         public void request(final long bytes) {
-            throw new UnsupportedOperationException(
-                String.format("request not implemented: %s/%s", this.stream, this.receiver)
-            );
+            try {
+                this.read((int) bytes);
+            } catch (final IOException err) {
+                this.receiver.onError(err);
+            }
         }
 
         @Override
         public void cancel() {
-            throw new UnsupportedOperationException(
-                String.format("cancel not implemented: %s/%s", this.stream, this.receiver)
-            );
+            try {
+                this.stream.close();
+            } catch (final IOException err) {
+                this.receiver.onError(err);
+            }
+        }
+
+        /**
+         * Read bytes from stream into receiver.
+         * @param bytes Amount of bytes to read
+         * @throws IOException On stream error
+         */
+        private void read(final int bytes) throws IOException {
+            final byte[] buf = new byte[(int) bytes];
+            final int read = this.stream.read(buf);
+            if (read == -1) {
+                this.stream.close();
+                this.receiver.onComplete();
+            } else {
+                for (int pos = 0; pos < read; ++pos) {
+                    this.receiver.onNext(buf[pos]);
+                }
+            }
         }
     }
 
