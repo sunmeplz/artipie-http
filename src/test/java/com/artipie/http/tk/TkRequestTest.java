@@ -24,6 +24,7 @@
 
 package com.artipie.http.tk;
 
+import org.cactoos.list.ListOf;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ import org.takes.rq.RqWithHeader;
  */
 final class TkRequestTest {
     @Test
-    void readsStatusLine() throws Exception {
+    void readsRequestLine() throws Exception {
         MatcherAssert.assertThat(
             new TkRequest(new RqFake("PUT")).line(),
             Matchers.equalTo("PUT /")
@@ -48,20 +49,32 @@ final class TkRequestTest {
         MatcherAssert.assertThat(
             new TkRequest(
                 new RqWithHeader(
-                    new RqWithHeader(new RqFake(), "X-Test", "1"), "X-Test", "2"
+                    new RqWithHeader(
+                        new RqFake(new ListOf<>("GET /", "Host: localhost"), ""),
+                        "X-Test", "1"
+                    ),
+                    "X-Test", "2"
                 )
             ).headers(),
             Matchers.allOf(
                 Matchers.aMapWithSize(2),
                 Matchers.hasEntry(
                     Matchers.containsStringIgnoringCase("host"),
-                    Matchers.containsInAnyOrder("www.example.com")
+                    Matchers.containsInAnyOrder("localhost")
                 ),
                 Matchers.hasEntry(
                     Matchers.containsStringIgnoringCase("X-Test"),
                     Matchers.containsInAnyOrder("1", "2")
                 )
             )
+        );
+    }
+
+    @Test
+    void readsEmptyHeaders() throws Exception {
+        MatcherAssert.assertThat(
+            new TkRequest(new RqFake(new ListOf<>("POST /"), "")).headers(),
+            Matchers.anEmptyMap()
         );
     }
 }
