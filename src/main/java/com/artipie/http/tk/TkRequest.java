@@ -38,10 +38,6 @@ import org.takes.rq.RqHeaders;
 /**
  * Takes request wrapper.
  * @since 0.1
- * @todo #3:30min Add a unit test for this class.
- *  Unit test has to include takes dependency with `test` scope
- *  and use `FkRequest` to construct request instance from takes.
- *  Test should verufy request line, headers and body via publisher.
  */
 public final class TkRequest implements Request {
 
