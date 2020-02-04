@@ -76,13 +76,9 @@ public final class TkRequest implements Request {
     /**
      * Flow subscription for request body.
      * @since 0.1
-     * @todo #3:30min Implement this class.
-     *  It should read requested amount of bytes on `request` method call
-     *  and submit it to the receiver.
-     *  When the stream is ended it should notify the receiver via `onComplete` call.
-     *  On failure it should call `onError` of receiver.
-     *  If cancellation requested via `cancel` method of Subscription it should close the
-     *  stream and exit. Also, the stream should be closed when complete.
+     * @todo #7:30min Add a unit test to verify cancel method.
+     *  The test should start reading the body and cancel it in the middle,
+     *  input stream should be closed after cancelation.
      */
     private static final class BodySubstription implements Subscription {
 
@@ -113,6 +109,9 @@ public final class TkRequest implements Request {
 
         @Override
         public void request(final long bytes) {
+            if (bytes <= 0) {
+                throw new IllegalArgumentException(String.format("can't request %d bytes", bytes));
+            }
             try {
                 this.read(bytes);
             } catch (final IOException | IllegalArgumentException err) {
@@ -135,9 +134,6 @@ public final class TkRequest implements Request {
          * @throws IOException On stream error
          */
         private void read(final long bytes) throws IOException {
-            if (bytes <= 0) {
-                throw new IllegalArgumentException(String.format("can't request %d bytes", bytes));
-            }
             final byte[] buf = new byte[TkRequest.BodySubstription.BUF_SIZE];
             long total = 0;
             while (total < bytes) {

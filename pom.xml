@@ -44,6 +44,10 @@
       <version>${junit-platform.version}</version>
       <scope>test</scope>
     </dependency>
+    <!--
+      We use RxJava for writing unit tests. It helps to convert Flow objects from JDK9 API
+      to blocking lists.
+    -->
     <dependency>
       <groupId>io.reactivex.rxjava3</groupId>
       <artifactId>rxjava</artifactId>
