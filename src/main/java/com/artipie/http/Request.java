@@ -30,7 +30,7 @@ import java.util.concurrent.Flow;
 
 /**
  * HTTP request.
- * See {@link https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html}.
+ * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">RFC2616</a>
  * @since 0.1
  */
 public interface Request {

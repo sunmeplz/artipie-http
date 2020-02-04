@@ -76,15 +76,16 @@ public final class TkRequest implements Request {
     /**
      * Flow subscription for request body.
      * @since 0.1
-     * @todo #3:30min Implement this class.
-     *  It should read requested amount of bytes on `request` method call
-     *  and submit it to the receiver.
-     *  When the stream is ended it should notify the receiver via `onComplete` call.
-     *  On failure it should call `onError` of receiver.
-     *  If cancellation requested via `cancel` method of Subscription it should close the
-     *  stream and exit. Also, the stream should be closed when complete.
+     * @todo #7:30min Add a unit test to verify cancel method.
+     *  The test should start reading the body and cancel it in the middle,
+     *  input stream should be closed after cancelation.
      */
     private static final class BodySubstription implements Subscription {
+
+        /**
+         * Buffer size for stream reading.
+         */
+        private static final int BUF_SIZE = 1024 * 8;
 
         /**
          * Request input stream.
@@ -108,16 +109,52 @@ public final class TkRequest implements Request {
 
         @Override
         public void request(final long bytes) {
-            throw new UnsupportedOperationException(
-                String.format("request not implemented: %s/%s", this.stream, this.receiver)
-            );
+            if (bytes <= 0) {
+                throw new IllegalArgumentException(String.format("can't request %d bytes", bytes));
+            }
+            try {
+                this.read(bytes);
+            } catch (final IOException | IllegalArgumentException err) {
+                this.receiver.onError(err);
+            }
         }
 
         @Override
         public void cancel() {
-            throw new UnsupportedOperationException(
-                String.format("cancel not implemented: %s/%s", this.stream, this.receiver)
-            );
+            try {
+                this.stream.close();
+            } catch (final IOException err) {
+                this.receiver.onError(err);
+            }
+        }
+
+        /**
+         * Read bytes from stream into receiver.
+         * @param bytes Amount of bytes to read
+         * @throws IOException On stream error
+         */
+        private void read(final long bytes) throws IOException {
+            final byte[] buf = new byte[TkRequest.BodySubstription.BUF_SIZE];
+            long total = 0;
+            while (total < bytes) {
+                final int len;
+                if (total + TkRequest.BodySubstription.BUF_SIZE <= bytes) {
+                    len = TkRequest.BodySubstription.BUF_SIZE;
+                } else {
+                    len = (int) (bytes - total);
+                }
+                final int read = this.stream.read(buf, 0, len);
+                total += read;
+                if (read == -1) {
+                    this.stream.close();
+                    this.receiver.onComplete();
+                    break;
+                } else {
+                    for (int pos = 0; pos < read; ++pos) {
+                        this.receiver.onNext(buf[pos]);
+                    }
+                }
+            }
         }
     }
 

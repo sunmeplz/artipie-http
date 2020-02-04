@@ -44,6 +44,22 @@
       <version>${junit-platform.version}</version>
       <scope>test</scope>
     </dependency>
+    <!--
+      We use RxJava for writing unit tests. It helps to convert Flow objects from JDK9 API
+      to blocking lists.
+    -->
+    <dependency>
+      <groupId>io.reactivex.rxjava3</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>3.0.0-RC6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.akarnokd</groupId>
+      <artifactId>rxjava3-jdk8-interop</artifactId>
+      <version>3.0.0-RC6</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <pluginManagement>
@@ -84,7 +100,40 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
+        <plugin>
+          <groupId>com.qulice</groupId>
+          <artifactId>qulice-maven-plugin</artifactId>
+          <version>0.18.19</version>
+          <configuration>
+            <license>file:${project.basedir}/LICENSE</license>
+            <excludes combine.children="append">
+              <exclude>findbugs:.*</exclude>
+              <exclude>duplicatefinder:.*</exclude>
+              <exclude>dependencies:.*</exclude>
+            </excludes>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+  <profiles>
+    <profile>
+      <id>qulice</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.qulice</groupId>
+            <artifactId>qulice-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
