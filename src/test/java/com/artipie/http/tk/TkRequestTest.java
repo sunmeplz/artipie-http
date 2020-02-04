@@ -24,10 +24,13 @@
 
 package com.artipie.http.tk;
 
+import io.reactivex.rxjava3.internal.operators.flowable.FlowableFromPublisher;
+import java.util.List;
 import org.cactoos.list.ListOf;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.reactivestreams.FlowAdapters;
 import org.takes.rq.RqFake;
 import org.takes.rq.RqWithHeader;
 
@@ -53,7 +56,7 @@ final class TkRequestTest {
                         new RqFake(new ListOf<>("GET /", "Host: localhost"), ""),
                         "X-Test", "1"
                     ),
-                    "X-Test", "2"
+                    "X-TesT", "2"
                 )
             ).headers(),
             Matchers.allOf(
@@ -63,7 +66,7 @@ final class TkRequestTest {
                     Matchers.containsInAnyOrder("localhost")
                 ),
                 Matchers.hasEntry(
-                    Matchers.containsStringIgnoringCase("X-Test"),
+                    Matchers.containsStringIgnoringCase("x-test"),
                     Matchers.containsInAnyOrder("1", "2")
                 )
             )
@@ -76,5 +79,31 @@ final class TkRequestTest {
             new TkRequest(new RqFake(new ListOf<>("POST /"), "")).headers(),
             Matchers.anEmptyMap()
         );
+    }
+
+    @Test
+    void readsBody() throws Exception {
+        final byte[] body = new byte[]{0x00, 0x01, 0x02, 0x03};
+        MatcherAssert.assertThat(
+            new FlowableFromPublisher<>(
+                FlowAdapters.toPublisher(
+                    new TkRequest(new RqFake(new ListOf<>("PUT /foo"), body)).body()
+                )
+            ).toList().map(TkRequestTest::toPrimitives).blockingGet(),
+            Matchers.equalTo(body)
+        );
+    }
+
+    /**
+     * Convert list of bytes to primitives.
+     * @param src Source list
+     * @return Primitive bytes
+     */
+    private static byte[] toPrimitives(final List<Byte> src) {
+        final byte[] res = new byte[src.size()];
+        for (int pos = 0; pos < res.length; ++pos) {
+            res[pos] = src.get(pos).byteValue();
+        }
+        return res;
     }
 }

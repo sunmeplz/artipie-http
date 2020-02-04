@@ -22,43 +22,8 @@
  * SOFTWARE.
  */
 
-package com.artipie.http;
-
-import java.util.Map;
-import java.util.concurrent.Flow;
-
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
+ * Tests for Takes wrappers of Artipie.
  * @since 0.1
  */
-public interface Response {
-
-    /**
-     * Status line.
-     * <p>
-     * Status line is {@code HTTP-Version SP Status-Code SP Reason-Phrase CRLF}.
-     * See 6.1 section of rfc2616.
-     * </p>
-     * @return Status string
-     */
-    String status();
-
-    /**
-     * General headers, response headers, entity headers.
-     * <p>
-     * See 4.5, 6.2 and 7.1 section of rfc2616.
-     * </p>
-     * @return Headers map of values by name
-     */
-    Map<String, Iterable<String>> headers();
-
-    /**
-     * Response body flow.
-     * <p>
-     * See 7.2 section of rfc2616.
-     * </p>
-     * @return Bytes flow
-     */
-    Flow.Subscriber<Byte> body();
-}
+package com.artipie.http.tk;
