@@ -24,19 +24,18 @@
 
 package com.artipie.http;
 
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * HTTP Artipie front end.
  * @since 0.1
  */
-public interface Front {
+public interface HttpFront {
 
     /**
      * Try to respond for the request.
      * @param req Request
-     * @return Response if can process
-     * @throws HttpException on failure
+     * @return Future response
      */
-    Optional<Response> respond(Request req) throws HttpException;
+    CompletableFuture<Response> respond(Request req);
 }
