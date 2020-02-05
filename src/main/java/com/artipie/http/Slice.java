@@ -27,10 +27,16 @@ package com.artipie.http;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * HTTP Artipie front end.
+ * Arti-pie slice.
+ * <p>
+ * Slice is a part of Artipie server.
+ * Each Artipie adapter implements this interface to expose
+ * repository HTTP API.
+ * Artipie main module joins all slices together into solid web server.
+ * </p>
  * @since 0.1
  */
-public interface HttpFront {
+public interface Slice {
 
     /**
      * Try to respond for the request.
