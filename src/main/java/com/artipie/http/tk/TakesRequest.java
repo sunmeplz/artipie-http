@@ -27,6 +27,7 @@ package com.artipie.http.tk;
 import com.artipie.http.Request;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.Flow.Subscriber;
@@ -55,22 +56,34 @@ public final class TakesRequest implements Request {
     }
 
     @Override
-    public String line() throws IOException {
-        return this.tkreq.head().iterator().next();
+    public String line() {
+        try {
+            return this.tkreq.head().iterator().next();
+        } catch (final IOException ioe) {
+            throw new UncheckedIOException(ioe);
+        }
     }
 
     @Override
-    public Map<String, Iterable<String>> headers() throws IOException {
-        final RqHeaders.Smart req = new RqHeaders.Smart(this.tkreq);
-        return new MapOf<>(
-            name -> new MapEntry<>(name, req.header(name)),
-            req.names()
-        );
+    public Map<String, Iterable<String>> headers() {
+        try {
+            final RqHeaders.Smart req = new RqHeaders.Smart(this.tkreq);
+            return new MapOf<>(
+                name -> new MapEntry<>(name, req.header(name)),
+                req.names()
+            );
+        } catch (final IOException ioe) {
+            throw new UncheckedIOException(ioe);
+        }
     }
 
     @Override
-    public Publisher<Byte> body() throws IOException {
-        return new TakesRequest.InputStreamPublisher(this.tkreq.body());
+    public Publisher<Byte> body() {
+        try {
+            return new InputStreamPublisher(this.tkreq.body());
+        } catch (final IOException ioe) {
+            throw new UncheckedIOException(ioe);
+        }
     }
 
     /**
