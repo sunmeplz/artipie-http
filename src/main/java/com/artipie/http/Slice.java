@@ -24,19 +24,24 @@
 
 package com.artipie.http;
 
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * HTTP Artipie front end.
+ * Arti-pie slice.
+ * <p>
+ * Slice is a part of Artipie server.
+ * Each Artipie adapter implements this interface to expose
+ * repository HTTP API.
+ * Artipie main module joins all slices together into solid web server.
+ * </p>
  * @since 0.1
  */
-public interface Front {
+public interface Slice {
 
     /**
      * Try to respond for the request.
      * @param req Request
-     * @return Response if can process
-     * @throws HttpException on failure
+     * @return Future response
      */
-    Optional<Response> respond(Request req) throws HttpException;
+    CompletableFuture<Response> respond(Request req);
 }
