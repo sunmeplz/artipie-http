@@ -35,14 +35,14 @@ import org.takes.rq.RqFake;
 import org.takes.rq.RqWithHeader;
 
 /**
- * Test case for {@link TkRequest}.
+ * Test case for {@link TakesRequest}.
  * @since 0.1
  */
-final class TkRequestTest {
+final class TakesRequestTest {
     @Test
     void readsRequestLine() throws Exception {
         MatcherAssert.assertThat(
-            new TkRequest(new RqFake("PUT")).line(),
+            new TakesRequest(new RqFake("PUT")).line(),
             Matchers.equalTo("PUT /")
         );
     }
@@ -50,7 +50,7 @@ final class TkRequestTest {
     @Test
     void readsHeasers() throws Exception {
         MatcherAssert.assertThat(
-            new TkRequest(
+            new TakesRequest(
                 new RqWithHeader(
                     new RqWithHeader(
                         new RqFake(new ListOf<>("GET /", "Host: localhost"), ""),
@@ -76,7 +76,7 @@ final class TkRequestTest {
     @Test
     void readsEmptyHeaders() throws Exception {
         MatcherAssert.assertThat(
-            new TkRequest(new RqFake(new ListOf<>("POST /"), "")).headers(),
+            new TakesRequest(new RqFake(new ListOf<>("POST /"), "")).headers(),
             Matchers.anEmptyMap()
         );
     }
@@ -87,9 +87,9 @@ final class TkRequestTest {
         MatcherAssert.assertThat(
             new FlowableFromPublisher<>(
                 FlowAdapters.toPublisher(
-                    new TkRequest(new RqFake(new ListOf<>("PUT /foo"), body)).body()
+                    new TakesRequest(new RqFake(new ListOf<>("PUT /foo"), body)).body()
                 )
-            ).toList().map(TkRequestTest::toPrimitives).blockingGet(),
+            ).toList().map(TakesRequestTest::toPrimitives).blockingGet(),
             Matchers.equalTo(body)
         );
     }

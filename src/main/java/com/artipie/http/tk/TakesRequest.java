@@ -39,7 +39,7 @@ import org.takes.rq.RqHeaders;
  * Takes request wrapper.
  * @since 0.1
  */
-public final class TkRequest implements Request {
+public final class TakesRequest implements Request {
 
     /**
      * Takes request.
@@ -50,7 +50,7 @@ public final class TkRequest implements Request {
      * Ctor.
      * @param tkreq Takes request
      */
-    public TkRequest(final org.takes.Request tkreq) {
+    public TakesRequest(final org.takes.Request tkreq) {
         this.tkreq = tkreq;
     }
 
@@ -70,7 +70,7 @@ public final class TkRequest implements Request {
 
     @Override
     public Publisher<Byte> body() throws IOException {
-        return new TkRequest.InputStreamPublisher(this.tkreq.body());
+        return new TakesRequest.InputStreamPublisher(this.tkreq.body());
     }
 
     /**
@@ -134,12 +134,12 @@ public final class TkRequest implements Request {
          * @throws IOException On stream error
          */
         private void read(final long bytes) throws IOException {
-            final byte[] buf = new byte[TkRequest.BodySubstription.BUF_SIZE];
+            final byte[] buf = new byte[TakesRequest.BodySubstription.BUF_SIZE];
             long total = 0;
             while (total < bytes) {
                 final int len;
-                if (total + TkRequest.BodySubstription.BUF_SIZE <= bytes) {
-                    len = TkRequest.BodySubstription.BUF_SIZE;
+                if (total + TakesRequest.BodySubstription.BUF_SIZE <= bytes) {
+                    len = TakesRequest.BodySubstription.BUF_SIZE;
                 } else {
                     len = (int) (bytes - total);
                 }
@@ -183,7 +183,7 @@ public final class TkRequest implements Request {
 
         @Override
         public void subscribe(final Subscriber<? super Byte> subscriber) {
-            subscriber.onSubscribe(new TkRequest.BodySubstription(this.stream, subscriber));
+            subscriber.onSubscribe(new TakesRequest.BodySubstription(this.stream, subscriber));
         }
     }
 }
