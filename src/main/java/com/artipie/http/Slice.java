@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.artipie.http;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.concurrent.Flow;
 
 /**
  * Arti-pie slice.
@@ -39,9 +39,13 @@ import java.util.concurrent.CompletableFuture;
 public interface Slice {
 
     /**
-     * Try to respond for the request.
-     * @param req Request
-     * @return Future response
+     * Respond to a http request.
+     * @param line The request line
+     * @param headers The request headers
+     * @param body The request body
+     * @return The response.
      */
-    CompletableFuture<Response> respond(Request req);
+    Response response(String line,
+        Iterable<Map.Entry<String, String>> headers,
+        Flow.Publisher<Byte> body);
 }
