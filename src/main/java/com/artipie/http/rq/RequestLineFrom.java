@@ -45,7 +45,7 @@ import org.cactoos.text.TextOf;
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">RFC2616</a>
  * @since 0.1
  */
-public final class RequestLine {
+public final class RequestLineFrom {
 
     /**
      * HTTP request line.
@@ -56,7 +56,7 @@ public final class RequestLine {
      * New reqiest line from string.
      * @param line Request line string
      */
-    public RequestLine(final String line) {
+    public RequestLineFrom(final String line) {
         this(new TextOf(line));
     }
 
@@ -64,7 +64,7 @@ public final class RequestLine {
      * Primary ctor.
      * @param line HTTP request line
      */
-    public RequestLine(final Text line) {
+    public RequestLineFrom(final Text line) {
         this.line = line;
     }
 
@@ -105,6 +105,6 @@ public final class RequestLine {
      *  whitespace char. If line doesn't contain 3 parts, let's throw an exception.
      */
     private String part(final int idx) throws IOException {
-        return new IoChecked<>(this.line::asString).value().split("\\s")[idx];
+        return new IoChecked<>(this.line::asString).value().trim().split("\\s")[idx];
     }
 }

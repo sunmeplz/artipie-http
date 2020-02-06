@@ -37,11 +37,11 @@ import org.junit.jupiter.api.Test;
  * </p>
  * @since 0.1
  */
-public final class RequestLineTest {
+public final class RequestLineFromTest {
     @Test
     void parsesMethodName() throws Exception {
         MatcherAssert.assertThat(
-            new RequestLine("TRACE /foo HTTP/1.1").method(),
+            new RequestLineFrom("TRACE /foo HTTP/1.1\r\n").method(),
             Matchers.equalTo("TRACE")
         );
     }
@@ -49,7 +49,7 @@ public final class RequestLineTest {
     @Test
     void parsesAsteriskUri() throws Exception {
         MatcherAssert.assertThat(
-            new RequestLine("GET * HTTP/1.1").uri(),
+            new RequestLineFrom("GET * HTTP/1.1\r\n").uri(),
             Matchers.equalTo(URI.create("*"))
         );
     }
@@ -57,7 +57,7 @@ public final class RequestLineTest {
     @Test
     void parsesAbsoluteUri() throws Exception {
         MatcherAssert.assertThat(
-            new RequestLine("GET http://www.w3.org/pub/WWW/TheProject.html HTTP/1.1").uri(),
+            new RequestLineFrom("GET http://www.w3.org/pub/WWW/TheProject.html HTTP/1.1\r\n").uri(),
             Matchers.equalTo(URI.create("http://www.w3.org/pub/WWW/TheProject.html"))
         );
     }
@@ -65,7 +65,7 @@ public final class RequestLineTest {
     @Test
     void parsesAbsolutePath() throws Exception {
         MatcherAssert.assertThat(
-            new RequestLine("GET /pub/WWW/TheProject.html HTTP/1.1").uri(),
+            new RequestLineFrom("GET /pub/WWW/TheProject.html HTTP/1.1\r\n").uri(),
             Matchers.equalTo(URI.create("/pub/WWW/TheProject.html"))
         );
     }
@@ -73,7 +73,7 @@ public final class RequestLineTest {
     @Test
     void parsesHttpVersion() throws Exception {
         MatcherAssert.assertThat(
-            new RequestLine("PUT * HTTP/1.1").version(),
+            new RequestLineFrom("PUT * HTTP/1.1\r\n").version(),
             Matchers.equalTo("HTTP/1.1")
         );
     }
