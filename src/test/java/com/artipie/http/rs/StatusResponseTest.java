@@ -21,33 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
 
-import java.util.Map;
-import java.util.concurrent.Flow;
+package com.artipie.http.rs;
+
+import com.artipie.http.hm.RsHasStatus;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 /**
- * Arti-pie slice.
- * <p>
- * Slice is a part of Artipie server.
- * Each Artipie adapter implements this interface to expose
- * repository HTTP API.
- * Artipie main module joins all slices together into solid web server.
- * </p>
+ * Test case for {@link StatusResponse}.
  * @since 0.1
  */
-public interface Slice {
-
-    /**
-     * Respond to a http request.
-     * @param line The request line
-     * @param headers The request headers
-     * @param body The request body
-     * @return The response.
-     */
-    Response response(
-        String line,
-        Iterable<Map.Entry<String, String>> headers,
-        Flow.Publisher<Byte> body
-    );
+final class StatusResponseTest {
+    @Test
+    void usesStatus() throws Exception {
+        final int code = 404;
+        MatcherAssert.assertThat(
+            new StatusResponse(code),
+            new RsHasStatus(code)
+        );
+    }
 }
