@@ -21,48 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.artipie.http;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Flow;
 
 /**
- * HTTP request.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">RFC2616</a>
+ * The http connection.
  * @since 0.1
  */
-public interface Request {
+public interface Connection {
 
     /**
-     * Request line.
-     * <p>
-     * See 5.1 section of rfc2616.
-     * Request line is {@code Method SP Request-URI SP HTTP-Version CRLF}.
-     * </p>
-     * @return Line string
-     * @throws IOException On IO failure
+     * Respond on connection.
+     * @param code The http status code.
+     * @param headers The http request headers.
+     * @param body The http response body.
      */
-    String line() throws IOException;
-
-    /**
-     * General headers, request headers and entity headers.
-     * <p>
-     * See 4.5, 5.3 and 7.1 sections of rfc2616.
-     * </p>
-     * @return Map of header values by name
-     * @throws IOException On IO failure
-     */
-    Map<String, Iterable<String>> headers() throws IOException;
-
-    /**
-     * Message body, represented as bytes flow.
-     * <p>
-     * See 4.3 section of rfc2616.
-     * </p>
-     * @return Bytes flow
-     * @throws IOException On IO failure
-     */
-    Flow.Publisher<Byte> body() throws IOException;
+    void accept(int code,
+        Iterable<Map.Entry<String, String>> headers,
+        Flow.Publisher<Byte> body);
 }

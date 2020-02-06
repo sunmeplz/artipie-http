@@ -21,11 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.artipie.http;
-
-import java.util.Map;
-import java.util.concurrent.Flow;
 
 /**
  * HTTP response.
@@ -35,30 +31,9 @@ import java.util.concurrent.Flow;
 public interface Response {
 
     /**
-     * Status line.
-     * <p>
-     * Status line is {@code HTTP-Version SP Status-Code SP Reason-Phrase CRLF}.
-     * See 6.1 section of rfc2616.
-     * </p>
-     * @return Status string
+     * Send the response.
+     *
+     * @param connection Connection to send the response to
      */
-    String status();
-
-    /**
-     * General headers, response headers, entity headers.
-     * <p>
-     * See 4.5, 6.2 and 7.1 section of rfc2616.
-     * </p>
-     * @return Headers map of values by name
-     */
-    Map<String, Iterable<String>> headers();
-
-    /**
-     * Response body flow.
-     * <p>
-     * See 7.2 section of rfc2616.
-     * </p>
-     * @return Bytes flow
-     */
-    Flow.Subscriber<Byte> body();
+    void send(Connection connection);
 }
