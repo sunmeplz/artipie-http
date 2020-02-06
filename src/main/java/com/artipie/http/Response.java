@@ -23,8 +23,6 @@
  */
 package com.artipie.http;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  * HTTP response.
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
@@ -36,7 +34,6 @@ public interface Response {
      * Send the response.
      *
      * @param connection Connection to send the response to
-     * @return Completion or error signal.
      */
-    CompletableFuture<Void> send(Connection connection);
+    void send(Connection connection);
 }

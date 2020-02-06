@@ -24,7 +24,6 @@
 package com.artipie.http;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 
 /**
@@ -34,13 +33,12 @@ import java.util.concurrent.Flow;
 public interface Connection {
 
     /**
-     * Render the destination.
+     * Respond on connection.
      * @param code The http status code.
      * @param headers The http request headers.
      * @param body The http response body.
-     * @return Completion or error signal.
      */
-    CompletableFuture<Void> respond(int code,
+    void respond(int code,
         Iterable<Map.Entry<String, String>> headers,
         Flow.Publisher<Byte> body);
 }
