@@ -21,22 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.artipie.http;
 
-import java.util.Optional;
+import java.util.Map;
+import java.util.concurrent.Flow;
 
 /**
- * HTTP Artipie front end.
+ * Arti-pie slice.
+ * <p>
+ * Slice is a part of Artipie server.
+ * Each Artipie adapter implements this interface to expose
+ * repository HTTP API.
+ * Artipie main module joins all slices together into solid web server.
+ * </p>
  * @since 0.1
  */
-public interface Front {
+public interface Slice {
 
     /**
-     * Try to respond for the request.
-     * @param req Request
-     * @return Response if can process
-     * @throws HttpException on failure
+     * Respond to a http request.
+     * @param line The request line
+     * @param headers The request headers
+     * @param body The request body
+     * @return The response.
      */
-    Optional<Response> respond(Request req) throws HttpException;
+    Response response(String line,
+        Iterable<Map.Entry<String, String>> headers,
+        Flow.Publisher<Byte> body);
 }

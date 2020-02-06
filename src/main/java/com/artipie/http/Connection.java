@@ -21,14 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.artipie.http;
+
+import java.util.Map;
+import java.util.concurrent.Flow;
 
 /**
- * Takes implementation of Artipie HTTP layer.
+ * The http connection.
  * @since 0.1
- * @todo #3:30min Implements TkResponse class.
- *  It should encapsulate `Response` interface from `com.artipie.http` package
- *  and implements `Response` from `org.takes` package. This implementation should
- *  subscribe for `body()` flow publisher and converts it to `InputStream`.
- *  Response line and headers should be joined into single `Iterable` of strings.
  */
-package com.artipie.http.tk;
+public interface Connection {
+
+    /**
+     * Respond on connection.
+     * @param code The http status code.
+     * @param headers The http request headers.
+     * @param body The http response body.
+     */
+    void accept(int code,
+        Iterable<Map.Entry<String, String>> headers,
+        Flow.Publisher<Byte> body);
+}

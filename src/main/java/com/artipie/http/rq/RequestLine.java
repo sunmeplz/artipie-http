@@ -24,7 +24,6 @@
 
 package com.artipie.http.rq;
 
-import com.artipie.http.Request;
 import java.io.IOException;
 import java.net.URI;
 import org.cactoos.Text;
@@ -52,14 +51,6 @@ public final class RequestLine {
      * HTTP request line.
      */
     private final Text line;
-
-    /**
-     * Request line of HTTP request.
-     * @param req HTTP request
-     */
-    public RequestLine(final Request req) {
-        this(req::line);
-    }
 
     /**
      * New reqiest line from string.
