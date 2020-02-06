@@ -38,7 +38,7 @@ public interface Connection {
      * @param headers The http request headers.
      * @param body The http response body.
      */
-    void respond(int code,
+    void accept(int code,
         Iterable<Map.Entry<String, String>> headers,
         Flow.Publisher<Byte> body);
 }
