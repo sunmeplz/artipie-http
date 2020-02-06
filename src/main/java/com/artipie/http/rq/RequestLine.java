@@ -100,6 +100,9 @@ public final class RequestLine {
      * @param idx Part index
      * @return Part string
      * @throws IOException In case of IO error
+     * @todo #12:30min Check idx value to avoid ArrayIndexOfBoundsException.
+     *  Valid HTTP request line must contains 3 parts which can be splitted by
+     *  whitespace char. If line doesn't contain 3 parts, let's throw an exception.
      */
     private String part(final int idx) throws IOException {
         return new IoChecked<>(this.line::asString).value().split("\\s")[idx];
