@@ -13,8 +13,7 @@ install: |
   export LANGUAGE=en_US.UTF-8
 merge:
   script: |
-    echo Use github actions to verify pull requests
-    exit 1
+    mvn verify -B -Pqulice
 deploy:
   script: |
     echo There is nothing to deploy
@@ -26,3 +25,6 @@ release:
     mvn versions:set "-DnewVersion=${tag}" --settings ../settings.xml
     git commit -am "${tag}"
     mvn clean deploy -Partipie,publish,sonatype,qulice,gpg-sign --errors --settings ../settings.xml
+architect:
+  - g4s8
+  - yegor256
