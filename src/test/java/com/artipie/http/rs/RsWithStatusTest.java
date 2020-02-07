@@ -29,15 +29,15 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link StatusResponse}.
+ * Test case for {@link ResponseWithStatus}.
  * @since 0.1
  */
-final class StatusResponseTest {
+final class RsWithStatusTest {
     @Test
     void usesStatus() throws Exception {
         final int code = 404;
         MatcherAssert.assertThat(
-            new StatusResponse(code),
+            new RsWithStatus(code),
             new RsHasStatus(code)
         );
     }

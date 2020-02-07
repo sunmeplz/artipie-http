@@ -33,7 +33,7 @@ import java.util.concurrent.Flow.Publisher;
  * Response with status.
  * @since 0.1
  */
-public final class StatusResponse implements Response {
+public final class RsWithStatus implements Response {
 
     /**
      * Origin response.
@@ -49,7 +49,7 @@ public final class StatusResponse implements Response {
      * New response with status.
      * @param code Status code
      */
-    public StatusResponse(final int code) {
+    public RsWithStatus(final int code) {
         this(Response.EMPTY, code);
     }
 
@@ -58,14 +58,14 @@ public final class StatusResponse implements Response {
      * @param origin Response to override
      * @param code Status code
      */
-    public StatusResponse(final Response origin, final int code) {
+    public RsWithStatus(final Response origin, final int code) {
         this.origin = origin;
         this.code = code;
     }
 
     @Override
     public void send(final Connection con) {
-        this.origin.send(new StatusResponse.ConWithStatus(con, this.code));
+        this.origin.send(new RsWithStatus.ConWithStatus(con, this.code));
     }
 
     /**
