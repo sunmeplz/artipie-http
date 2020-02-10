@@ -23,8 +23,9 @@
  */
 package com.artipie.http;
 
+import io.reactivex.Flowable;
 import java.util.Collections;
-import wtf.g4s8.jflows.PubEmpty;
+import org.reactivestreams.FlowAdapters;
 
 /**
  * HTTP response.
@@ -36,7 +37,14 @@ public interface Response {
     /**
      * Empty response.
      */
-    Response EMPTY = con -> con.accept(0, Collections.emptyList(), new PubEmpty<Byte>());
+    Response EMPTY = con -> {
+        final int code = 200;
+        con.accept(
+            code,
+            Collections.emptyList(),
+            FlowAdapters.toFlowPublisher(Flowable.empty())
+        );
+    };
 
     /**
      * Send the response.
