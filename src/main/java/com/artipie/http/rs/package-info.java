@@ -21,34 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.concurrent.Flow;
 
 /**
- * Arti-pie slice.
- * <p>
- * Slice is a part of Artipie server.
- * Each Artipie adapter implements this interface to expose
- * repository HTTP API.
- * Artipie main module joins all slices together into solid web server.
- * </p>
+ * Responses.
  * @since 0.1
  */
-public interface Slice {
+package com.artipie.http.rs;
 
-    /**
-     * Respond to a http request.
-     * @param line The request line
-     * @param headers The request headers
-     * @param body The request body
-     * @return The response.
-     */
-    Response response(
-        String line,
-        Iterable<Map.Entry<String, String>> headers,
-        Flow.Publisher<ByteBuffer> body
-    );
-}

@@ -23,12 +23,20 @@
  */
 package com.artipie.http;
 
+import java.util.Collections;
+import wtf.g4s8.jflows.PubEmpty;
+
 /**
  * HTTP response.
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
  * @since 0.1
  */
 public interface Response {
+
+    /**
+     * Empty response.
+     */
+    Response EMPTY = con -> con.accept(0, Collections.emptyList(), new PubEmpty<Byte>());
 
     /**
      * Send the response.
