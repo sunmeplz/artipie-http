@@ -26,6 +26,38 @@ This module tends to be reactive and provides these interfaces:
  - `Connection` - response asks connection to accept response data, `Connection`
  should be implemented by HTTP web server implementation to accept HTTP responses
 
+Each artipie adapter has to implement `Slice` interface with single method `response`.
+This method should process the request and return reactive response object:
+```java
+class Maven implements Slice {
+  @Override
+  public Response response(String line, Iterable<Map.Entry<String, String>> headers,
+      Flow.Publisher<Byte> body) {
+      this.upload(body);
+      return new RsWithStatus(200);
+  }
+}
+```
+
+Response is reactive object whith single method `send`. This method is called by
+server implementation, server provides connection implementation as `send` parameter
+which can accept response data: the server asks response to send itself to connection.
+
+```java
+class MavenResponse implements Response {
+
+    @Override
+    void send(final Connection con) {
+        con.accept(200, headers, empty);
+    }
+}
+```
+
+HTTP server implements `Connection` interface which can accept response data:
+server asks response to send itself to connection, response asks connection
+to accept the data. Artipie adapter are not supposed to implement this interface,
+it should be done by HTTP server implementation, e.g. vertex-server module.
+
 ## How to contribute
 
 Fork repository, make changes, send us a pull request. We will review
