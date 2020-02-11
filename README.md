@@ -44,7 +44,7 @@ server implementation, server provides connection implementation as `send` param
 which can accept response data: the server asks response to send itself to connection.
 
 ```java
-class MavenResponse implements Slice {
+class MavenResponse implements Response {
 
     @Override
     void send(final Connection con) {
