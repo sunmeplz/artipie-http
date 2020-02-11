@@ -24,11 +24,7 @@
 
 package com.artipie.http.rq;
 
-import java.io.IOException;
 import java.net.URI;
-import org.cactoos.Text;
-import org.cactoos.scalar.IoChecked;
-import org.cactoos.text.TextOf;
 
 /**
  * Request line helper object.
