@@ -50,48 +50,37 @@ public final class RequestLineFrom {
     /**
      * HTTP request line.
      */
-    private final Text line;
-
-    /**
-     * New reqiest line from string.
-     * @param line Request line string
-     */
-    public RequestLineFrom(final String line) {
-        this(new TextOf(line));
-    }
+    private final String line;
 
     /**
      * Primary ctor.
      * @param line HTTP request line
      */
-    public RequestLineFrom(final Text line) {
+    public RequestLineFrom(final String line) {
         this.line = line;
     }
 
     /**
      * Request method.
      * @return Method name
-     * @throws IOException In case of IO error
      */
-    public String method() throws IOException {
+    public String method() {
         return this.part(0);
     }
 
     /**
      * Request URI.
      * @return URI of the request
-     * @throws IOException In case of IO error
      */
-    public URI uri() throws IOException {
+    public URI uri() {
         return URI.create(this.part(1));
     }
 
     /**
      * HTTP version.
      * @return HTTP version string
-     * @throws IOException In case of IO error
      */
-    public String version() throws IOException {
+    public String version() {
         return this.part(2);
     }
 
@@ -99,12 +88,11 @@ public final class RequestLineFrom {
      * Part of request line.
      * @param idx Part index
      * @return Part string
-     * @throws IOException In case of IO error
      * @todo #12:30min Check idx value to avoid ArrayIndexOfBoundsException.
      *  Valid HTTP request line must contains 3 parts which can be splitted by
      *  whitespace char. If line doesn't contain 3 parts, let's throw an exception.
      */
-    private String part(final int idx) throws IOException {
-        return new IoChecked<>(this.line::asString).value().trim().split("\\s")[idx];
+    private String part(final int idx) {
+        return this.line.trim().split("\\s")[idx];
     }
 }
