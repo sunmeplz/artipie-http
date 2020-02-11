@@ -26,6 +26,7 @@ package com.artipie.http.hm;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import java.nio.ByteBuffer;
 import java.util.Map.Entry;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,7 +95,7 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
 
         @Override
         public void accept(final int code, final Iterable<Entry<String, String>> headers,
-            final Publisher<Byte> body) {
+            final Publisher<ByteBuffer> body) {
             this.container.set(code);
         }
     }

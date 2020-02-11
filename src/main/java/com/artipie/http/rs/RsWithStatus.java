@@ -26,6 +26,7 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import java.nio.ByteBuffer;
 import java.util.Map.Entry;
 import java.util.concurrent.Flow.Publisher;
 
@@ -98,7 +99,7 @@ public final class RsWithStatus implements Response {
         public void accept(
             final int code,
             final Iterable<Entry<String, String>> headers,
-            final Publisher<Byte> body
+            final Publisher<ByteBuffer> body
         ) {
             this.origin.accept(this.status, headers, body);
         }
