@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 ---
-name: Commit message linter
+name: GitHub validator
 "on": [push, pull_request]
 jobs:
   check:
@@ -28,8 +28,7 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v2
-      - name: Download lint
+      - name: Lint
         run: |
           curl https://raw.githubusercontent.com/llorllale/go-gitlint/master/download-gitlint.sh | sh
-      - name: Lint
-        run: ./bin/gitlint
+          ./bin/gitlint
