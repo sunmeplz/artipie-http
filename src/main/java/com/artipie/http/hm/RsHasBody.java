@@ -1,0 +1,128 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Artipie
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.artipie.http.hm;
+
+import com.artipie.http.Connection;
+import com.artipie.http.Response;
+import io.reactivex.Flowable;
+import java.nio.ByteBuffer;
+import java.util.Map.Entry;
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicReference;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
+import org.hamcrest.core.IsEqual;
+import org.reactivestreams.FlowAdapters;
+
+/**
+ * Matcher to verify response body.
+ *
+ * @since 0.1
+ */
+public final class RsHasBody extends TypeSafeMatcher<Response> {
+
+    /**
+     * Body matcher.
+     */
+    private final Matcher<byte[]> body;
+
+    /**
+     * Ctor.
+     *
+     * @param body Body to match
+     */
+    public RsHasBody(final byte[] body) {
+        this(new IsEqual<>(body));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param body Body matcher
+     */
+    public RsHasBody(final Matcher<byte[]> body) {
+        this.body = body;
+    }
+
+    @Override
+    public void describeTo(final Description description) {
+        description.appendDescriptionOf(this.body);
+    }
+
+    @Override
+    public boolean matchesSafely(final Response item) {
+        final AtomicReference<byte[]> out = new AtomicReference<>();
+        item.send(new RsHasBody.FakeConnection(out));
+        return this.body.matches(out.get());
+    }
+
+    /**
+     * Fake connection.
+     *
+     * @since 0.1
+     */
+    private static final class FakeConnection implements Connection {
+
+        /**
+         * Body container.
+         */
+        private final AtomicReference<byte[]> container;
+
+        /**
+         * Ctor.
+         *
+         * @param container Body container
+         */
+        FakeConnection(final AtomicReference<byte[]> container) {
+            this.container = container;
+        }
+
+        @Override
+        public void accept(
+            final int code,
+            final Iterable<Entry<String, String>> headers,
+            final Flow.Publisher<ByteBuffer> body
+        ) {
+            final ByteBuffer buffer = Flowable.fromPublisher(FlowAdapters.toPublisher(body))
+                .toList()
+                .blockingGet()
+                .stream()
+                .reduce(
+                    (left, right) -> {
+                        final ByteBuffer concat = ByteBuffer.allocate(
+                            left.remaining() + right.remaining()
+                        ).put(left).put(right);
+                        concat.flip();
+                        return concat;
+                    }
+                )
+                .orElse(ByteBuffer.allocate(0));
+            final byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            this.container.set(bytes);
+        }
+    }
+}
