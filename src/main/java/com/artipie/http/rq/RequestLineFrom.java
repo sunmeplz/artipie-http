@@ -25,6 +25,8 @@
 package com.artipie.http.rq;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Request line helper object.
@@ -60,8 +62,19 @@ public final class RequestLineFrom {
      * Request method.
      * @return Method name
      */
-    public String method() {
-        return this.part(0);
+    public RqMethod method() {
+        final Collection<RqMethod> methods = Arrays.asList(
+            RqMethod.OPTIONS, RqMethod.GET, RqMethod.HEAD, RqMethod.POST, RqMethod.PUT,
+            RqMethod.DELETE, RqMethod.TRACE, RqMethod.CONNECT
+        );
+        final String string = this.part(0);
+        return methods
+            .stream()
+            .filter(method -> method.value().equals(string))
+            .findAny()
+            .orElseThrow(
+                () -> new IllegalStateException(String.format("Unknown method: '%s'", string))
+            );
     }
 
     /**
