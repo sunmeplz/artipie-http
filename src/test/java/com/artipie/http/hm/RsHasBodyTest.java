@@ -28,7 +28,7 @@ import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.FlowAdapters;
 
@@ -56,8 +56,9 @@ class RsHasBodyTest {
             );
         };
         MatcherAssert.assertThat(
+            "Matcher is expected to match response with equal body",
             new RsHasBody("hello".getBytes()).matches(response),
-            Matchers.equalTo(true)
+            new IsEqual<>(true)
         );
     }
 
@@ -72,8 +73,9 @@ class RsHasBodyTest {
             )
         );
         MatcherAssert.assertThat(
+            "Matcher is expected not to match response with not equal body",
             new RsHasBody("2".getBytes()).matches(response),
-            Matchers.equalTo(false)
+            new IsEqual<>(false)
         );
     }
 
