@@ -24,24 +24,6 @@ SOFTWARE.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <build>
-    <plugins>
-      <plugin>
-        <!--
-        @todo #32:30min Replace Buffer.slice(from, length) from JDK13 with custom implementation
-         and downgrade required JDK version back to 9.
-         Most probably we can implement slice using duplicate() method and change buffer position
-         and limit.
-        -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>13</source>
-          <target>13</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <parent>
     <groupId>com.artipie</groupId>
     <artifactId>ppom</artifactId>
