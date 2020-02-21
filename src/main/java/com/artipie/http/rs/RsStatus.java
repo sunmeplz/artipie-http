@@ -29,94 +29,94 @@ package com.artipie.http.rs;
  *
  * @since 0.4
  */
-public final class RsStatus {
+public enum RsStatus {
 
     /**
      * OK.
      */
-    public static final RsStatus OK = new RsStatus("200");
+    OK("200"),
 
     /**
      * Created.
      */
-    public static final RsStatus CREATED = new RsStatus("201");
+    CREATED("201"),
 
     /**
      * Accepted.
      */
-    public static final RsStatus ACCEPTED = new RsStatus("202");
+    ACCEPTED("202"),
 
     /**
      * Moved Permanently.
      */
-    public static final RsStatus MOVED_PERMANENTLY = new RsStatus("301");
+    MOVED_PERMANENTLY("301"),
 
     /**
      * Found.
      */
-    public static final RsStatus FOUND = new RsStatus("302");
+    FOUND("302"),
 
     /**
      * Not Modified.
      */
-    public static final RsStatus NOT_MODIFIED = new RsStatus("304");
+    NOT_MODIFIED("304"),
 
     /**
      * Temporary Redirect.
      */
     @SuppressWarnings("PMD.LongVariable")
-    public static final RsStatus TEMPORARY_REDIRECT = new RsStatus("307");
+    TEMPORARY_REDIRECT("307"),
 
     /**
      * Bad Request.
      */
-    public static final RsStatus BAD_REQUEST = new RsStatus("400");
+    BAD_REQUEST("400"),
 
     /**
      * Unauthorized.
      */
-    public static final RsStatus UNAUTHORIZED = new RsStatus("401");
+    UNAUTHORIZED("401"),
 
     /**
      * Forbidden.
      */
-    public static final RsStatus FORBIDDEN = new RsStatus("403");
+    FORBIDDEN("403"),
 
     /**
      * Not Found.
      */
-    public static final RsStatus NOT_FOUND = new RsStatus("404");
+    NOT_FOUND("404"),
 
     /**
      * Method Not Allowed.
      */
     @SuppressWarnings("PMD.LongVariable")
-    public static final RsStatus METHOD_NOT_ALLOWED = new RsStatus("405");
+    METHOD_NOT_ALLOWED("405"),
 
     /**
      * Request Time-out.
      */
-    public static final RsStatus REQUEST_TIMEOUT = new RsStatus("408");
+    REQUEST_TIMEOUT("408"),
 
     /**
      * Conflict.
      */
-    public static final RsStatus CONFLICT = new RsStatus("409");
+    CONFLICT("409"),
 
     /**
      * Internal Server Error.
      */
-    public static final RsStatus INTERNAL_ERROR = new RsStatus("500");
+    INTERNAL_ERROR("500"),
 
     /**
      * Not Implemented.
      */
-    public static final RsStatus NOT_IMPLEMENTED = new RsStatus("501");
+    NOT_IMPLEMENTED("501"),
 
     /**
      * Service Unavailable.
      */
-    public static final RsStatus UNAVAILABLE = new RsStatus("503");
+    UNAVAILABLE("503");
 
     /**
      * Code value.
@@ -128,7 +128,7 @@ public final class RsStatus {
      *
      * @param string Code value.
      */
-    private RsStatus(final String string) {
+    RsStatus(final String string) {
         this.string = string;
     }
 
