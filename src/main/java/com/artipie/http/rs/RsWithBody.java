@@ -81,7 +81,7 @@ public final class RsWithBody implements Response {
     }
 
     /**
-     * Overrides origin response body with byte buffer.
+     * Decorates origin response body with byte buffer.
      * @param origin Response
      * @param buf Body buffer
      */
@@ -98,7 +98,7 @@ public final class RsWithBody implements Response {
     }
 
     /**
-     * Override response body with publisher.
+     * Decorates origin response body with publisher.
      * @param origin Response
      * @param body Publisher
      */
