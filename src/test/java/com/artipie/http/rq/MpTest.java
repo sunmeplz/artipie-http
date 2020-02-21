@@ -29,8 +29,16 @@ import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
+
+import io.vertx.reactivex.ext.web.client.WebClient;
+import io.vertx.reactivex.ext.web.multipart.MultipartForm;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.reactivestreams.FlowAdapters;
 
 /**
@@ -40,22 +48,58 @@ import org.reactivestreams.FlowAdapters;
  */
 public class MpTest {
 
+    private static final String LOCALHOST = "localhost";
+
     @Test
-    public void ableToParseBasic() throws IOException {
+    public void ableToParseBasic(@TempDir final Path dir) throws IOException {
         final Vertx vertx = Vertx.vertx();
-        final Slice slice = (line, headers, body) -> connection -> {
-            final int zero = 0;
-            final int okay = 200;
-            connection.accept(
-                okay,
-                new HashSet<>(zero),
-                FlowAdapters.toFlowPublisher(Flowable.empty())
-            );
+        final Slice slice = (line, headers, body) -> {
+            return connection -> {
+                for (Map.Entry<String, String> header : headers) {
+                    System.out.println(header);
+                }
+                final int zero = 0;
+                final int okay = 200;
+                final Flowable<ByteBuffer> flowable = Flowable.fromPublisher(FlowAdapters.toPublisher(body));
+                flowable.subscribe(byteBuffer -> {
+                    final byte[] bytes = new byte[byteBuffer.remaining()];
+                    byteBuffer.get(bytes);
+                    final String s = new String(bytes);
+                    System.out.println(s);
+                });
+                final Mp mp = new Mp(headers);
+//                body.subscribe(mp);
+//                final Flowable<Part> partFlowable = Flowable.fromPublisher(FlowAdapters.toPublisher(mp));
+//                partFlowable.subscribe();
+                connection.accept(
+                    okay,
+                    new HashSet<>(zero),
+                    FlowAdapters.toFlowPublisher(Flowable.empty())
+                );
+            };
         };
         final int port = this.rndPort();
         final VertxSliceServer server = new VertxSliceServer(vertx, slice, port);
         server.start();
-//        final String = ""
+        final Path resolve = dir.resolve("text.txt");
+        Files.write(resolve, "Hello worrrrld!!!".getBytes());
+        final WebClient web = WebClient.create(vertx);
+        web.post(port, MpTest.LOCALHOST, "/hello")
+            .rxSendMultipartForm(
+                MultipartForm.create()
+                    .textFileUpload(
+                        "hello",
+                        resolve.getFileName().toString(),
+                        resolve.toAbsolutePath().toString(),
+                        "text/plain"
+                    )
+                    .textFileUpload(
+                        "hello2",
+                        resolve.getFileName().toString(),
+                        resolve.toAbsolutePath().toString(),
+                        "text/plain"
+                    )
+            ).blockingGet();
         server.stop();
         vertx.close();
     }

@@ -25,9 +25,13 @@
 package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Flow;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 
 /**
  * A multipart parser. Parses a Flow of Bytes into a flow of Multiparts
@@ -37,6 +41,8 @@ import java.util.function.Supplier;
  * @since 0.4
  */
 public final class Mp implements Flow.Processor<ByteBuffer, Part> {
+
+    private static final String CRLF = "\r\n";
 
     /**
      * Content type header.
@@ -62,7 +68,15 @@ public final class Mp implements Flow.Processor<ByteBuffer, Part> {
      */
     public Mp(final Iterable<Map.Entry<String, String>> headers) {
         this.boundary = () -> {
-            throw new IllegalStateException("boundary parsing from headers are not implemented");
+            final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+            final String type = StreamSupport.stream(headers.spliterator(), false)
+                .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .get();
+            final Matcher matcher = pattern.matcher(type);
+            matcher.find();
+            return matcher.group(1);
         };
     }
 
