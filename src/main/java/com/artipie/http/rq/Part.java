@@ -32,7 +32,7 @@ import java.util.concurrent.Flow;
  * Multipart body part message.
  * @since 0.4
  */
-public interface RqPart extends Flow.Publisher<ByteBuffer> {
+public interface Part extends Flow.Publisher<ByteBuffer> {
 
     /**
      * Part headers.

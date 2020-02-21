@@ -25,29 +25,18 @@
 package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Flow;
-import java.util.regex.Pattern;
-import org.cactoos.Text;
 
 /**
- * Multipart request.
+ * A multipart parser. Parses a Flow of Bytes into a flow of Multiparts
  * See
  * <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">rfc1341</a>
  * spec.
  * @since 0.4
- * @todo #32:30min Implement this class.
- *  It should read the stream of body chunks and convert it to stream of
- *  request parts. When we detect new request part it should immediately
- *  emmit new part object.
  */
-public final class RqMultipart implements Flow.Publisher<RqPart> {
-
-    /**
-     * Multipart boundary header.
-     * @checkstyle ConstantUsageCheck (500 lines)
-     */
-    @SuppressWarnings("PMD.UnusedPrivateField")
-    private static final Pattern BOUNDARY = Pattern.compile(".*[^a-z]boundary=([^;]+).*");
+public final class Mp implements Flow.Publisher<Part> {
 
     /**
      * Content type header.
@@ -55,7 +44,7 @@ public final class RqMultipart implements Flow.Publisher<RqPart> {
      * It's the main header of multipart request.
      * </p>
      */
-    private final Text header;
+    private final Callable<String> boundary;
 
     /**
      * Byte buffer body publisher.
@@ -64,24 +53,30 @@ public final class RqMultipart implements Flow.Publisher<RqPart> {
 
     /**
      * Ctor.
-     * @param header Content type header value
-     * @param body Publisher
-     * @todo #32:30min Add secondary constructor RqMultipart(headers, body)
-     *  to convert content type header to Text right in the constructor.
-     *  Add a unit test to verify this case.
+     * @param boundary Multipart body boundary
+     * @param body A flow of bytes
      */
-    public RqMultipart(final Text header, final Flow.Publisher<ByteBuffer> body) {
-        this.header = header;
+    public Mp(final String boundary,
+              final Flow.Publisher<ByteBuffer> body) {
+        this.boundary = () -> boundary;
+        this.body = body;
+    }
+
+    /**
+     * Ctor.
+     * @param headers Content type header value
+     * @param body A flow of bytes
+     */
+    public Mp(final Iterable<Map.Entry<String, String>> headers,
+              final Flow.Publisher<ByteBuffer> body) {
+        this.boundary = () -> {
+            throw new IllegalStateException("boundary parsing from headers are not implemented");
+        };
         this.body = body;
     }
 
     @Override
-    public void subscribe(final Flow.Subscriber<? super RqPart> sub) {
-        throw new IllegalStateException("not implemented");
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s %s", this.header, this.body);
+    public void subscribe(Flow.Subscriber<? super Part> subscriber) {
+        throw new IllegalStateException("subscription is not implemented");
     }
 }
