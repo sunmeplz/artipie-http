@@ -26,8 +26,8 @@ package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Flow;
+import java.util.function.Supplier;
 
 /**
  * A multipart parser. Parses a Flow of Bytes into a flow of Multiparts
@@ -44,7 +44,7 @@ public final class Mp implements Flow.Publisher<Part> {
      * It's the main header of multipart request.
      * </p>
      */
-    private final Callable<String> boundary;
+    private final Supplier<String> boundary;
 
     /**
      * Byte buffer body publisher.
