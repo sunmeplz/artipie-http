@@ -24,6 +24,9 @@
 
 package com.artipie.http.rq;
 
+import io.reactivex.Flowable;
+import org.reactivestreams.FlowAdapters;
+
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.Flow;
@@ -77,6 +80,7 @@ public final class Mp implements Flow.Publisher<Part> {
 
     @Override
     public void subscribe(Flow.Subscriber<? super Part> subscriber) {
-        throw new IllegalStateException("subscription is not implemented");
+        Flow.Publisher<Part> flow = FlowAdapters.toFlowPublisher(Flowable.empty());
+        flow.subscribe(subscriber);
     }
 }
