@@ -27,12 +27,11 @@ import com.artipie.http.Slice;
 import com.artipie.vertx.VertxSliceServer;
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
-import org.junit.jupiter.api.Test;
-import org.reactivestreams.FlowAdapters;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
+import org.junit.jupiter.api.Test;
+import org.reactivestreams.FlowAdapters;
 
 /**
  * Multipart parser test.
@@ -46,16 +45,17 @@ public class MpTest {
         final Vertx vertx = Vertx.vertx();
         final Slice slice = (line, headers, body) -> connection -> {
             final int zero = 0;
-            final int ok = 200;
+            final int okay = 200;
             connection.accept(
-                ok,
+                okay,
                 new HashSet<>(zero),
                 FlowAdapters.toFlowPublisher(Flowable.empty())
             );
         };
-        final int port = rndPort();
+        final int port = this.rndPort();
         final VertxSliceServer server = new VertxSliceServer(vertx, slice, port);
         server.start();
+//        final String = ""
         server.stop();
         vertx.close();
     }

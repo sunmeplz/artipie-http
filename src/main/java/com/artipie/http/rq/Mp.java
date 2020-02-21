@@ -24,9 +24,6 @@
 
 package com.artipie.http.rq;
 
-import io.reactivex.Flowable;
-import org.reactivestreams.FlowAdapters;
-
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.Flow;
@@ -39,7 +36,7 @@ import java.util.function.Supplier;
  * spec.
  * @since 0.4
  */
-public final class Mp implements Flow.Publisher<Part> {
+public final class Mp implements Flow.Processor<ByteBuffer, Part> {
 
     /**
      * Content type header.
@@ -50,37 +47,47 @@ public final class Mp implements Flow.Publisher<Part> {
     private final Supplier<String> boundary;
 
     /**
-     * Byte buffer body publisher.
-     */
-    private final Flow.Publisher<ByteBuffer> body;
-
-    /**
      * Ctor.
+     *
      * @param boundary Multipart body boundary
-     * @param body A flow of bytes
      */
-    public Mp(final String boundary,
-              final Flow.Publisher<ByteBuffer> body) {
+    public Mp(final String boundary) {
         this.boundary = () -> boundary;
-        this.body = body;
     }
 
     /**
      * Ctor.
+     *
      * @param headers Content type header value
-     * @param body A flow of bytes
      */
-    public Mp(final Iterable<Map.Entry<String, String>> headers,
-              final Flow.Publisher<ByteBuffer> body) {
+    public Mp(final Iterable<Map.Entry<String, String>> headers) {
         this.boundary = () -> {
             throw new IllegalStateException("boundary parsing from headers are not implemented");
         };
-        this.body = body;
     }
 
     @Override
     public void subscribe(Flow.Subscriber<? super Part> subscriber) {
-        Flow.Publisher<Part> flow = FlowAdapters.toFlowPublisher(Flowable.empty());
-        flow.subscribe(subscriber);
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onNext(ByteBuffer item) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onComplete() {
+        throw new IllegalStateException("not implemented");
     }
 }
