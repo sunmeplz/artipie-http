@@ -46,6 +46,7 @@ public final class RqHeadersTest {
         final String first = "1";
         final String second = "2";
         MatcherAssert.assertThat(
+            "RqHeaders didn't find headers by name",
             new RqHeaders(
                 new IterableOf<>(
                     new MapEntry<>("x-header", first),
@@ -67,6 +68,7 @@ public final class RqHeadersTest {
     void findSingleValue() {
         final String value = "text/plain";
         MatcherAssert.assertThat(
+            "RqHeaders.Single didn't find expected header",
             new RqHeaders.Single(
                 new IterableOf<>(
                     new MapEntry<>("Content-type", value),
