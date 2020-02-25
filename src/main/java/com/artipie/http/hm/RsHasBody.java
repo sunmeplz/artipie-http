@@ -29,13 +29,12 @@ import com.artipie.http.Response;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsEqual;
-import org.reactivestreams.FlowAdapters;
+import org.reactivestreams.Publisher;
 
 /**
  * Matcher to verify response body.
@@ -104,9 +103,9 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
         public void accept(
             final int code,
             final Iterable<Entry<String, String>> headers,
-            final Flow.Publisher<ByteBuffer> body
+            final Publisher<ByteBuffer> body
         ) {
-            final ByteBuffer buffer = Flowable.fromPublisher(FlowAdapters.toPublisher(body))
+            final ByteBuffer buffer = Flowable.fromPublisher(body)
                 .toList()
                 .blockingGet()
                 .stream()

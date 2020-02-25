@@ -26,9 +26,9 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import org.reactivestreams.Publisher;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow.Publisher;
 
 /**
  * Response with status.

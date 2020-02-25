@@ -26,11 +26,11 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import org.reactivestreams.Publisher;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow.Publisher;
-import wtf.g4s8.jflows.PubSingle;
 
 /**
  * Response with body.
@@ -91,7 +91,12 @@ public final class RsWithBody implements Response {
 
     @Override
     public void send(final Connection con) {
-        this.origin.send(new RsWithBody.ConWithBody(con, new PubSingle<>(this.body)));
+        this.origin.send(
+            new RsWithBody.ConWithBody(
+                con,
+                Flowable.just(this.body)
+            )
+        );
     }
 
     /**
