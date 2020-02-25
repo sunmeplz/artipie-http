@@ -79,5 +79,11 @@ SOFTWARE.
       <version>3.0.0-RC6</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.llorllale</groupId>
+      <artifactId>cactoos-matchers</artifactId>
+      <version>0.18</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
