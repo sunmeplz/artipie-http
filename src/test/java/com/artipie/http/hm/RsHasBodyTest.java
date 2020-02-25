@@ -31,7 +31,6 @@ import java.util.Collections;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
-import org.reactivestreams.FlowAdapters;
 
 /**
  * Tests for {@link RsHasBody}.
@@ -45,12 +44,10 @@ class RsHasBodyTest {
         final Response response = connection -> connection.accept(
             RsStatus.OK,
             Collections.emptyList(),
-            FlowAdapters.toFlowPublisher(
-                Flowable.fromArray(
-                    ByteBuffer.wrap("he".getBytes()),
-                    ByteBuffer.wrap("ll".getBytes()),
-                    ByteBuffer.wrap("o".getBytes())
-                )
+            Flowable.fromArray(
+                ByteBuffer.wrap("he".getBytes()),
+                ByteBuffer.wrap("ll".getBytes()),
+                ByteBuffer.wrap("o".getBytes())
             )
         );
         MatcherAssert.assertThat(
@@ -65,9 +62,7 @@ class RsHasBodyTest {
         final Response response = connection -> connection.accept(
             RsStatus.OK,
             Collections.emptyList(),
-            FlowAdapters.toFlowPublisher(
-                Flowable.fromArray(ByteBuffer.wrap("1".getBytes()))
-            )
+            Flowable.fromArray(ByteBuffer.wrap("1".getBytes()))
         );
         MatcherAssert.assertThat(
             "Matcher is expected not to match response with not equal body",

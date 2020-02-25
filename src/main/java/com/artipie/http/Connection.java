@@ -26,7 +26,7 @@ package com.artipie.http;
 import com.artipie.http.rs.RsStatus;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.Flow;
+import org.reactivestreams.Publisher;
 
 /**
  * The http connection.
@@ -43,5 +43,5 @@ public interface Connection {
     void accept(
         RsStatus status,
         Iterable<Map.Entry<String, String>> headers,
-        Flow.Publisher<ByteBuffer> body);
+        Publisher<ByteBuffer> body);
 }
