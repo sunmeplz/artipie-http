@@ -29,6 +29,7 @@ import com.artipie.http.Response;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
+import java.util.concurrent.Flow;
 import java.util.concurrent.Flow.Publisher;
 import wtf.g4s8.jflows.PubSingle;
 
@@ -48,9 +49,9 @@ public final class RsWithBody implements Response {
     private final Response origin;
 
     /**
-     * Body buffer.
+     * Body publisher.
      */
-    private final ByteBuffer body;
+    private final Flow.Publisher<ByteBuffer> body;
 
     /**
      * Decorates response with new text body.
@@ -80,18 +81,35 @@ public final class RsWithBody implements Response {
     }
 
     /**
-     * Overrides origin response body with byte buffer.
+     * Decorates origin response body with byte buffer.
      * @param origin Response
      * @param buf Body buffer
      */
     public RsWithBody(final Response origin, final ByteBuffer buf) {
+        this(origin, new PubSingle<>(buf));
+    }
+
+    /**
+     * Creates new response with body publisher.
+     * @param body Publisher
+     */
+    public RsWithBody(final Flow.Publisher<ByteBuffer> body) {
+        this(Response.EMPTY, body);
+    }
+
+    /**
+     * Decorates origin response body with publisher.
+     * @param origin Response
+     * @param body Publisher
+     */
+    public RsWithBody(final Response origin, final Flow.Publisher<ByteBuffer> body) {
         this.origin = origin;
-        this.body = buf;
+        this.body = body;
     }
 
     @Override
     public void send(final Connection con) {
-        this.origin.send(new RsWithBody.ConWithBody(con, new PubSingle<>(this.body)));
+        this.origin.send(new RsWithBody.ConWithBody(con, this.body));
     }
 
     /**
