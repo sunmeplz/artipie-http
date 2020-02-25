@@ -25,7 +25,7 @@ package com.artipie.http;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.Flow;
+import org.reactivestreams.Publisher;
 
 /**
  * Arti-pie slice.
@@ -49,6 +49,6 @@ public interface Slice {
     Response response(
         String line,
         Iterable<Map.Entry<String, String>> headers,
-        Flow.Publisher<ByteBuffer> body
+        Publisher<ByteBuffer> body
     );
 }

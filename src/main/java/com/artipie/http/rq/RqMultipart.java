@@ -25,9 +25,10 @@
 package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.Flow;
 import java.util.regex.Pattern;
 import org.cactoos.Text;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
 /**
  * Multipart request.
@@ -40,7 +41,7 @@ import org.cactoos.Text;
  *  request parts. When we detect new request part it should immediately
  *  emmit new part object.
  */
-public final class RqMultipart implements Flow.Publisher<RqPart> {
+public final class RqMultipart implements Publisher<RqPart> {
 
     /**
      * Multipart boundary header.
@@ -60,7 +61,7 @@ public final class RqMultipart implements Flow.Publisher<RqPart> {
     /**
      * Byte buffer body publisher.
      */
-    private final Flow.Publisher<ByteBuffer> body;
+    private final Publisher<ByteBuffer> body;
 
     /**
      * Ctor.
@@ -70,13 +71,13 @@ public final class RqMultipart implements Flow.Publisher<RqPart> {
      *  to convert content type header to Text right in the constructor.
      *  Add a unit test to verify this case.
      */
-    public RqMultipart(final Text header, final Flow.Publisher<ByteBuffer> body) {
+    public RqMultipart(final Text header, final Publisher<ByteBuffer> body) {
         this.header = header;
         this.body = body;
     }
 
     @Override
-    public void subscribe(final Flow.Subscriber<? super RqPart> sub) {
+    public void subscribe(final Subscriber<? super RqPart> sub) {
         throw new IllegalStateException("not implemented");
     }
 

@@ -26,12 +26,11 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow;
-import java.util.concurrent.Flow.Publisher;
-import wtf.g4s8.jflows.PubSingle;
+import org.reactivestreams.Publisher;
 
 /**
  * Response with body.
@@ -51,7 +50,7 @@ public final class RsWithBody implements Response {
     /**
      * Body publisher.
      */
-    private final Flow.Publisher<ByteBuffer> body;
+    private final Publisher<ByteBuffer> body;
 
     /**
      * Decorates response with new text body.
@@ -86,14 +85,14 @@ public final class RsWithBody implements Response {
      * @param buf Body buffer
      */
     public RsWithBody(final Response origin, final ByteBuffer buf) {
-        this(origin, new PubSingle<>(buf));
+        this(origin, Flowable.just(buf));
     }
 
     /**
      * Creates new response with body publisher.
      * @param body Publisher
      */
-    public RsWithBody(final Flow.Publisher<ByteBuffer> body) {
+    public RsWithBody(final Publisher<ByteBuffer> body) {
         this(Response.EMPTY, body);
     }
 
@@ -102,7 +101,7 @@ public final class RsWithBody implements Response {
      * @param origin Response
      * @param body Publisher
      */
-    public RsWithBody(final Response origin, final Flow.Publisher<ByteBuffer> body) {
+    public RsWithBody(final Response origin, final Publisher<ByteBuffer> body) {
         this.origin = origin;
         this.body = body;
     }

@@ -25,7 +25,6 @@ package com.artipie.http;
 
 import io.reactivex.Flowable;
 import java.util.Collections;
-import org.reactivestreams.FlowAdapters;
 
 /**
  * HTTP response.
@@ -42,7 +41,7 @@ public interface Response {
         con.accept(
             code,
             Collections.emptyList(),
-            FlowAdapters.toFlowPublisher(Flowable.empty())
+            Flowable.empty()
         );
     };
 

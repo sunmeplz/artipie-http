@@ -28,12 +28,12 @@ import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsEqual;
+import org.reactivestreams.Publisher;
 
 /**
  * Matcher to verify response status.

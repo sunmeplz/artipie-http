@@ -23,12 +23,13 @@
  */
 package com.artipie.http.rq;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.cactoos.iterable.IterableOf;
-import org.cactoos.list.ListOf;
 import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.hamcrest.core.IsEqual;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.llorllale.cactoos.matchers.TextHasString;
@@ -48,19 +49,14 @@ public final class RqHeadersTest {
         MatcherAssert.assertThat(
             "RqHeaders didn't find headers by name",
             new RqHeaders(
-                new IterableOf<>(
+                new IterableOf<Map.Entry<String, String>>(
                     new MapEntry<>("x-header", first),
                     new MapEntry<>("Accept", "application/json"),
                     new MapEntry<>("X-Header", second)
                 ),
                 "X-header"
             ),
-            new IsIterableContainingInOrder<>(
-                new ListOf<>(
-                    new IsEqual<>(first),
-                    new IsEqual<>(second)
-                )
-            )
+            Matchers.contains(first, second)
         );
     }
 
@@ -70,7 +66,7 @@ public final class RqHeadersTest {
         MatcherAssert.assertThat(
             "RqHeaders.Single didn't find expected header",
             new RqHeaders.Single(
-                new IterableOf<>(
+                Arrays.asList(
                     new MapEntry<>("Content-type", value),
                     new MapEntry<>("Range", "100")
                 ),
@@ -84,7 +80,7 @@ public final class RqHeadersTest {
     void singleFailsIfNoHeadersFound() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new RqHeaders.Single(new IterableOf<>(), "Empty").asString()
+            () -> new RqHeaders.Single(Collections.emptyList(), "Empty").asString()
         );
     }
 
@@ -93,7 +89,7 @@ public final class RqHeadersTest {
         Assertions.assertThrows(
             IllegalStateException.class,
             () -> new RqHeaders.Single(
-                new IterableOf<>(
+                Arrays.asList(
                     new MapEntry<>("Content-length", "1024"),
                     new MapEntry<>("Content-Length", "1025")
                 ),
