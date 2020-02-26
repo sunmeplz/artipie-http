@@ -23,53 +23,61 @@
  */
 package com.artipie.http.rq;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * HTTP request method.
  * See <a href="https://tools.ietf.org/html/rfc2616#section-5.1.1">RFC 2616 5.1.1 Method</a>
  *
  * @since 0.4
  */
-public final class RqMethod {
+public enum RqMethod {
 
     /**
      * OPTIONS.
      */
-    public static final RqMethod OPTIONS = new RqMethod("OPTIONS");
+    OPTIONS("OPTIONS"),
 
     /**
      * GET.
      */
-    public static final RqMethod GET = new RqMethod("GET");
+    GET("GET"),
 
     /**
      * HEAD.
      */
-    public static final RqMethod HEAD = new RqMethod("HEAD");
+    HEAD("HEAD"),
 
     /**
      * POST.
      */
-    public static final RqMethod POST = new RqMethod("POST");
+    POST("POST"),
 
     /**
      * PUT.
      */
-    public static final RqMethod PUT = new RqMethod("PUT");
+    PUT("PUT"),
 
     /**
      * DELETE.
      */
-    public static final RqMethod DELETE = new RqMethod("DELETE");
+    DELETE("DELETE"),
 
     /**
      * TRACE.
      */
-    public static final RqMethod TRACE = new RqMethod("TRACE");
+    TRACE("TRACE"),
 
     /**
      * CONNECT.
      */
-    public static final RqMethod CONNECT = new RqMethod("CONNECT");
+    CONNECT("CONNECT");
+
+    /**
+     * Set of all existing methods.
+     */
+    public static final Set<RqMethod> ALL = EnumSet.allOf(RqMethod.class);
 
     /**
      * String value.
@@ -81,7 +89,7 @@ public final class RqMethod {
      *
      * @param string String value.
      */
-    private RqMethod(final String string) {
+    RqMethod(final String string) {
         this.string = string;
     }
 
