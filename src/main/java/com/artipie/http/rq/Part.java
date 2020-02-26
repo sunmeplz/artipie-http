@@ -26,13 +26,13 @@ package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.Flow;
+import org.reactivestreams.Publisher;
 
 /**
  * Multipart body part message.
  * @since 0.4
  */
-public interface Part extends Flow.Publisher<ByteBuffer> {
+public interface Part extends Publisher<ByteBuffer> {
 
     /**
      * Part headers.
