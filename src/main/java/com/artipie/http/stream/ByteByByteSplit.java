@@ -23,12 +23,30 @@
  */
 package com.artipie.http.stream;
 
+import com.google.common.collect.EvictingQueue;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import java.nio.ByteBuffer;
 
+/**
+ *
+ */
 public class ByteByByteSplit extends ByteStreamSplit {
+
+    /**
+     * A ring buffer with bytes.
+     */
+    private final EvictingQueue<Byte> ring;
+
+    /**
+     * Ctor.
+     * @param delim The delim.
+     */
+    public ByteByByteSplit(final byte[] delim) {
+        super(delim);
+        this.ring = EvictingQueue.create(delim.length);
+    }
 
     /// Publisher ///
 
