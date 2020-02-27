@@ -29,7 +29,7 @@ import com.artipie.http.Slice;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Flow;
+import org.reactivestreams.Publisher;
 
 /**
  * Asynchronous {@link Slice} implementation.
@@ -61,7 +61,7 @@ public final class AsyncSlice implements Slice {
     @Override
     public Response response(final String line,
         final Iterable<Map.Entry<String, String>> headers,
-        final Flow.Publisher<ByteBuffer> body) {
+        final Publisher<ByteBuffer> body) {
         return new RsAsync(
             this.slice.thenApply(target -> target.response(line, headers, body))
         );
