@@ -52,7 +52,7 @@ public final class RsAsync implements Response {
      * Ctor.
      * @param rsp Response
      */
-    RsAsync(final CompletionStage<Response> rsp) {
+    public RsAsync(final CompletionStage<Response> rsp) {
         this.rsp = rsp;
     }
 

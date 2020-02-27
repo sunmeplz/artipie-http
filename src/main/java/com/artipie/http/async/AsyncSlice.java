@@ -54,7 +54,7 @@ public final class AsyncSlice implements Slice {
      * Ctor.
      * @param slice Async slice.
      */
-    AsyncSlice(final CompletionStage<Slice> slice) {
+    public AsyncSlice(final CompletionStage<Slice> slice) {
         this.slice = slice;
     }
 
