@@ -25,6 +25,7 @@ package com.artipie.http;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
@@ -38,8 +39,10 @@ public interface Connection {
      * @param code The http status code.
      * @param headers The http request headers.
      * @param body The http response body.
+     * @return Completion stage for accepting HTTP response.
      */
-    void accept(int code,
+    CompletionStage<Void> accept(
+        int code,
         Iterable<Map.Entry<String, String>> headers,
         Publisher<ByteBuffer> body);
 }

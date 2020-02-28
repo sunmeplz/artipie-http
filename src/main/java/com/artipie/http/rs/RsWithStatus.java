@@ -28,6 +28,7 @@ import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
@@ -65,8 +66,8 @@ public final class RsWithStatus implements Response {
     }
 
     @Override
-    public void send(final Connection con) {
-        this.origin.send(new RsWithStatus.ConWithStatus(con, this.code));
+    public CompletionStage<Void> send(final Connection con) {
+        return this.origin.send(new RsWithStatus.ConWithStatus(con, this.code));
     }
 
     /**
@@ -96,12 +97,11 @@ public final class RsWithStatus implements Response {
         }
 
         @Override
-        public void accept(
+        public CompletionStage<Void> accept(
             final int code,
             final Iterable<Entry<String, String>> headers,
-            final Publisher<ByteBuffer> body
-        ) {
-            this.origin.accept(this.status, headers, body);
+            final Publisher<ByteBuffer> body) {
+            return this.origin.accept(this.status, headers, body);
         }
     }
 }

@@ -25,6 +25,7 @@ package com.artipie.http;
 
 import io.reactivex.Flowable;
 import java.util.Collections;
+import java.util.concurrent.CompletionStage;
 
 /**
  * HTTP response.
@@ -38,7 +39,7 @@ public interface Response {
      */
     Response EMPTY = con -> {
         final int code = 200;
-        con.accept(
+        return con.accept(
             code,
             Collections.emptyList(),
             Flowable.empty()
@@ -49,6 +50,7 @@ public interface Response {
      * Send the response.
      *
      * @param connection Connection to send the response to
+     * @return Completion stage for sending response to the connection.
      */
-    void send(Connection connection);
+    CompletionStage<Void> send(Connection connection);
 }

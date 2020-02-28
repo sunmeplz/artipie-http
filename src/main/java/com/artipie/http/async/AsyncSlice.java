@@ -34,8 +34,7 @@ import org.reactivestreams.Publisher;
 /**
  * Asynchronous {@link Slice} implementation.
  * <p>
- * This slice encapsulates {@link CompletionStage} of {@link Slice}
- * and returns {@link RsAsync} with completion stage mapping.
+ * This slice encapsulates {@link CompletionStage} of {@link Slice} and returns {@link Response}.
  * </p>
  * @since 0.4
  * @todo #41:30min Add unit tests for AsyncSlice and RsAsync.
@@ -62,8 +61,8 @@ public final class AsyncSlice implements Slice {
     public Response response(final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        return new RsAsync(
-            this.slice.thenApply(target -> target.response(line, headers, body))
+        return connection -> this.slice.thenCompose(
+            target -> target.response(line, headers, body).send(connection)
         );
     }
 }

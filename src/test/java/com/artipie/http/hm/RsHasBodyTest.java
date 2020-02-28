@@ -41,17 +41,15 @@ class RsHasBodyTest {
     @Test
     void shouldMatchEqualBody() {
         final int code = 200;
-        final Response response = connection -> {
-            connection.accept(
-                code,
-                Collections.emptyList(),
-                Flowable.fromArray(
-                    ByteBuffer.wrap("he".getBytes()),
-                    ByteBuffer.wrap("ll".getBytes()),
-                    ByteBuffer.wrap("o".getBytes())
-                )
-            );
-        };
+        final Response response = connection -> connection.accept(
+            code,
+            Collections.emptyList(),
+            Flowable.fromArray(
+                ByteBuffer.wrap("he".getBytes()),
+                ByteBuffer.wrap("ll".getBytes()),
+                ByteBuffer.wrap("o".getBytes())
+            )
+        );
         MatcherAssert.assertThat(
             "Matcher is expected to match response with equal body",
             new RsHasBody("hello".getBytes()).matches(response),

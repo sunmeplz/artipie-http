@@ -29,6 +29,9 @@ import com.artipie.http.Response;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -74,7 +77,11 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
     @Override
     public boolean matchesSafely(final Response item) {
         final AtomicReference<byte[]> out = new AtomicReference<>();
-        item.send(new RsHasBody.FakeConnection(out));
+        try {
+            item.send(new RsHasBody.FakeConnection(out)).toCompletableFuture().get();
+        } catch (final InterruptedException | ExecutionException ex) {
+            throw new IllegalArgumentException("Bad response", ex);
+        }
         return this.body.matches(out.get());
     }
 
@@ -100,28 +107,33 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
         }
 
         @Override
-        public void accept(
+        public CompletionStage<Void> accept(
             final int code,
             final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> body
         ) {
-            final ByteBuffer buffer = Flowable.fromPublisher(body)
-                .toList()
-                .blockingGet()
-                .stream()
-                .reduce(
-                    (left, right) -> {
-                        final ByteBuffer concat = ByteBuffer.allocate(
-                            left.remaining() + right.remaining()
-                        ).put(left).put(right);
-                        concat.flip();
-                        return concat;
-                    }
-                )
-                .orElse(ByteBuffer.allocate(0));
-            final byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            this.container.set(bytes);
+            return CompletableFuture.supplyAsync(
+                () -> {
+                    final ByteBuffer buffer = Flowable.fromPublisher(body)
+                        .toList()
+                        .blockingGet()
+                        .stream()
+                        .reduce(
+                            (left, right) -> {
+                                final ByteBuffer concat = ByteBuffer.allocate(
+                                    left.remaining() + right.remaining()
+                                ).put(left).put(right);
+                                concat.flip();
+                                return concat;
+                            }
+                        )
+                        .orElse(ByteBuffer.allocate(0));
+                    final byte[] bytes = new byte[buffer.remaining()];
+                    buffer.get(bytes);
+                    this.container.set(bytes);
+                    return null;
+                }
+            );
         }
     }
 }
