@@ -60,8 +60,15 @@ public final class RequestLineFrom {
      * Request method.
      * @return Method name
      */
-    public String method() {
-        return this.part(0);
+    public RqMethod method() {
+        final String string = this.part(0);
+        return RqMethod.ALL
+            .stream()
+            .filter(method -> method.value().equals(string))
+            .findAny()
+            .orElseThrow(
+                () -> new IllegalStateException(String.format("Unknown method: '%s'", string))
+            );
     }
 
     /**
