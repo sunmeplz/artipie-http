@@ -21,7 +21,7 @@ public class SplitTest {
                 return ByteBuffer.wrap(bytes);
             }).toArray(ByteBuffer[]::new)
         );
-        final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes(), ring);
+        final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         flow.subscribe(split);
         final String actual = new String(
             Flowable.fromPublisher(split)

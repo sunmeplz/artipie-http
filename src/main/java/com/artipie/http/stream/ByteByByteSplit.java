@@ -28,6 +28,9 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -39,6 +42,12 @@ public class ByteByByteSplit extends ByteStreamSplit {
      */
     private final EvictingQueue<Byte> ring;
 
+    private final AtomicReference<Subscription> subscription;
+    private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> subscriber;
+    private final AtomicBoolean started;
+    private final AtomicBoolean stopped;
+    private final AtomicLong requested;
+
     /**
      * Ctor.
      * @param delim The delim.
@@ -46,34 +55,70 @@ public class ByteByByteSplit extends ByteStreamSplit {
     public ByteByByteSplit(final byte[] delim) {
         super(delim);
         this.ring = EvictingQueue.create(delim.length);
+        this.subscription = new AtomicReference<>();
+        this.subscriber = new AtomicReference<>();
+        this.started = new AtomicBoolean(false);
+        this.requested = new AtomicLong(0);
+        this.stopped = new AtomicBoolean(false);
     }
 
     /// Publisher ///
 
     @Override
-    public void subscribe(Subscriber<? super Publisher<ByteBuffer>> s) {
+    public void subscribe(final Subscriber<? super Publisher<ByteBuffer>> sub) {
+        if (this.subscriber.get() != null) {
+            throw new IllegalStateException("Only one subscription is allowed");
+        }
+        this.subscriber.set(sub);
+        sub.onSubscribe(new Subscription() {
+            @Override
+            public void request(final long ask) {
+                ByteByByteSplit.this.requested.updateAndGet(current -> current + ask);
+            }
 
+            @Override
+            public void cancel() {
+                throw new IllegalStateException("Cancel is not allowed");
+            }
+        });
+        this.tryToStart();
     }
+
 
     /// Subscriber ///
 
     @Override
-    public void onSubscribe(Subscription s) {
+    public void onSubscribe(final Subscription sub) {
+        if (this.subscriber.get() != null) {
+            throw new IllegalStateException("Only one subscription is allowed");
+        }
+        this.subscription.set(sub);
+    }
+
+    @Override
+    public void onNext(final ByteBuffer byteBuffer) {
 
     }
 
     @Override
-    public void onNext(ByteBuffer byteBuffer) {
-
-    }
-
-    @Override
-    public void onError(Throwable t) {
+    public void onError(final Throwable throwable) {
 
     }
 
     @Override
     public void onComplete() {
+
+    }
+
+    private void tryToStart() {
+        if (this.subscriber.get() != null &&
+            this.subscription.get() != null &&
+            this.started.compareAndSet(false, true)){
+            this.start();
+        }
+    }
+
+    private void start() {
 
     }
 }
