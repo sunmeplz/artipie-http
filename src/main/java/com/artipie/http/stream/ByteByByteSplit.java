@@ -24,10 +24,12 @@
 package com.artipie.http.stream;
 
 import com.google.common.collect.EvictingQueue;
+import org.apache.commons.lang3.ArrayUtils;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,7 +47,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
     private final AtomicReference<Subscription> subscription;
     private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> subscriber;
     private final AtomicBoolean started;
-    private final AtomicBoolean stopped;
+    private final AtomicBoolean terminated;
     private final AtomicLong requested;
 
     /**
@@ -54,12 +56,12 @@ public class ByteByByteSplit extends ByteStreamSplit {
      */
     public ByteByByteSplit(final byte[] delim) {
         super(delim);
-        this.ring = EvictingQueue.create(delim.length);
+        this.ring = EvictingQueue.<Byte>create(delim.length);
         this.subscription = new AtomicReference<>();
         this.subscriber = new AtomicReference<>();
         this.started = new AtomicBoolean(false);
         this.requested = new AtomicLong(0);
-        this.stopped = new AtomicBoolean(false);
+        this.terminated = new AtomicBoolean(false);
     }
 
     /// Publisher ///
@@ -73,7 +75,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
         sub.onSubscribe(new Subscription() {
             @Override
             public void request(final long ask) {
-                ByteByByteSplit.this.requested.updateAndGet(current -> current + ask);
+                ByteByByteSplit.this.subscription.get().request(ask);
             }
 
             @Override
@@ -97,28 +99,44 @@ public class ByteByByteSplit extends ByteStreamSplit {
 
     @Override
     public void onNext(final ByteBuffer byteBuffer) {
+        final byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes);
+        this.feedByteByByte(bytes);
+    }
 
+    private void feedByteByByte(byte[] bytes) {
+        for (final byte each : bytes) {
+            ring.add(each);
+            final byte[] primitive = ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
+            if (Arrays.equals(delim, primitive)) {
+                ring.peek();
+            }
+        }
     }
 
     @Override
     public void onError(final Throwable throwable) {
-
+        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
+        if (subscriber != null) {
+            subscriber.onError(throwable);
+        }
+        this.terminated.set(true);
     }
 
     @Override
     public void onComplete() {
-
+        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
+        if (subscriber != null) {
+            subscriber.onComplete();
+        }
+        this.terminated.set(true);
     }
 
     private void tryToStart() {
         if (this.subscriber.get() != null &&
             this.subscription.get() != null &&
-            this.started.compareAndSet(false, true)){
-            this.start();
+            !this.terminated.get()) {
+            this.started.compareAndSet(false, true);
         }
-    }
-
-    private void start() {
-
     }
 }
