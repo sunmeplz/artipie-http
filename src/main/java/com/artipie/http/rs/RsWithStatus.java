@@ -69,6 +69,11 @@ public final class RsWithStatus implements Response {
         this.origin.send(new RsWithStatus.ConWithStatus(con, this.code));
     }
 
+    @Override
+    public String toString() {
+        return String.format("RsWithStatus{code=%d, origin=%s}", this.code, this.origin);
+    }
+
     /**
      * Connection with overriden status code.
      * @since 0.1
