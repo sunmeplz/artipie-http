@@ -44,29 +44,29 @@ public final class RsWithStatus implements Response {
     /**
      * Status code.
      */
-    private final int code;
+    private final RsStatus status;
 
     /**
      * New response with status.
-     * @param code Status code
+     * @param status Status code
      */
-    public RsWithStatus(final int code) {
-        this(Response.EMPTY, code);
+    public RsWithStatus(final RsStatus status) {
+        this(Response.EMPTY, status);
     }
 
     /**
      * Override status code for response.
      * @param origin Response to override
-     * @param code Status code
+     * @param status Status code
      */
-    public RsWithStatus(final Response origin, final int code) {
+    public RsWithStatus(final Response origin, final RsStatus status) {
         this.origin = origin;
-        this.code = code;
+        this.status = status;
     }
 
     @Override
     public void send(final Connection con) {
-        this.origin.send(new RsWithStatus.ConWithStatus(con, this.code));
+        this.origin.send(new RsWithStatus.ConWithStatus(con, this.status));
     }
 
     @Override
@@ -88,21 +88,21 @@ public final class RsWithStatus implements Response {
         /**
          * New status.
          */
-        private final int status;
+        private final RsStatus status;
 
         /**
          * Override status code for connection.
          * @param origin Connection
          * @param status Code to override
          */
-        ConWithStatus(final Connection origin, final int status) {
+        ConWithStatus(final Connection origin, final RsStatus status) {
             this.origin = origin;
             this.status = status;
         }
 
         @Override
         public void accept(
-            final int code,
+            final RsStatus ignored,
             final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> body
         ) {

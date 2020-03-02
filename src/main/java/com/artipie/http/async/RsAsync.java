@@ -26,6 +26,7 @@ package com.artipie.http.async;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.charset.StandardCharsets;
@@ -61,8 +62,7 @@ public final class RsAsync implements Response {
         this.rsp.exceptionally(
             err -> new RsWithStatus(
                 new RsWithBody(err.getMessage(), StandardCharsets.UTF_8),
-                // @checkstyle MagicNumberCheck (1 line)
-                500
+                RsStatus.INTERNAL_ERROR
             )
         ).thenAccept(target -> target.send(con));
     }

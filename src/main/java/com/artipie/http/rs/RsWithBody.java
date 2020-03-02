@@ -138,9 +138,9 @@ public final class RsWithBody implements Response {
         }
 
         @Override
-        public void accept(final int code, final Iterable<Entry<String, String>> headers,
+        public void accept(final RsStatus status, final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> none) {
-            this.origin.accept(code, headers, this.body);
+            this.origin.accept(status, headers, this.body);
         }
     }
 }
