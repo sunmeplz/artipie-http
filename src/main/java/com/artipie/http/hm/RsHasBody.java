@@ -26,6 +26,7 @@ package com.artipie.http.hm;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
@@ -103,7 +104,7 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
 
         @Override
         public CompletionStage<Void> accept(
-            final int code,
+            final RsStatus status,
             final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> body
         ) {

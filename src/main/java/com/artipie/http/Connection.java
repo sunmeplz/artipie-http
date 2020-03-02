@@ -23,6 +23,7 @@
  */
 package com.artipie.http;
 
+import com.artipie.http.rs.RsStatus;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -36,13 +37,13 @@ public interface Connection {
 
     /**
      * Respond on connection.
-     * @param code The http status code.
+     * @param status The http status code.
      * @param headers The http request headers.
      * @param body The http response body.
      * @return Completion stage for accepting HTTP response.
      */
     CompletionStage<Void> accept(
-        int code,
+        RsStatus status,
         Iterable<Map.Entry<String, String>> headers,
         Publisher<ByteBuffer> body);
 }

@@ -24,6 +24,7 @@
 package com.artipie.http.hm;
 
 import com.artipie.http.Response;
+import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -40,9 +41,8 @@ class RsHasBodyTest {
 
     @Test
     void shouldMatchEqualBody() {
-        final int code = 200;
         final Response response = connection -> connection.accept(
-            code,
+            RsStatus.OK,
             Collections.emptyList(),
             Flowable.fromArray(
                 ByteBuffer.wrap("he".getBytes()),
@@ -59,9 +59,8 @@ class RsHasBodyTest {
 
     @Test
     void shouldNotMatchNotEqualBody() {
-        final int code = 200;
         final Response response = connection -> connection.accept(
-            code,
+            RsStatus.OK,
             Collections.emptyList(),
             Flowable.fromArray(ByteBuffer.wrap("1".getBytes()))
         );

@@ -23,6 +23,7 @@
  */
 package com.artipie.http;
 
+import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.util.Collections;
 import java.util.concurrent.CompletionStage;
@@ -38,9 +39,8 @@ public interface Response {
      * Empty response.
      */
     Response EMPTY = con -> {
-        final int code = 200;
         return con.accept(
-            code,
+            RsStatus.OK,
             Collections.emptyList(),
             Flowable.empty()
         );

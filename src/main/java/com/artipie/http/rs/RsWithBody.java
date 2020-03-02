@@ -140,10 +140,10 @@ public final class RsWithBody implements Response {
 
         @Override
         public CompletionStage<Void> accept(
-            final int code,
+            final RsStatus status,
             final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> none) {
-            return this.origin.accept(code, headers, this.body);
+            return this.origin.accept(status, headers, this.body);
         }
     }
 }

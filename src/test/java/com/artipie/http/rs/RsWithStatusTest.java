@@ -29,16 +29,16 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link ResponseWithStatus}.
+ * Test case for {@link RsWithStatus}.
  * @since 0.1
  */
 final class RsWithStatusTest {
     @Test
     void usesStatus() throws Exception {
-        final int code = 404;
+        final RsStatus status = RsStatus.NOT_FOUND;
         MatcherAssert.assertThat(
-            new RsWithStatus(code),
-            new RsHasStatus(code)
+            new RsWithStatus(status),
+            new RsHasStatus(status)
         );
     }
 }
