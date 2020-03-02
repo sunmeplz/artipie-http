@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -77,11 +76,7 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
     @Override
     public boolean matchesSafely(final Response item) {
         final AtomicReference<byte[]> out = new AtomicReference<>();
-        try {
-            item.send(new RsHasBody.FakeConnection(out)).toCompletableFuture().get();
-        } catch (final InterruptedException | ExecutionException ex) {
-            throw new IllegalArgumentException("Bad response", ex);
-        }
+        item.send(new RsHasBody.FakeConnection(out)).toCompletableFuture().join();
         return this.body.matches(out.get());
     }
 

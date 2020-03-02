@@ -29,7 +29,6 @@ import com.artipie.http.Response;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -72,11 +71,7 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
     @Override
     public boolean matchesSafely(final Response item) {
         final AtomicInteger out = new AtomicInteger();
-        try {
-            item.send(new FakeConnection(out)).toCompletableFuture().get();
-        } catch (final InterruptedException | ExecutionException ex) {
-            throw new IllegalArgumentException("Bad response", ex);
-        }
+        item.send(new FakeConnection(out)).toCompletableFuture().join();
         return this.status.matches(out.get());
     }
 
