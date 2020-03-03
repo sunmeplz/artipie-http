@@ -29,6 +29,7 @@ import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -71,7 +72,7 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
     @Override
     public boolean matchesSafely(final Response item) {
         final AtomicReference<RsStatus> out = new AtomicReference<>();
-        item.send(new RsHasStatus.FakeConnection(out));
+        item.send(new FakeConnection(out)).toCompletableFuture().join();
         return this.status.matches(out.get());
     }
 
@@ -95,9 +96,16 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
         }
 
         @Override
-        public void accept(final RsStatus status, final Iterable<Entry<String, String>> headers,
+        public CompletableFuture<Void> accept(
+            final RsStatus status,
+            final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> body) {
-            this.container.set(status);
+            return CompletableFuture.supplyAsync(
+                () -> {
+                    this.container.set(status);
+                    return null;
+                }
+            );
         }
     }
 }

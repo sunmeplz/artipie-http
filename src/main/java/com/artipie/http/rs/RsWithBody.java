@@ -30,6 +30,7 @@ import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
@@ -107,8 +108,8 @@ public final class RsWithBody implements Response {
     }
 
     @Override
-    public void send(final Connection con) {
-        this.origin.send(new RsWithBody.ConWithBody(con, this.body));
+    public CompletionStage<Void> send(final Connection con) {
+        return this.origin.send(new RsWithBody.ConWithBody(con, this.body));
     }
 
     /**
@@ -138,9 +139,11 @@ public final class RsWithBody implements Response {
         }
 
         @Override
-        public void accept(final RsStatus status, final Iterable<Entry<String, String>> headers,
+        public CompletionStage<Void> accept(
+            final RsStatus status,
+            final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> none) {
-            this.origin.accept(status, headers, this.body);
+            return this.origin.accept(status, headers, this.body);
         }
     }
 }
