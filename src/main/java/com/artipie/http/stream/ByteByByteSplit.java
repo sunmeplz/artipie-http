@@ -54,7 +54,10 @@ public class ByteByByteSplit extends ByteStreamSplit {
     private final AtomicReference<Subscriber<? super ByteBuffer>> subsubscriber;
     private final AtomicBoolean started;
     private final AtomicBoolean terminated;
-    private final AtomicLong requested;
+
+    private final AtomicBoolean upstreamTerminated = new AtomicBoolean(false);
+
+    private final AtomicLong subDemand = new AtomicLong(0);
     private final AtomicLong subsubDemand = new AtomicLong(0);
 
     /**
@@ -68,7 +71,6 @@ public class ByteByByteSplit extends ByteStreamSplit {
         this.subscription = new AtomicReference<>();
         this.subscriber = new AtomicReference<>();
         this.started = new AtomicBoolean(false);
-        this.requested = new AtomicLong(0);
         this.terminated = new AtomicBoolean(false);
         this.subsubscriber = new AtomicReference<>();
         this.storage = new LinkedBlockingQueue<>();
@@ -85,6 +87,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
         sub.onSubscribe(new Subscription() {
             @Override
             public void request(final long ask) {
+                subDemand.updateAndGet(operand -> operand + ask);
                 ByteByByteSplit.this.subscription.get().request(ask);
             }
 
@@ -113,13 +116,13 @@ public class ByteByByteSplit extends ByteStreamSplit {
         byteBuffer.get(bytes);
         ByteBuffer current = this.bufWithInitMark(bytes.length);
         for (final byte each : bytes) {
-            final Byte last = ring.get(delim.length - 1);
             final boolean eviction = ring.isAtFullCapacity();
-            ring.add(each);
             if (eviction) {
+                final Byte last = ring.get(delim.length - 1);
                 current.put(last);
             }
-            final byte[] primitive = ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
+            ring.add(each);
+            final byte[] primitive = ringBytes();
             if (Arrays.equals(delim, primitive)) {
                 ring.clear();
                 current.limit(current.position());
@@ -134,22 +137,26 @@ public class ByteByByteSplit extends ByteStreamSplit {
         this.emit(Optional.of(current));
     }
 
+    private byte[] ringBytes() {
+        return ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
+    }
+
     @Override
     public void onError(final Throwable throwable) {
         final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
         if (subscriber != null) {
             subscriber.onError(throwable);
         }
-        this.terminated.set(true);
     }
 
     @Override
     public void onComplete() {
+        this.upstreamTerminated.set(true);
+        this.emit(Optional.of(ByteBuffer.wrap(ringBytes())));
         final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
         if (subscriber != null) {
             subscriber.onComplete();
         }
-        this.terminated.set(true);
     }
 
     private ByteBuffer bufWithInitMark(int size) {
@@ -161,26 +168,35 @@ public class ByteByByteSplit extends ByteStreamSplit {
     private void tryToStart() {
         if (this.subscriber.get() != null &&
             this.subscription.get() != null &&
-            !this.terminated.get() &&
             this.started.compareAndSet(false, true)) {
-            this.start();
+            this.emitNextSubSub();
         }
     }
 
-    private void start() {
-        emitNextSubSub();
-    }
-
-    private void emit(final Optional<ByteBuffer> buffer) {
+    private synchronized void emit(final Optional<ByteBuffer> buffer) {
         this.storage.add(buffer);
         meetDemand();
     }
 
-    private void meetDemand() {
-
+    private synchronized void meetDemand() {
+        if (subsubscriber.get() != null) {
+            while (subsubDemand.get() > 0 && storage.size() > 0) {
+                subsubDemand.decrementAndGet();
+                final Optional<ByteBuffer> poll = storage.poll();
+                if (poll.isPresent()) {
+                    subsubscriber.get().onNext(poll.get());
+                } else {
+                    subsubscriber.get().onComplete();
+                    emitNextSubSub();
+                }
+            }
+            if (this.upstreamTerminated.get()) {
+                subsubscriber.get().onComplete();
+            }
+        }
     }
 
-    private void emitNextSubSub(){
+    private void emitNextSubSub() {
         Publisher<ByteBuffer> pub = new Publisher<ByteBuffer>() {
             @Override
             public void subscribe(Subscriber<? super ByteBuffer> sub) {
@@ -189,6 +205,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
                     @Override
                     public void request(long n) {
                         subsubDemand.updateAndGet(operand -> operand + n);
+                        meetDemand();
                     }
 
                     @Override
