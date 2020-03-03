@@ -24,11 +24,14 @@
 package com.artipie.http.stream;
 
 import com.google.common.collect.EvictingQueue;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,7 +45,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
     /**
      * A ring buffer with bytes.
      */
-    private final EvictingQueue<Byte> ring;
+    private final CircularFifoQueue<Byte> ring;
 
     private final AtomicReference<Subscription> subscription;
     private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> subscriber;
@@ -52,11 +55,12 @@ public class ByteByByteSplit extends ByteStreamSplit {
 
     /**
      * Ctor.
+     *
      * @param delim The delim.
      */
     public ByteByByteSplit(final byte[] delim) {
         super(delim);
-        this.ring = EvictingQueue.<Byte>create(delim.length);
+        this.ring = new CircularFifoQueue<>(delim.length);
         this.subscription = new AtomicReference<>();
         this.subscriber = new AtomicReference<>();
         this.started = new AtomicBoolean(false);
@@ -101,17 +105,39 @@ public class ByteByByteSplit extends ByteStreamSplit {
     public void onNext(final ByteBuffer byteBuffer) {
         final byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
+        byteBuffer.slice();
         this.feedByteByByte(bytes);
     }
 
     private void feedByteByByte(byte[] bytes) {
+        final ArrayList<ByteBuffer> parts = new ArrayList<>();
+        final ByteBuffer current = ByteBuffer.wrap(new byte[bytes.length]);
+        boolean delimed = false;
         for (final byte each : bytes) {
+            final Byte last = ring.get(delim.length - 1);
+            final boolean eviction = ring.isAtFullCapacity();
             ring.add(each);
+            if (eviction) {
+                current.put(last);
+            }
             final byte[] primitive = ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
             if (Arrays.equals(delim, primitive)) {
-                ring.peek();
+                ring.clear();
+            } else {
+
             }
         }
+    }
+
+    public static void main(String[] args) {
+        final CircularFifoQueue<String> objects = new CircularFifoQueue<>(2);
+        objects.add("a");
+        objects.add("b");
+        objects.add("c");
+        System.out.println(objects.isAtFullCapacity());
+        objects.clear();
+        objects.forEach(System.out::println);
+        System.out.println(objects.isAtFullCapacity());
     }
 
     @Override
