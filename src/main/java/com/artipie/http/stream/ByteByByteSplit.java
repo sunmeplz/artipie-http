@@ -38,57 +38,86 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * Byte stream split implementation based on Circular buffer of bytes.
  *
+ * @since 0.4
  */
 public class ByteByByteSplit extends ByteStreamSplit {
 
     /**
-     * A ring buffer with bytes.
+     * A ring buffer with bytes. Used for delimiter findings.
      */
     private final CircularFifoQueue<Byte> ring;
-
+    
+    /**
+     * The splitted buffers. Empty means delimiter.
+     */
     private final LinkedBlockingQueue<Optional<ByteBuffer>> storage;
-
-    private final AtomicReference<Subscription> subscription;
-    private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> subscriber;
-    private final AtomicReference<Subscriber<? super ByteBuffer>> subsubscriber;
+    
+    /**
+     * The upstream to request elements from.
+     */
+    private final AtomicReference<Subscription> upstream;
+    
+    /**
+     * Downstream to emit elements to.
+     */
+    private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> downstream;
+    
+    /**
+     * Downstream of a downstream element.
+     */
+    private final AtomicReference<Subscriber<? super ByteBuffer>> downDownstream;
+    
+    /**
+     * Is this processor already started?
+     */
     private final AtomicBoolean started;
-    private final AtomicBoolean terminated;
-
-    private final AtomicBoolean upstreamTerminated = new AtomicBoolean(false);
-
-    private final AtomicLong subDemand = new AtomicLong(0);
-    private final AtomicLong subsubDemand = new AtomicLong(0);
+    
+    /**
+     * Has upstream been terminated.
+     */
+    private final AtomicBoolean upstreamTerminated;
+    
+    /**
+     * The downstream demand.
+     */
+    private final AtomicLong downDemand;
+    
+    /**
+     * The down downstream demand.
+     */
+    private final AtomicLong downDownDemand;
 
     /**
      * Ctor.
      *
-     * @param delim The delim.
+     * @param delimiter The delimiter.
      */
-    public ByteByByteSplit(final byte[] delim) {
-        super(delim);
-        this.ring = new CircularFifoQueue<>(delim.length);
-        this.subscription = new AtomicReference<>();
-        this.subscriber = new AtomicReference<>();
+    public ByteByByteSplit(final byte[] delimiter) {
+        super(delimiter);
+        this.ring = new CircularFifoQueue<>(delimiter.length);
+        this.upstream = new AtomicReference<>();
+        this.downstream = new AtomicReference<>();
         this.started = new AtomicBoolean(false);
-        this.terminated = new AtomicBoolean(false);
-        this.subsubscriber = new AtomicReference<>();
+        this.downDownstream = new AtomicReference<>();
         this.storage = new LinkedBlockingQueue<>();
+        this.upstreamTerminated = new AtomicBoolean(false);
+        this.downDemand = new AtomicLong(0);
+        this.downDownDemand = new AtomicLong(0);
     }
-
-    /// Publisher ///
-
+    
     @Override
     public void subscribe(final Subscriber<? super Publisher<ByteBuffer>> sub) {
-        if (this.subscriber.get() != null) {
+        if (this.downstream.get() != null) {
             throw new IllegalStateException("Only one subscription is allowed");
         }
-        this.subscriber.set(sub);
+        this.downstream.set(sub);
         sub.onSubscribe(new Subscription() {
             @Override
             public void request(final long ask) {
-                subDemand.updateAndGet(operand -> operand + ask);
-                ByteByByteSplit.this.subscription.get().request(ask);
+                ByteByByteSplit.this.downDemand.updateAndGet(operand -> operand + ask);
+                ByteByByteSplit.this.upstream.get().request(ask);
             }
 
             @Override
@@ -98,16 +127,13 @@ public class ByteByByteSplit extends ByteStreamSplit {
         });
         this.tryToStart();
     }
-
-
-    /// Subscriber ///
-
+    
     @Override
     public void onSubscribe(final Subscription sub) {
-        if (this.subscriber.get() != null) {
+        if (this.downstream.get() != null) {
             throw new IllegalStateException("Only one subscription is allowed");
         }
-        this.subscription.set(sub);
+        this.upstream.set(sub);
     }
 
     @Override
@@ -137,37 +163,34 @@ public class ByteByByteSplit extends ByteStreamSplit {
         this.emit(Optional.of(current));
     }
 
-    private byte[] ringBytes() {
-        return ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
-    }
-
     @Override
     public void onError(final Throwable throwable) {
-        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
+        this.upstreamTerminated.set(true);
+        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.downstream.get();
         if (subscriber != null) {
             subscriber.onError(throwable);
         }
     }
-
+    
     @Override
     public void onComplete() {
         this.upstreamTerminated.set(true);
         this.emit(Optional.of(ByteBuffer.wrap(ringBytes())));
-        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.subscriber.get();
-        if (subscriber != null) {
-            subscriber.onComplete();
-        }
     }
-
+    
     private ByteBuffer bufWithInitMark(int size) {
         ByteBuffer current = ByteBuffer.allocate(size);
         current.mark();
         return current;
     }
+    
+    private byte[] ringBytes() {
+        return ArrayUtils.toPrimitive(ring.stream().toArray(Byte[]::new));
+    }
 
     private void tryToStart() {
-        if (this.subscriber.get() != null &&
-            this.subscription.get() != null &&
+        if (this.downstream.get() != null &&
+            this.upstream.get() != null &&
             this.started.compareAndSet(false, true)) {
             this.emitNextSubSub();
         }
@@ -179,42 +202,40 @@ public class ByteByByteSplit extends ByteStreamSplit {
     }
 
     private synchronized void meetDemand() {
-        if (subsubscriber.get() != null) {
-            while (subsubDemand.get() > 0 && storage.size() > 0) {
-                subsubDemand.decrementAndGet();
-                final Optional<ByteBuffer> poll = storage.poll();
+        if (this.downDownstream.get() != null) {
+            while (this.downDownDemand.get() > 0 && this.storage.size() > 0) {
+                this.downDownDemand.decrementAndGet();
+                final Optional<ByteBuffer> poll = this.storage.poll();
                 if (poll.isPresent()) {
-                    subsubscriber.get().onNext(poll.get());
+                    downDownstream.get().onNext(poll.get());
                 } else {
-                    subsubscriber.get().onComplete();
+                    downDownstream.get().onComplete();
                     emitNextSubSub();
                 }
             }
             if (this.upstreamTerminated.get()) {
-                subsubscriber.get().onComplete();
+                downDownstream.get().onComplete();
+                downstream.get().onComplete();
             }
         }
     }
 
     private void emitNextSubSub() {
-        Publisher<ByteBuffer> pub = new Publisher<ByteBuffer>() {
-            @Override
-            public void subscribe(Subscriber<? super ByteBuffer> sub) {
-                subsubscriber.set(sub);
-                sub.onSubscribe(new Subscription() {
-                    @Override
-                    public void request(long n) {
-                        subsubDemand.updateAndGet(operand -> operand + n);
-                        meetDemand();
-                    }
+        Publisher<ByteBuffer> pub = sub -> {
+            downDownstream.set(sub);
+            sub.onSubscribe(new Subscription() {
+                @Override
+                public void request(long n) {
+                    downDownDemand.updateAndGet(operand -> operand + n);
+                    meetDemand();
+                }
 
-                    @Override
-                    public void cancel() {
+                @Override
+                public void cancel() {
 
-                    }
-                });
-            }
+                }
+            });
         };
-        subscriber.get().onNext(pub);
+        downstream.get().onNext(pub);
     }
 }

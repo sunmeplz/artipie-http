@@ -4,14 +4,19 @@ import io.reactivex.Flowable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+/**
+ * Tests for {@link ByteByByteSplit}.
+ *
+ * @since 0.4
+ */
 public class SplitTest {
 
-    @Test
-    public void basicSplit() {
+    @RepeatedTest(100_000)
+    public void basicSplitWorks() {
         Flowable<ByteBuffer> flow = Flowable.fromArray(
             Arrays.stream(
                 ArrayUtils.toObject("how are you".getBytes())
