@@ -168,6 +168,19 @@ public class ByteByByteSplit extends ByteStreamSplit {
     }
 
     private void start() {
+        emitNextSubSub();
+    }
+
+    private void emit(final Optional<ByteBuffer> buffer) {
+        this.storage.add(buffer);
+        meetDemand();
+    }
+
+    private void meetDemand() {
+
+    }
+
+    private void emitNextSubSub(){
         Publisher<ByteBuffer> pub = new Publisher<ByteBuffer>() {
             @Override
             public void subscribe(Subscriber<? super ByteBuffer> sub) {
@@ -175,7 +188,7 @@ public class ByteByByteSplit extends ByteStreamSplit {
                 sub.onSubscribe(new Subscription() {
                     @Override
                     public void request(long n) {
-
+                        subsubDemand.updateAndGet(operand -> operand + n);
                     }
 
                     @Override
@@ -186,14 +199,5 @@ public class ByteByByteSplit extends ByteStreamSplit {
             }
         };
         subscriber.get().onNext(pub);
-    }
-
-    private void subsubDemand(int demand) {
-
-    }
-
-    private void emit(Optional<ByteBuffer> buffer) {
-
-
     }
 }
