@@ -1,50 +1,80 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Artipie
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.artipie.http.stream;
 
 import io.reactivex.Flowable;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.RepeatedTest;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * Tests for {@link ByteByByteSplit}.
  *
  * @since 0.4
+ * @checkstyle MagicNumberCheck (500 lines)
  */
-public class SplitTest {
+public final class SplitTest {
 
-    @RepeatedTest(100_000)
+    @RepeatedTest(10_000)
     public void basicSplitWorks() {
-        Flowable<ByteBuffer> flow = Flowable.fromArray(
+        final Flowable<ByteBuffer> flow = Flowable.fromArray(
             Arrays.stream(
                 ArrayUtils.toObject("how are you".getBytes())
-            ).map((Byte aByte) -> {
-                final byte[] bytes = new byte[1];
-                bytes[0] = aByte;
-                return ByteBuffer.wrap(bytes);
-            }).toArray(ByteBuffer[]::new)
+            ).map(
+                (Byte aByte) -> {
+                    final byte[] bytes = new byte[1];
+                    bytes[0] = aByte;
+                    return ByteBuffer.wrap(bytes);
+                }
+            ).toArray(ByteBuffer[]::new)
         );
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         flow.subscribe(split);
         final String actual = new String(
             Flowable.fromPublisher(split)
-                .flatMap(byteBufferPublisher -> byteBufferPublisher)
+                .flatMap(pub -> pub)
                 .toList()
                 .blockingGet()
                 .stream()
-                .map(byteBuffer -> {
-                    final byte[] res = new byte[byteBuffer.remaining()];
-                    byteBuffer.get(res);
-                    return res;
-                })
-                .reduce((a, b) -> {
-                    byte[] c = new byte[a.length + b.length];
-                    System.arraycopy(a, 0, c, 0, a.length);
-                    System.arraycopy(b, 0, c, a.length, b.length);
-                    return c;
-                })
+                .map(
+                    byteBuffer -> {
+                        final byte[] res = new byte[byteBuffer.remaining()];
+                        byteBuffer.get(res);
+                        return res;
+                    }
+                )
+                .reduce(
+                    (one, another) -> {
+                        final byte[] res = new byte[one.length + another.length];
+                        System.arraycopy(one, 0, res, 0, one.length);
+                        System.arraycopy(another, 0, res, one.length, another.length);
+                        return res;
+                    }
+                )
                 .get()
         );
         MatcherAssert.assertThat(
