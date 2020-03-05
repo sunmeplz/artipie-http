@@ -26,9 +26,11 @@ package com.artipie.http.hm;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import com.artipie.http.rs.RsStatus;
 import java.nio.ByteBuffer;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -44,13 +46,13 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
     /**
      * Status code matcher.
      */
-    private final Matcher<Integer> status;
+    private final Matcher<RsStatus> status;
 
     /**
      * Ctor.
      * @param status Code to match
      */
-    public RsHasStatus(final int status) {
+    public RsHasStatus(final RsStatus status) {
         this(new IsEqual<>(status));
     }
 
@@ -58,7 +60,7 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
      * Ctor.
      * @param status Code matcher
      */
-    public RsHasStatus(final Matcher<Integer> status) {
+    public RsHasStatus(final Matcher<RsStatus> status) {
         this.status = status;
     }
 
@@ -69,8 +71,8 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
 
     @Override
     public boolean matchesSafely(final Response item) {
-        final AtomicInteger out = new AtomicInteger();
-        item.send(new RsHasStatus.FakeConnection(out));
+        final AtomicReference<RsStatus> out = new AtomicReference<>();
+        item.send(new FakeConnection(out)).toCompletableFuture().join();
         return this.status.matches(out.get());
     }
 
@@ -83,20 +85,27 @@ public final class RsHasStatus extends TypeSafeMatcher<Response> {
         /**
          * Status code container.
          */
-        private final AtomicInteger container;
+        private final AtomicReference<RsStatus> container;
 
         /**
          * Ctor.
          * @param container Status code container
          */
-        FakeConnection(final AtomicInteger container) {
+        FakeConnection(final AtomicReference<RsStatus> container) {
             this.container = container;
         }
 
         @Override
-        public void accept(final int code, final Iterable<Entry<String, String>> headers,
+        public CompletableFuture<Void> accept(
+            final RsStatus status,
+            final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> body) {
-            this.container.set(code);
+            return CompletableFuture.supplyAsync(
+                () -> {
+                    this.container.set(status);
+                    return null;
+                }
+            );
         }
     }
 }

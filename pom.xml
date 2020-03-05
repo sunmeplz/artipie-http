@@ -35,12 +35,6 @@ SOFTWARE.
   <url>https://github.com/artipie/http</url>
   <dependencies>
     <dependency>
-      <groupId>org.takes</groupId>
-      <artifactId>takes</artifactId>
-      <version>1.19</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.cactoos</groupId>
       <artifactId>cactoos</artifactId>
     </dependency>
