@@ -39,7 +39,7 @@ import org.junit.jupiter.api.RepeatedTest;
  */
 public final class ByteByByteSplitTest {
 
-    @RepeatedTest(10_000)
+    @RepeatedTest(100)
     public void basicSplitWorks() {
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         Flowable.fromArray(
