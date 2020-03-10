@@ -41,7 +41,8 @@ public final class ByteByByteSplitTest {
 
     @RepeatedTest(10_000)
     public void basicSplitWorks() {
-        final Flowable<ByteBuffer> flow = Flowable.fromArray(
+        final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
+        Flowable.fromArray(
             Arrays.stream(
                 ArrayUtils.toObject("how are you".getBytes())
             ).map(
@@ -51,35 +52,32 @@ public final class ByteByByteSplitTest {
                     return ByteBuffer.wrap(bytes);
                 }
             ).toArray(ByteBuffer[]::new)
-        );
-        final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
-        flow.subscribe(split);
-        final String actual = new String(
-            Flowable.fromPublisher(split)
-                .flatMap(pub -> pub)
-                .toList()
-                .blockingGet()
-                .stream()
-                .map(
-                    byteBuffer -> {
-                        final byte[] res = new byte[byteBuffer.remaining()];
-                        byteBuffer.get(res);
-                        return res;
-                    }
-                )
-                .reduce(
-                    (one, another) -> {
-                        final byte[] res = new byte[one.length + another.length];
-                        System.arraycopy(one, 0, res, 0, one.length);
-                        System.arraycopy(another, 0, res, one.length, another.length);
-                        return res;
-                    }
-                )
-                .get()
-        );
+        ).subscribe(split);
         MatcherAssert.assertThat(
             "howareyou",
-            new IsEqual<>(actual)
+            new IsEqual<>(new String(
+                Flowable.fromPublisher(split)
+                    .flatMap(pub -> pub)
+                    .toList()
+                    .blockingGet()
+                    .stream()
+                    .map(
+                        byteBuffer -> {
+                            final byte[] res = new byte[byteBuffer.remaining()];
+                            byteBuffer.get(res);
+                            return res;
+                        }
+                    )
+                    .reduce(
+                        (one, another) -> {
+                            final byte[] res = new byte[one.length + another.length];
+                            System.arraycopy(one, 0, res, 0, one.length);
+                            System.arraycopy(another, 0, res, one.length, another.length);
+                            return res;
+                        }
+                    )
+                    .get()
+            ))
         );
     }
 
