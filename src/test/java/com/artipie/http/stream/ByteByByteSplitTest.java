@@ -37,7 +37,7 @@ import org.junit.jupiter.api.RepeatedTest;
  * @since 0.4
  * @checkstyle MagicNumberCheck (500 lines)
  */
-public final class SplitTest {
+public final class ByteByByteSplitTest {
 
     @RepeatedTest(10_000)
     public void basicSplitWorks() {
