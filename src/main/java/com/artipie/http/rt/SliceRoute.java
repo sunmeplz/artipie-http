@@ -2,6 +2,7 @@ package com.artipie.http.rt;
 
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.ByteBuffer;
@@ -9,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Flow;
 import org.cactoos.list.ListOf;
+import org.reactivestreams.Publisher;
 
 /**
  * Routing slice.
@@ -42,7 +43,7 @@ public final class SliceRoute implements Slice {
     @Override
     public Response response(final String line,
         final Iterable<Map.Entry<String, String>> headers,
-        final Flow.Publisher<ByteBuffer> body) {
+        final Publisher<ByteBuffer> body) {
         Response response = null;
         for (final Path item : this.routes) {
             final Optional<Response> opt = item.response(line, headers, body);
@@ -53,7 +54,7 @@ public final class SliceRoute implements Slice {
         }
         if (response == null) {
             response = new RsWithBody(
-                new RsWithStatus(404),
+                new RsWithStatus(RsStatus.NOT_FOUND),
                 "not found", StandardCharsets.UTF_8
             );
         }
@@ -77,7 +78,7 @@ public final class SliceRoute implements Slice {
         private final Slice slice;
 
         /**
-         * New rouing path.
+         * New routing path.
          * @param rule Rules to apply
          * @param slice Slice to call
          */
@@ -95,7 +96,7 @@ public final class SliceRoute implements Slice {
          */
         Optional<Response> response(final String line,
             final Iterable<Map.Entry<String, String>> headers,
-            final Flow.Publisher<ByteBuffer> body) {
+            final Publisher<ByteBuffer> body) {
             final Optional<Response> res;
             if (this.rule.apply(line, headers)) {
                 res = Optional.of(this.slice.response(line, headers, body));
