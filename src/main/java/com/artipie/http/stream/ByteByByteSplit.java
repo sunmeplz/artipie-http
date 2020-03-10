@@ -45,7 +45,7 @@ import org.reactivestreams.Subscription;
  * multi threaded way.
  * @todo #32:30min Cancellation support.
  * For now downstream and down downstream cancellation is not supported,
- * but we definitely nee to have it.
+ * but we definitely need to have it.
  * @todo #32:30min Downstream emission subscription.
  * We need to be aware of the fact that downstream switch doesn't happen instantly.
  * For now, implementation does not rely on that.
