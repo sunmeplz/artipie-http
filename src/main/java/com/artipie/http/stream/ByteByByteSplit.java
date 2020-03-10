@@ -84,17 +84,17 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
     /**
      * The upstream to request elements from.
      */
-    private final AtomicReference<Subscription> upstream;
+    private final AtomicReference<Optional<Subscription>> upstream;
 
     /**
      * Downstream to emit elements to.
      */
-    private final AtomicReference<Subscriber<? super Publisher<ByteBuffer>>> downstream;
+    private final AtomicReference<Optional<Subscriber<? super Publisher<ByteBuffer>>>> downstream;
 
     /**
      * Downstream of a downstream element.
      */
-    private final AtomicReference<Subscriber<? super ByteBuffer>> downDownstream;
+    private final AtomicReference<Optional<Subscriber<? super ByteBuffer>>> downDownstream;
 
     /**
      * Is this processor already started?
@@ -124,10 +124,10 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
     public ByteByByteSplit(final byte[] delim) {
         this.ring = new CircularFifoQueue<>(delim.length);
         this.delim = Arrays.copyOf(delim, delim.length);
-        this.upstream = new AtomicReference<>();
-        this.downstream = new AtomicReference<>();
+        this.upstream = new AtomicReference<>(Optional.empty());
+        this.downstream = new AtomicReference<>(Optional.empty());
         this.started = new AtomicBoolean(false);
-        this.downDownstream = new AtomicReference<>();
+        this.downDownstream = new AtomicReference<>(Optional.empty());
         this.storage = new LinkedBlockingQueue<>();
         this.upstreamTerminated = new AtomicBoolean(false);
         this.downDemand = new AtomicLong(0);
@@ -136,16 +136,16 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
 
     @Override
     public void subscribe(final Subscriber<? super Publisher<ByteBuffer>> sub) {
-        if (this.downstream.get() != null) {
+        if (this.downstream.get().isPresent()) {
             throw new IllegalStateException("Only one subscription is allowed");
         }
-        this.downstream.set(sub);
+        this.downstream.set(Optional.of(sub));
         sub.onSubscribe(
             new Subscription() {
                 @Override
                 public void request(final long ask) {
                     ByteByByteSplit.this.downDemand.updateAndGet(operand -> operand + ask);
-                    ByteByByteSplit.this.upstream.get().request(ask);
+                    ByteByByteSplit.this.upstream.get().get().request(ask);
                 }
 
                 @Override
@@ -159,10 +159,10 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
 
     @Override
     public void onSubscribe(final Subscription sub) {
-        if (this.downstream.get() != null) {
+        if (this.downstream.get().isPresent()) {
             throw new IllegalStateException("Only one subscription is allowed");
         }
-        this.upstream.set(sub);
+        this.upstream.set(Optional.of(sub));
     }
 
     @Override
@@ -194,10 +194,7 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
     @Override
     public void onError(final Throwable throwable) {
         this.upstreamTerminated.set(true);
-        final Subscriber<? super Publisher<ByteBuffer>> subscriber = this.downstream.get();
-        if (subscriber != null) {
-            subscriber.onError(throwable);
-        }
+        this.downstream.get().ifPresent(value -> value.onError(throwable));
     }
 
     @Override
@@ -230,8 +227,8 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
      * Try to start the processor.
      */
     private void tryToStart() {
-        if (this.downstream.get() != null
-            && this.upstream.get() != null
+        if (this.downstream.get().isPresent()
+            && this.upstream.get().isPresent()
             && this.started.compareAndSet(false, true)) {
             this.emitNextSubSub();
         }
@@ -251,20 +248,20 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
      * Attempt to meet the downstream demand.
      */
     private synchronized void meetDemand() {
-        if (this.downDownstream.get() != null) {
+        if (this.downDownstream.get().isPresent()) {
             while (this.downDownDemand.get() > 0 && this.storage.size() > 0) {
                 this.downDownDemand.decrementAndGet();
                 final Optional<ByteBuffer> poll = this.storage.poll();
                 if (poll.isPresent()) {
-                    this.downDownstream.get().onNext(poll.get());
+                    this.downDownstream.get().get().onNext(poll.get());
                 } else {
-                    this.downDownstream.get().onComplete();
+                    this.downDownstream.get().get().onComplete();
                     this.emitNextSubSub();
                 }
             }
             if (this.upstreamTerminated.get()) {
-                this.downDownstream.get().onComplete();
-                this.downstream.get().onComplete();
+                this.downDownstream.get().get().onComplete();
+                this.downstream.get().get().onComplete();
             }
         }
     }
@@ -273,9 +270,9 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
      * Emit next sub stream.
      */
     private void emitNextSubSub() {
-        this.downstream.get().onNext(
+        this.downstream.get().get().onNext(
             (Publisher<ByteBuffer>) sub -> {
-                this.downDownstream.set(sub);
+                this.downDownstream.set(Optional.of(sub));
                 sub.onSubscribe(
                     new Subscription() {
                         @Override
