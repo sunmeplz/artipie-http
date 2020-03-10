@@ -21,34 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
+package com.artipie.http.slice;
 
-import com.artipie.http.rs.RsStatus;
+import com.artipie.asto.Content;
+import com.artipie.asto.Key;
+import com.artipie.asto.Storage;
+import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.http.hm.RsHasBody;
+import com.artipie.http.rq.RequestLine;
 import io.reactivex.Flowable;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.concurrent.CompletionStage;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Test case for {@link SliceDownload}.
+ * @since 1.0
  */
-public interface Response {
+public final class SliceDownloadTest {
 
-    /**
-     * Empty response.
-     */
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
-
-    /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
-     */
-    CompletionStage<Void> send(Connection connection);
+    @Test
+    void downloadsByKeyFromPath() throws Exception {
+        final Storage storage = new InMemoryStorage();
+        final String path = "one/two/target.txt";
+        final byte[] data = "hello".getBytes(StandardCharsets.UTF_8);
+        storage.save(new Key.From(path), new Content.From(data)).get();
+        MatcherAssert.assertThat(
+            new SliceDownload(storage).response(
+                new RequestLine("GET", path, "HTTP/1.1").toString(),
+                Collections.emptyList(), Flowable.empty()
+            ),
+            new RsHasBody(data)
+        );
+    }
 }
