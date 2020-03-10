@@ -26,11 +26,12 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
-import java.util.concurrent.Flow.Publisher;
-import wtf.g4s8.jflows.PubSingle;
+import java.util.concurrent.CompletionStage;
+import org.reactivestreams.Publisher;
 
 /**
  * Response with body.
@@ -48,9 +49,9 @@ public final class RsWithBody implements Response {
     private final Response origin;
 
     /**
-     * Body buffer.
+     * Body publisher.
      */
-    private final ByteBuffer body;
+    private final Publisher<ByteBuffer> body;
 
     /**
      * Decorates response with new text body.
@@ -80,18 +81,35 @@ public final class RsWithBody implements Response {
     }
 
     /**
-     * Overrides origin response body with byte buffer.
+     * Decorates origin response body with byte buffer.
      * @param origin Response
      * @param buf Body buffer
      */
     public RsWithBody(final Response origin, final ByteBuffer buf) {
+        this(origin, Flowable.just(buf));
+    }
+
+    /**
+     * Creates new response with body publisher.
+     * @param body Publisher
+     */
+    public RsWithBody(final Publisher<ByteBuffer> body) {
+        this(Response.EMPTY, body);
+    }
+
+    /**
+     * Decorates origin response body with publisher.
+     * @param origin Response
+     * @param body Publisher
+     */
+    public RsWithBody(final Response origin, final Publisher<ByteBuffer> body) {
         this.origin = origin;
-        this.body = buf;
+        this.body = body;
     }
 
     @Override
-    public void send(final Connection con) {
-        this.origin.send(new RsWithBody.ConWithBody(con, new PubSingle<>(this.body)));
+    public CompletionStage<Void> send(final Connection con) {
+        return this.origin.send(new RsWithBody.ConWithBody(con, this.body));
     }
 
     /**
@@ -121,9 +139,11 @@ public final class RsWithBody implements Response {
         }
 
         @Override
-        public void accept(final int code, final Iterable<Entry<String, String>> headers,
+        public CompletionStage<Void> accept(
+            final RsStatus status,
+            final Iterable<Entry<String, String>> headers,
             final Publisher<ByteBuffer> none) {
-            this.origin.accept(code, headers, this.body);
+            return this.origin.accept(status, headers, this.body);
         }
     }
 }

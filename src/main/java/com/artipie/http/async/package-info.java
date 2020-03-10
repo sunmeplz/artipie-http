@@ -21,36 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
-
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
-import java.util.concurrent.CompletionStage;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Async implementations of {@link Slice}, {@link Response}, etc.
+ * @since 0.4
  */
-public interface Response {
+package com.artipie.http.async;
 
-    /**
-     * Empty response.
-     */
-    Response EMPTY = con -> {
-        return con.accept(
-            RsStatus.OK,
-            Collections.emptyList(),
-            Flowable.empty()
-        );
-    };
-
-    /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
-     */
-    CompletionStage<Void> send(Connection connection);
-}
