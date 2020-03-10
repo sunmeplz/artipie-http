@@ -177,8 +177,7 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
                 current.put(last);
             }
             this.ring.add(each);
-            final byte[] primitive = this.ringBytes();
-            if (Arrays.equals(this.delim, primitive)) {
+            if (Arrays.equals(this.delim, this.ringBytes())) {
                 this.ring.clear();
                 current.limit(current.position());
                 current.reset();
