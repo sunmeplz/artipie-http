@@ -49,7 +49,6 @@ public final class ByteByByteSplitTest {
         );
     }
 
-
     @Test
     public void severalCharSplitWorks() {
         final ByteByByteSplit split = new ByteByByteSplit("__".getBytes());

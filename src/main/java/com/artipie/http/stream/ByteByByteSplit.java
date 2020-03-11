@@ -173,7 +173,7 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
         for (final byte each : bytes) {
             final boolean eviction = this.ring.isAtFullCapacity();
             if (eviction) {
-                final Byte last = this.ring.get(this.delim.length - 1);
+                final Byte last = this.ring.get(0);
                 current.put(last);
             }
             this.ring.add(each);
