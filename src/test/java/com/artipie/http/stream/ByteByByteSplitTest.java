@@ -42,9 +42,54 @@ public final class ByteByByteSplitTest {
     @Test
     public void basicSplitWorks() {
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
-        Flowable.fromArray(
+        this.buffersOfOneByteFlow("how are you").subscribe(split);
+        MatcherAssert.assertThat(
+            this.flowOfString(split),
+            new IsEqual<>("howareyou")
+        );
+    }
+
+
+    @Test
+    public void severalCharSplitWorks() {
+        final ByteByByteSplit split = new ByteByByteSplit("__".getBytes());
+        this.buffersOfOneByteFlow("how__are__you").subscribe(split);
+        MatcherAssert.assertThat(
+            this.flowOfString(split),
+            new IsEqual<>("howareyou")
+        );
+    }
+
+    private String flowOfString(final ByteByByteSplit split) {
+        return new String(
+            Flowable.fromPublisher(split)
+                .flatMap(pub -> pub)
+                .toList()
+                .blockingGet()
+                .stream()
+                .map(
+                    byteBuffer -> {
+                        final byte[] res = new byte[byteBuffer.remaining()];
+                        byteBuffer.get(res);
+                        return res;
+                    }
+                )
+                .reduce(
+                    (one, another) -> {
+                        final byte[] res = new byte[one.length + another.length];
+                        System.arraycopy(one, 0, res, 0, one.length);
+                        System.arraycopy(another, 0, res, one.length, another.length);
+                        return res;
+                    }
+                )
+                .get()
+        );
+    }
+
+    private Flowable<ByteBuffer> buffersOfOneByteFlow(String str) {
+        return Flowable.fromArray(
             Arrays.stream(
-                ArrayUtils.toObject("how are you".getBytes())
+                ArrayUtils.toObject(str.getBytes())
             ).map(
                 (Byte aByte) -> {
                     final byte[] bytes = new byte[1];
@@ -52,35 +97,6 @@ public final class ByteByByteSplitTest {
                     return ByteBuffer.wrap(bytes);
                 }
             ).toArray(ByteBuffer[]::new)
-        ).subscribe(split);
-        MatcherAssert.assertThat(
-            "howareyou",
-            new IsEqual<>(
-                new String(
-                    Flowable.fromPublisher(split)
-                        .flatMap(pub -> pub)
-                        .toList()
-                        .blockingGet()
-                        .stream()
-                        .map(
-                            byteBuffer -> {
-                                final byte[] res = new byte[byteBuffer.remaining()];
-                                byteBuffer.get(res);
-                                return res;
-                            }
-                        )
-                        .reduce(
-                            (one, another) -> {
-                                final byte[] res = new byte[one.length + another.length];
-                                System.arraycopy(one, 0, res, 0, one.length);
-                                System.arraycopy(another, 0, res, one.length, another.length);
-                                return res;
-                            }
-                        )
-                        .get()
-                )
-            )
         );
     }
-
 }
