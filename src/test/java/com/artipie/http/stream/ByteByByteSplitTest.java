@@ -29,7 +29,7 @@ import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ByteByByteSplit}.
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.RepeatedTest;
  */
 public final class ByteByByteSplitTest {
 
-    @RepeatedTest(100)
+    @Test 
     public void basicSplitWorks() {
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         Flowable.fromArray(
