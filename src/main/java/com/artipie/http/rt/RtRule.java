@@ -31,6 +31,11 @@ import org.cactoos.list.ListOf;
 
 /**
  * Routing rule.
+ * <p>
+ * A rule which is applied to the request metadata such as request line and
+ * headers. If rule matched, then routing slice {@link SliceRoute} will
+ * redirect request to target {@link com.artipie.http.Slice}.
+ * </p>
  * @since 0.5
  */
 public interface RtRule {

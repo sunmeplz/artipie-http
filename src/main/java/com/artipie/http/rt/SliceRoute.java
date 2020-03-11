@@ -38,7 +38,25 @@ import org.reactivestreams.Publisher;
 
 /**
  * Routing slice.
+ * <p>
+ * {@link Slice} implementation which redirect requests to {@link Slice}
+ * in {@link SliceRoute.Path} if {@link RtRule} matched.<br/>
+ * Usage:
+ * <pre><code>
+ * new SliceRoute(
+ *   new SliceRoute.Path(
+ *     new RtRule.ByMethod("GET"), new DownloadSlice(storage)
+ *   ),
+ *   new SliceRoute.Path(
+ *     new RtRule.ByMethod("PUT"), new UploadSlice(storage)
+ *   )
+ * );
+ * </code></pre>
+ * </p>
  * @since 0.5
+ * @todo #51:30min Refactor SliceRoute to get rid of null.
+ *  This class is using null to iterate over optional responses and return first
+ *  matched one in `response` method. Let's refactor it to avoid using null.
  */
 public final class SliceRoute implements Slice {
 
@@ -86,6 +104,11 @@ public final class SliceRoute implements Slice {
 
     /**
      * Route path.
+     * <p>
+     * A path to slice with routing rule. If
+     * {@link RtRule} passed, then the request will be redirected to
+     * underlying {@link Slice}.
+     * </p>
      * @since 0.5
      */
     public static final class Path {
