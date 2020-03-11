@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
  * @since 0.4
  * @checkstyle MagicNumberCheck (500 lines)
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class ByteByByteSplitTest {
 
     @Test
@@ -85,7 +86,7 @@ public final class ByteByByteSplitTest {
         );
     }
 
-    private Flowable<ByteBuffer> buffersOfOneByteFlow(String str) {
+    private Flowable<ByteBuffer> buffersOfOneByteFlow(final String str) {
         return Flowable.fromArray(
             Arrays.stream(
                 ArrayUtils.toObject(str.getBytes())
