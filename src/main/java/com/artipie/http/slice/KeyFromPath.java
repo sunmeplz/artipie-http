@@ -21,34 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
+package com.artipie.http.slice;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
-import java.util.concurrent.CompletionStage;
+import com.artipie.asto.Key;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Key from path.
+ * @since 0.6
  */
-public interface Response {
+public final class KeyFromPath extends Key.Wrap {
 
     /**
-     * Empty response.
+     * Key from path string.
+     * @param path Path string
      */
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
+    public KeyFromPath(final String path) {
+        super(new Key.From(normalize(path)));
+    }
 
     /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
+     * Normalize path to use as a valid {@link Key}.
+     * Removes leading slash char if exist.
+     * @param path Path string
+     * @return Normalized path
      */
-    CompletionStage<Void> send(Connection connection);
+    private static String normalize(final String path) {
+        final String res;
+        if (path.length() > 0 && path.charAt(0) == '/') {
+            res = path.substring(1);
+        } else {
+            res = path;
+        }
+        return res;
+    }
 }

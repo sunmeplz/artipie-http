@@ -21,34 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
+package com.artipie.http.slice;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
-import java.util.concurrent.CompletionStage;
+import com.artipie.asto.Content;
+import com.artipie.http.rq.RqHeaders;
+import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.Optional;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Content with size from headers.
+ * @since 0.6
  */
-public interface Response {
+public final class ContentWithSize implements Content {
 
     /**
-     * Empty response.
+     * Request body.
      */
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
+    private final Publisher<ByteBuffer> body;
 
     /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
+     * Request headers.
      */
-    CompletionStage<Void> send(Connection connection);
+    private final Iterable<Map.Entry<String, String>> headers;
+
+    /**
+     * Content with size from body and headers.
+     * @param body Body
+     * @param headers Headers
+     */
+    ContentWithSize(final Publisher<ByteBuffer> body,
+        final Iterable<Map.Entry<String, String>> headers) {
+        this.body = body;
+        this.headers = headers;
+    }
+
+    @Override
+    public Optional<Long> size() {
+        return new RqHeaders(this.headers, "content-size")
+            .stream().findFirst()
+            .map(Long::parseLong);
+    }
+
+    @Override
+    public void subscribe(final Subscriber<? super ByteBuffer> subscriber) {
+        this.body.subscribe(subscriber);
+    }
 }
