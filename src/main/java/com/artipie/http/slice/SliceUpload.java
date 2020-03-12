@@ -23,23 +23,19 @@
  */
 package com.artipie.http.slice;
 
-import com.artipie.asto.Content;
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.async.AsyncResponse;
 import com.artipie.http.rq.RequestLineFrom;
-import com.artipie.http.rq.RqHeaders;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 
 /**
  * Slice to upload the resource to storage by key from path.
@@ -63,7 +59,7 @@ public final class SliceUpload implements Slice {
      * @param storage Storage
      */
     public SliceUpload(final Storage storage) {
-        this(storage, Key.From::new);
+        this(storage, KeyFromPath::new);
     }
 
     /**
@@ -87,45 +83,5 @@ public final class SliceUpload implements Slice {
                 .thenCompose(key -> this.storage.save(key, new ContentWithSize(body, headers)))
                 .thenApply(rsp -> new RsWithStatus(RsStatus.CREATED))
         );
-    }
-
-    /**
-     * Content with size from headers.
-     * @since 0.6
-     */
-    private static final class ContentWithSize implements Content {
-
-        /**
-         * Request body.
-         */
-        private final Publisher<ByteBuffer> body;
-
-        /**
-         * Request headers.
-         */
-        private final Iterable<Map.Entry<String, String>> headers;
-
-        /**
-         * Content with size from body and headers.
-         * @param body Body
-         * @param headers Headers
-         */
-        ContentWithSize(final Publisher<ByteBuffer> body,
-            final Iterable<Map.Entry<String, String>> headers) {
-            this.body = body;
-            this.headers = headers;
-        }
-
-        @Override
-        public Optional<Long> size() {
-            return new RqHeaders(this.headers, "content-size")
-                .stream().findFirst()
-                .map(Long::parseLong);
-        }
-
-        @Override
-        public void subscribe(final Subscriber<? super ByteBuffer> subscriber) {
-            this.body.subscribe(subscriber);
-        }
     }
 }

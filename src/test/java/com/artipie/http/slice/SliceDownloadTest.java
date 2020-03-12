@@ -28,11 +28,14 @@ import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.http.hm.RsHasBody;
+import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.rq.RequestLine;
+import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,10 +52,38 @@ public final class SliceDownloadTest {
         storage.save(new Key.From(path), new Content.From(data)).get();
         MatcherAssert.assertThat(
             new SliceDownload(storage).response(
-                new RequestLine("GET", path, "HTTP/1.1").toString(),
-                Collections.emptyList(), Flowable.empty()
+                get("/one/two/target.txt"), Collections.emptyList(), Flowable.empty()
             ),
             new RsHasBody(data)
         );
+    }
+
+    @Test
+    void returnsNotFoundIfKeyDoesntExist() throws Exception {
+        MatcherAssert.assertThat(
+            new SliceDownload(new InMemoryStorage()).response(
+                get("/not-exists"), Collections.emptyList(), Flowable.empty()
+            ),
+            new RsHasStatus(RsStatus.NOT_FOUND)
+        );
+    }
+
+    @Test
+    void returnsOkOnEmptyValue() throws Exception {
+        final Storage storage = new InMemoryStorage();
+        final String path = "empty.txt";
+        storage.save(new Key.From(path), new Content.From(new byte[0])).get();
+        MatcherAssert.assertThat(
+            new SliceDownload(storage).response(
+                get("/empty.txt"), Collections.emptyList(), Flowable.empty()
+            ),
+            Matchers.allOf(
+                new RsHasStatus(RsStatus.OK), new RsHasBody(new byte[0])
+            )
+        );
+    }
+
+    private static String get(final String path) {
+        return new RequestLine("GET", path, "HTTP/1.1").toString();
     }
 }

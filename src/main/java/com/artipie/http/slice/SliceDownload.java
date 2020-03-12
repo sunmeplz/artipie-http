@@ -33,6 +33,7 @@ import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -64,7 +65,7 @@ public final class SliceDownload implements Slice {
      * @param storage Storage
      */
     public SliceDownload(final Storage storage) {
-        this(storage, Key.From::new);
+        this(storage, KeyFromPath::new);
     }
 
     /**
@@ -85,9 +86,28 @@ public final class SliceDownload implements Slice {
         return new AsyncResponse(
             CompletableFuture.supplyAsync(() -> new RequestLineFrom(line).uri().getPath())
                 .thenApply(this.transform)
-                .thenCompose(this.storage::value)
-                .thenApply(RsWithBody::new)
-                .thenApply(rsp -> new RsWithStatus(rsp, RsStatus.OK))
+                .thenCompose(
+                    key -> this.storage.exists(key).thenCompose(
+                        // @checkstyle ReturnCountCheck (10 lines)
+                        exist -> {
+                            if (exist) {
+                                return this.storage.value(key)
+                                    .thenApply(RsWithBody::new)
+                                    .thenApply(rsp -> new RsWithStatus(rsp, RsStatus.OK));
+                            } else {
+                                return CompletableFuture.completedFuture(
+                                    new RsWithStatus(
+                                        new RsWithBody(
+                                            String.format("Key %s not found", key.string()),
+                                            StandardCharsets.UTF_8
+                                        ),
+                                        RsStatus.NOT_FOUND
+                                    )
+                                );
+                            }
+                        }
+                    )
+                )
         );
     }
 }

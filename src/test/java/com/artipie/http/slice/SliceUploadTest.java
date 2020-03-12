@@ -36,12 +36,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link SliceUpload}.
  * @since 0.6
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 public final class SliceUploadTest {
 
@@ -70,7 +71,7 @@ public final class SliceUploadTest {
                 ).bytes(),
                 StandardCharsets.UTF_8
             ),
-            Matchers.equalTo(hello)
+            new IsEqual<>(hello)
         );
     }
 }
