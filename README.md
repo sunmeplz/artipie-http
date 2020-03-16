@@ -62,7 +62,7 @@ it should be done by HTTP server implementation, e.g. vertex-server module.
 
 ### Routing
 
-You can do routing in following style:
+You can do routing in the following style:
 
 ```java
 @Override
