@@ -49,10 +49,10 @@ public final class RsWithHeaders implements Response {
     private final Iterable<Map.Entry<String, String>> headers;
 
     /**
-     * Decorates response with headers.
+     * Ctor.
      *
-     * @param origin Response.
-     * @param headers Additional headers.
+     * @param origin Response
+     * @param headers Headers
      */
     public RsWithHeaders(
         final Response origin,
@@ -83,10 +83,11 @@ public final class RsWithHeaders implements Response {
         private final Iterable<Map.Entry<String, String>> headers;
 
         /**
-         * Override status code for connection.
+         * Ctor.
+         *
          * @param origin Connection
-         * @param headers Headers to override
-         * */
+         * @param headers Headers
+         */
         private ConWithHeaders(
             final Connection origin,
             final Iterable<Map.Entry<String, String>> headers) {
@@ -96,10 +97,10 @@ public final class RsWithHeaders implements Response {
 
         @Override
         public CompletionStage<Void> accept(
-            final RsStatus ignored,
-            final Iterable<Map.Entry<String, String>> hdrs,
+            final RsStatus status,
+            final Iterable<Map.Entry<String, String>> hrs,
             final Publisher<ByteBuffer> body) {
-            return this.origin.accept(ignored, this.headers, body);
+            return this.origin.accept(status, this.headers, body);
         }
     }
 }
