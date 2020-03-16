@@ -38,7 +38,7 @@ public interface Connection {
     /**
      * Respond on connection.
      * @param status The http status code.
-     * @param headers The http request headers.
+     * @param headers The http response headers.
      * @param body The http response body.
      * @return Completion stage for accepting HTTP response.
      */

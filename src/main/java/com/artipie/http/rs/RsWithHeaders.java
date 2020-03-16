@@ -27,15 +27,16 @@ package com.artipie.http.rs;
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import java.nio.ByteBuffer;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
- * Response with status.
+ * RsWithHeaders.
+ *
  * @since 0.1
  */
-public final class RsWithStatus implements Response {
+public final class RsWithHeaders implements Response {
 
     /**
      * Origin response.
@@ -43,43 +44,33 @@ public final class RsWithStatus implements Response {
     private final Response origin;
 
     /**
-     * Status code.
+     * Headers.
      */
-    private final RsStatus status;
+    private final Iterable<Map.Entry<String, String>> headers;
 
     /**
-     * New response with status.
-     * @param status Status code
+     * Decorates response with headers.
+     *
+     * @param origin Response.
+     * @param headers Additional headers.
      */
-    public RsWithStatus(final RsStatus status) {
-        this(Response.EMPTY, status);
-    }
-
-    /**
-     * Override status code for response.
-     * @param origin Response to override
-     * @param status Status code
-     */
-    public RsWithStatus(final Response origin, final RsStatus status) {
+    public RsWithHeaders(
+        final Response origin,
+        final Iterable<Map.Entry<String, String>> headers) {
         this.origin = origin;
-        this.status = status;
+        this.headers = headers;
     }
 
     @Override
     public CompletionStage<Void> send(final Connection con) {
-        return this.origin.send(new RsWithStatus.ConWithStatus(con, this.status));
-    }
-
-    @Override
-    public String toString() {
-        return String.format("RsWithStatus{status=%s, origin=%s}", this.status, this.origin);
+        return this.origin.send(new RsWithHeaders.ConWithHeaders(con, this.headers));
     }
 
     /**
-     * Connection with overridden status code.
-     * @since 0.1
+     * Connection with overridden headers.
+     * @since 0.3
      */
-    private static final class ConWithStatus implements Connection {
+    private static final class ConWithHeaders implements Connection {
 
         /**
          * Origin connection.
@@ -87,26 +78,28 @@ public final class RsWithStatus implements Response {
         private final Connection origin;
 
         /**
-         * New status.
+         * New headers.
          */
-        private final RsStatus status;
+        private final Iterable<Map.Entry<String, String>> headers;
 
         /**
          * Override status code for connection.
          * @param origin Connection
-         * @param status Code to override
-         */
-        ConWithStatus(final Connection origin, final RsStatus status) {
+         * @param headers Headers to override
+         * */
+        private ConWithHeaders(
+            final Connection origin,
+            final Iterable<Map.Entry<String, String>> headers) {
             this.origin = origin;
-            this.status = status;
+            this.headers = headers;
         }
 
         @Override
         public CompletionStage<Void> accept(
             final RsStatus ignored,
-            final Iterable<Entry<String, String>> headers,
+            final Iterable<Map.Entry<String, String>> hdrs,
             final Publisher<ByteBuffer> body) {
-            return this.origin.accept(this.status, headers, body);
+            return this.origin.accept(ignored, this.headers, body);
         }
     }
 }
