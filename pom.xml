@@ -72,12 +72,6 @@ SOFTWARE.
       <groupId>com.artipie</groupId>
       <artifactId>vertx-server</artifactId>
       <version>0.2.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.artipie</groupId>
-          <artifactId>http</artifactId>
-        </exclusion>
-      </exclusions>
       <scope>test</scope>
     </dependency>
     <dependency>
