@@ -43,7 +43,7 @@ public interface RtRule {
     /**
      * Fallback RtRule.
      */
-    RtRule FALLBACK = ((line, headers) -> true);
+    RtRule FALLBACK = (line, headers) -> true;
 
     /**
      * Apply this rule to request.
