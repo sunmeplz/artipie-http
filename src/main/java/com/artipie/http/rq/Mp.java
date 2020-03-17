@@ -25,23 +25,35 @@
 package com.artipie.http.rq;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
+import org.reactivestreams.Processor;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 /**
  * A multipart parser. Parses a Flow of Bytes into a flow of Multiparts
  * See
  * <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">rfc1341</a>
  * spec.
+ * @todo #32:120min Implement Publisher part.
+ *  Subscribe is a part of publisher contract. Parts are emmited in a way, similar to stream parser,
+ *  but with an attention to headers.
+ * @todo #32:120min Implement Subscriber part.
+ *  On subscribe is called when upstream wants to propagate elements to us. We should take it and
+ *  use it.
  * @since 0.4
+ * @checkstyle ConstantUsageCheck (500 lines)
  */
-public final class Mp implements Flow.Processor<ByteBuffer, Part> {
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.UnusedPrivateField", "PMD.SingularField"})
+public final class Mp implements Processor<ByteBuffer, Part> {
 
+    /**
+     * The CRLF.
+     */
     private static final String CRLF = "\r\n";
 
     /**
@@ -54,11 +66,19 @@ public final class Mp implements Flow.Processor<ByteBuffer, Part> {
 
     /**
      * Ctor.
+     * @param boundary The boundary supplier.
+     */
+    public Mp(final Supplier<String> boundary) {
+        this.boundary = boundary;
+    }
+
+    /**
+     * Ctor.
      *
      * @param boundary Multipart body boundary
      */
     public Mp(final String boundary) {
-        this.boundary = () -> boundary;
+        this(() -> boundary);
     }
 
     /**
@@ -67,36 +87,38 @@ public final class Mp implements Flow.Processor<ByteBuffer, Part> {
      * @param headers Content type header value
      */
     public Mp(final Iterable<Map.Entry<String, String>> headers) {
-        this.boundary = () -> {
-            final Pattern pattern = Pattern.compile("boundary=(\\w+)");
-            final String type = StreamSupport.stream(headers.spliterator(), false)
-                .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
-            final Matcher matcher = pattern.matcher(type);
-            matcher.find();
-            return matcher.group(1);
-        };
+        this(
+            () -> {
+                final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+                final String type = StreamSupport.stream(headers.spliterator(), false)
+                    .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .get();
+                final Matcher matcher = pattern.matcher(type);
+                matcher.find();
+                return matcher.group(1);
+            }
+        );
     }
 
     @Override
-    public void subscribe(Flow.Subscriber<? super Part> subscriber) {
+    public void subscribe(final Subscriber<? super Part> subscriber) {
         throw new IllegalStateException("not implemented");
     }
 
     @Override
-    public void onSubscribe(Flow.Subscription subscription) {
+    public void onSubscribe(final Subscription subscription) {
         throw new IllegalStateException("not implemented");
     }
 
     @Override
-    public void onNext(ByteBuffer item) {
+    public void onNext(final ByteBuffer item) {
         throw new IllegalStateException("not implemented");
     }
 
     @Override
-    public void onError(Throwable throwable) {
+    public void onError(final Throwable throwable) {
         throw new IllegalStateException("not implemented");
     }
 

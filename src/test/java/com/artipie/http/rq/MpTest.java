@@ -24,59 +24,52 @@
 package com.artipie.http.rq;
 
 import com.artipie.http.Slice;
+import com.artipie.http.rs.RsStatus;
 import com.artipie.vertx.VertxSliceServer;
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.ext.web.client.WebClient;
+import io.vertx.reactivex.ext.web.multipart.MultipartForm;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.Map;
-
-import io.vertx.reactivex.ext.web.client.WebClient;
-import io.vertx.reactivex.ext.web.multipart.MultipartForm;
+import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.reactivestreams.FlowAdapters;
 
 /**
  * Multipart parser test.
- *
+ * @todo #32:60min Enable this test.
+ *  In order to ensure that multipart parser works correctly we wrote a test for it. For now, it
+ *  is disabled, but, later, we will enable it.
  * @since 0.4
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class MpTest {
 
+    /**
+     * The localhost.
+     */
     private static final String LOCALHOST = "localhost";
 
     @Test
+    @Disabled
     public void ableToParseBasic(@TempDir final Path dir) throws IOException {
         final Vertx vertx = Vertx.vertx();
-        final Slice slice = (line, headers, body) -> {
-            return connection -> {
-                for (Map.Entry<String, String> header : headers) {
-                    System.out.println(header);
-                }
-                final int zero = 0;
-                final int okay = 200;
-                final Flowable<ByteBuffer> flowable = Flowable.fromPublisher(FlowAdapters.toPublisher(body));
-                flowable.subscribe(byteBuffer -> {
-                    final byte[] bytes = new byte[byteBuffer.remaining()];
-                    byteBuffer.get(bytes);
-                    final String s = new String(bytes);
-                    System.out.println(s);
-                });
-                final Mp mp = new Mp(headers);
-//                body.subscribe(mp);
-//                final Flowable<Part> partFlowable = Flowable.fromPublisher(FlowAdapters.toPublisher(mp));
-//                partFlowable.subscribe();
-                connection.accept(
-                    okay,
-                    new HashSet<>(zero),
-                    FlowAdapters.toFlowPublisher(Flowable.empty())
-                );
-            };
+        final Slice slice = (line, headers, body) -> connection -> {
+            final int zero = 0;
+            final Mp mpp = new Mp(headers);
+            body.subscribe(mpp);
+            Flowable.fromPublisher(mpp).subscribe();
+            connection.accept(
+                RsStatus.OK,
+                new HashSet<>(zero),
+                Flowable.empty()
+            );
+            return CompletableFuture.completedFuture(null);
         };
         final int port = this.rndPort();
         final VertxSliceServer server = new VertxSliceServer(vertx, slice, port);
