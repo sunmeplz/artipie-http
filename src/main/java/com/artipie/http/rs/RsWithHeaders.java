@@ -68,7 +68,7 @@ public final class RsWithHeaders implements Response {
     }
 
     /**
-     * Connection with overridden headers.
+     * Connection with additional headers.
      * @since 0.3
      */
     private static final class ConWithHeaders implements Connection {
@@ -79,7 +79,7 @@ public final class RsWithHeaders implements Response {
         private final Connection origin;
 
         /**
-         * New headers.
+         * Additional headers.
          */
         private final Iterable<Map.Entry<String, String>> headers;
 
