@@ -41,6 +41,11 @@ import org.cactoos.list.ListOf;
 public interface RtRule {
 
     /**
+     * Fallback RtRule.
+     */
+    RtRule FALLBACK = ((line, headers) -> true);
+
+    /**
      * Apply this rule to request.
      * @param line Request line
      * @param headers Request headers
