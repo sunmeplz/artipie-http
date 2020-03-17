@@ -57,6 +57,6 @@ public final class SliceSimple implements Slice {
         final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        return new AsyncResponse(CompletableFuture.completedFuture(this.res));
+        return this.res;
     }
 }
