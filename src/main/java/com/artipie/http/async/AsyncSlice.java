@@ -21,34 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
+package com.artipie.http.async;
+
+import com.artipie.http.Response;
+import com.artipie.http.Slice;
+import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import org.reactivestreams.Publisher;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Asynchronous {@link Slice} implementation.
+ * <p>
+ * This slice encapsulates {@link CompletionStage} of {@link Slice} and returns {@link Response}.
+ * </p>
+ * @since 0.4
+ * @todo #41:30min Add unit tests for AsyncSlice and RsAsync.
+ *  Tests should verify the positive case, when slice and response
+ *  completes normally; And exceptional behavior, when 500 error should be
+ *  sent to connection.
  */
-public interface Response {
+public final class AsyncSlice implements Slice {
 
     /**
-     * Empty response.
+     * Async slice.
      */
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
+    private final CompletionStage<Slice> slice;
 
     /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
+     * Ctor.
+     * @param slice Async slice.
      */
-    CompletionStage<Void> send(Connection connection);
+    public AsyncSlice(final CompletionStage<Slice> slice) {
+        this.slice = slice;
+    }
+
+    @Override
+    public Response response(final String line,
+        final Iterable<Map.Entry<String, String>> headers,
+        final Publisher<ByteBuffer> body) {
+        return connection -> this.slice.thenCompose(
+            target -> target.response(line, headers, body).send(connection)
+        );
+    }
 }

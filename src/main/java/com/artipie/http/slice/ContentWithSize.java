@@ -21,32 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.stream;
+package com.artipie.http.slice;
 
-import org.reactivestreams.Processor;
-import org.reactivestreams.Publisher;
+import com.artipie.asto.Content;
+import com.artipie.http.rq.RqHeaders;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Optional;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 
-abstract class ByteStreamSplit implements Processor<ByteBuffer, Publisher<ByteBuffer>> {
+/**
+ * Content with size from headers.
+ * @since 0.6
+ */
+public final class ContentWithSize implements Content {
 
     /**
-     * Delimiter for a stream of byte buffer.
+     * Request body.
      */
-    protected final byte[] delim;
+    private final Publisher<ByteBuffer> body;
 
     /**
-     * Ctor.
+     * Request headers.
      */
-    public ByteStreamSplit(){
-        this("\r\n".getBytes(StandardCharsets.UTF_8));
+    private final Iterable<Map.Entry<String, String>> headers;
+
+    /**
+     * Content with size from body and headers.
+     * @param body Body
+     * @param headers Headers
+     */
+    ContentWithSize(final Publisher<ByteBuffer> body,
+        final Iterable<Map.Entry<String, String>> headers) {
+        this.body = body;
+        this.headers = headers;
     }
 
-    /**
-     * Ctor.
-     * @param delim Delimiter for stream splitting.
-     */
-    public ByteStreamSplit(byte[] delim) {
-        this.delim = delim;
+    @Override
+    public Optional<Long> size() {
+        return new RqHeaders(this.headers, "content-size")
+            .stream().findFirst()
+            .map(Long::parseLong);
+    }
+
+    @Override
+    public void subscribe(final Subscriber<? super ByteBuffer> subscriber) {
+        this.body.subscribe(subscriber);
     }
 }

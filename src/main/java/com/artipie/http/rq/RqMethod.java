@@ -21,34 +21,84 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
+package com.artipie.http.rq;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
-import java.util.concurrent.CompletionStage;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * HTTP request method.
+ * See <a href="https://tools.ietf.org/html/rfc2616#section-5.1.1">RFC 2616 5.1.1 Method</a>
+ *
+ * @since 0.4
  */
-public interface Response {
+public enum RqMethod {
 
     /**
-     * Empty response.
+     * OPTIONS.
      */
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
+    OPTIONS("OPTIONS"),
 
     /**
-     * Send the response.
+     * GET.
+     */
+    GET("GET"),
+
+    /**
+     * HEAD.
+     */
+    HEAD("HEAD"),
+
+    /**
+     * POST.
+     */
+    POST("POST"),
+
+    /**
+     * PUT.
+     */
+    PUT("PUT"),
+
+    /**
+     * DELETE.
+     */
+    DELETE("DELETE"),
+
+    /**
+     * TRACE.
+     */
+    TRACE("TRACE"),
+
+    /**
+     * CONNECT.
+     */
+    CONNECT("CONNECT");
+
+    /**
+     * Set of all existing methods.
+     */
+    public static final Set<RqMethod> ALL = EnumSet.allOf(RqMethod.class);
+
+    /**
+     * String value.
+     */
+    private final String string;
+
+    /**
+     * Ctor.
      *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
+     * @param string String value.
      */
-    CompletionStage<Void> send(Connection connection);
+    RqMethod(final String string) {
+        this.string = string;
+    }
+
+    /**
+     * Method string.
+     *
+     * @return Method string.
+     */
+    public String value() {
+        return this.string;
+    }
 }

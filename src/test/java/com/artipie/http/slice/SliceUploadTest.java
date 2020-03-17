@@ -21,54 +21,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.hm;
+package com.artipie.http.slice;
 
-import com.artipie.http.Response;
+import com.artipie.asto.Key;
+import com.artipie.asto.Remaining;
+import com.artipie.asto.Storage;
+import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.http.hm.RsHasStatus;
+import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link RsHasBody}.
- *
- * @since 0.4
+ * Test case for {@link SliceUpload}.
+ * @since 0.6
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-class RsHasBodyTest {
+public final class SliceUploadTest {
 
     @Test
-    void shouldMatchEqualBody() {
-        final Response response = connection -> connection.accept(
-            RsStatus.OK,
-            Collections.emptyList(),
-            Flowable.fromArray(
-                ByteBuffer.wrap("he".getBytes()),
-                ByteBuffer.wrap("ll".getBytes()),
-                ByteBuffer.wrap("o".getBytes())
-            )
+    void uploadsKeyByPath() throws Exception {
+        final Storage storage = new InMemoryStorage();
+        final String hello = "Hello";
+        final byte[] data = hello.getBytes(StandardCharsets.UTF_8);
+        final String path = "uploads/file.txt";
+        MatcherAssert.assertThat(
+            "Wrong HTTP status returned",
+            new SliceUpload(storage).response(
+                new RequestLine("PUT", path, "HTTP/1.1").toString(),
+                Collections.singleton(
+                    new MapEntry<>("Content-Size", Long.toString(data.length))
+                ),
+                Flowable.just(ByteBuffer.wrap(data))
+            ),
+            new RsHasStatus(RsStatus.CREATED)
         );
         MatcherAssert.assertThat(
-            "Matcher is expected to match response with equal body",
-            new RsHasBody("hello".getBytes()).matches(response),
-            new IsEqual<>(true)
+            new String(
+                new Remaining(
+                    Flowable.fromPublisher(storage.value(new Key.From(path)).get()).toList()
+                        .blockingGet().get(0)
+                ).bytes(),
+                StandardCharsets.UTF_8
+            ),
+            new IsEqual<>(hello)
         );
     }
-
-    @Test
-    void shouldNotMatchNotEqualBody() {
-        final Response response = connection -> connection.accept(
-            RsStatus.OK,
-            Collections.emptyList(),
-            Flowable.fromArray(ByteBuffer.wrap("1".getBytes()))
-        );
-        MatcherAssert.assertThat(
-            "Matcher is expected not to match response with not equal body",
-            new RsHasBody("2".getBytes()).matches(response),
-            new IsEqual<>(false)
-        );
-    }
-
 }

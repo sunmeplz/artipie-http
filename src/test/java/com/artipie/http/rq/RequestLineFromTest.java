@@ -42,7 +42,7 @@ public final class RequestLineFromTest {
     void parsesMethodName() throws Exception {
         MatcherAssert.assertThat(
             new RequestLineFrom("TRACE /foo HTTP/1.1\r\n").method(),
-            Matchers.equalTo("TRACE")
+            Matchers.equalTo(RqMethod.TRACE)
         );
     }
 
