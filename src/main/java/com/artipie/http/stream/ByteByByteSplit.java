@@ -59,7 +59,6 @@ import org.reactivestreams.Subscription;
  * @checkstyle EmptyLineSeparatorCheck (500 lines)
  */
 @SuppressWarnings({
-    "PMD.AvoidSynchronizedAtMethodLevel",
     "PMD.LongVariable",
     "PMD.TooManyMethods",
     "PMD.AvoidDuplicateLiterals"
@@ -117,6 +116,16 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
     private final AtomicLong downDownDemand;
 
     /**
+     * The object to sync on for upstream calls.
+     */
+    private final Object upSync;
+
+    /**
+     * The object to sync on for downstream calls.
+     */
+    private final Object downSync;
+
+    /**
      * Ctor.
      *
      * @param delim The delimiter.
@@ -132,6 +141,8 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
         this.upstreamTerminated = new AtomicBoolean(false);
         this.downDemand = new AtomicLong(0);
         this.downDownDemand = new AtomicLong(0);
+        this.upSync = new Object();
+        this.downSync = new Object();
     }
 
     @Override
@@ -144,13 +155,17 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
             new Subscription() {
                 @Override
                 public void request(final long ask) {
-                    ByteByByteSplit.this.downDemand.updateAndGet(operand -> operand + ask);
-                    ByteByByteSplit.this.upstream.get().get().request(ask);
+                    synchronized (ByteByByteSplit.this.downSync) {
+                        ByteByByteSplit.this.downDemand.updateAndGet(operand -> operand + ask);
+                        ByteByByteSplit.this.upstream.get().get().request(ask);
+                    }
                 }
 
                 @Override
                 public void cancel() {
-                    throw new IllegalStateException("Cancel is not allowed");
+                    synchronized (ByteByByteSplit.this.downSync) {
+                        throw new IllegalStateException("Cancel is not allowed");
+                    }
                 }
             }
         );
@@ -159,48 +174,56 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
 
     @Override
     public void onSubscribe(final Subscription sub) {
-        if (this.downstream.get().isPresent()) {
-            throw new IllegalStateException("Only one subscription is allowed");
+        synchronized (this.upSync) {
+            if (this.downstream.get().isPresent()) {
+                throw new IllegalStateException("Only one subscription is allowed");
+            }
+            this.upstream.set(Optional.of(sub));
         }
-        this.upstream.set(Optional.of(sub));
     }
 
     @Override
-    public synchronized void onNext(final ByteBuffer next) {
-        final byte[] bytes = new byte[next.remaining()];
-        next.get(bytes);
-        ByteBuffer current = ByteByByteSplit.bufWithInitMark(bytes.length);
-        for (final byte each : bytes) {
-            final boolean eviction = this.ring.isAtFullCapacity();
-            if (eviction) {
-                final Byte last = this.ring.get(0);
-                current.put(last);
+    public void onNext(final ByteBuffer next) {
+        synchronized (this.upSync) {
+            final byte[] bytes = new byte[next.remaining()];
+            next.get(bytes);
+            ByteBuffer current = ByteByByteSplit.bufWithInitMark(bytes.length);
+            for (final byte each : bytes) {
+                final boolean eviction = this.ring.isAtFullCapacity();
+                if (eviction) {
+                    final Byte last = this.ring.get(0);
+                    current.put(last);
+                }
+                this.ring.add(each);
+                if (Arrays.equals(this.delim, this.ringBytes())) {
+                    this.ring.clear();
+                    current.limit(current.position());
+                    current.reset();
+                    this.emit(Optional.of(current));
+                    this.emit(Optional.empty());
+                    current = ByteByByteSplit.bufWithInitMark(bytes.length);
+                }
             }
-            this.ring.add(each);
-            if (Arrays.equals(this.delim, this.ringBytes())) {
-                this.ring.clear();
-                current.limit(current.position());
-                current.reset();
-                this.emit(Optional.of(current));
-                this.emit(Optional.empty());
-                current = ByteByByteSplit.bufWithInitMark(bytes.length);
-            }
+            current.limit(current.position());
+            current.reset();
+            this.emit(Optional.of(current));
         }
-        current.limit(current.position());
-        current.reset();
-        this.emit(Optional.of(current));
     }
 
     @Override
     public void onError(final Throwable throwable) {
-        this.upstreamTerminated.set(true);
-        this.downstream.get().ifPresent(value -> value.onError(throwable));
+        synchronized (this.upSync) {
+            this.upstreamTerminated.set(true);
+            this.downstream.get().ifPresent(value -> value.onError(throwable));
+        }
     }
 
     @Override
     public void onComplete() {
-        this.upstreamTerminated.set(true);
-        this.emit(Optional.of(ByteBuffer.wrap(this.ringBytes())));
+        synchronized (this.upSync) {
+            this.upstreamTerminated.set(true);
+            this.emit(Optional.of(ByteBuffer.wrap(this.ringBytes())));
+        }
     }
 
     /**
@@ -239,7 +262,7 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
      *
      * @param buffer Buffer or empty if a sub stream needs to be completed.
      */
-    private synchronized void emit(final Optional<ByteBuffer> buffer) {
+    private void emit(final Optional<ByteBuffer> buffer) {
         this.storage.add(buffer);
         this.meetDemand();
     }
@@ -247,21 +270,23 @@ public final class ByteByByteSplit implements Processor<ByteBuffer, Publisher<By
     /**
      * Attempt to meet the downstream demand.
      */
-    private synchronized void meetDemand() {
-        if (this.downDownstream.get().isPresent()) {
-            while (this.downDownDemand.get() > 0 && this.storage.size() > 0) {
-                this.downDownDemand.decrementAndGet();
-                final Optional<ByteBuffer> poll = this.storage.poll();
-                if (poll.isPresent()) {
-                    this.downDownstream.get().get().onNext(poll.get());
-                } else {
-                    this.downDownstream.get().get().onComplete();
-                    this.emitNextSubSub();
+    private void meetDemand() {
+        synchronized (this.downSync) {
+            if (this.downDownstream.get().isPresent()) {
+                while (this.downDownDemand.get() > 0 && this.storage.size() > 0) {
+                    this.downDownDemand.decrementAndGet();
+                    final Optional<ByteBuffer> poll = this.storage.poll();
+                    if (poll.isPresent()) {
+                        this.downDownstream.get().get().onNext(poll.get());
+                    } else {
+                        this.downDownstream.get().get().onComplete();
+                        this.emitNextSubSub();
+                    }
                 }
-            }
-            if (this.upstreamTerminated.get()) {
-                this.downDownstream.get().get().onComplete();
-                this.downstream.get().get().onComplete();
+                if (this.upstreamTerminated.get()) {
+                    this.downDownstream.get().get().onComplete();
+                    this.downstream.get().get().onComplete();
+                }
             }
         }
     }
