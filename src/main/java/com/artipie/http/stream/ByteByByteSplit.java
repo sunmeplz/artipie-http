@@ -40,9 +40,6 @@ import org.reactivestreams.Subscription;
 /**
  * Byte stream split implementation based on Circular buffer of bytes.
  *
- * @todo #32:30min Thread safety improvements.
- *  We need to ensure that there is no threading issues in case upstream emit items in a
- *  multi threaded way.
  * @todo #32:30min Cancellation support.
  *  For now downstream and down downstream cancellation is not supported,
  *  but we definitely need to have it.
