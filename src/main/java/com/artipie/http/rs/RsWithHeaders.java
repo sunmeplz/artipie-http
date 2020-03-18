@@ -28,7 +28,7 @@ import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import com.google.common.collect.Iterables;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import org.cactoos.map.MapEntry;
@@ -67,13 +67,15 @@ public final class RsWithHeaders implements Response {
     /**
      * Ctor.
      *
-     * @param origin Response
+     * @param origin Origin response.
+     * @param name Name of header.
+     * @param value Value of header.
      */
-    public RsWithHeaders(Response origin, String name, String value) {
-        this.origin = origin;
-        this.headers = new ArrayList<Map.Entry<String, String>>(){{
-            add(new MapEntry<>(name, value));
-        }};
+    public RsWithHeaders(
+        final Response origin,
+        final String name,
+        final String value) {
+        this(origin, Collections.singleton(new MapEntry<>(name, value)));
     }
 
     @Override
