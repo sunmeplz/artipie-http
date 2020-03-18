@@ -55,7 +55,7 @@ public interface Slice {
     /**
      * SliceWrap is a simple decorative envelope for Slice.
      *
-     * @since 0.3
+     * @since 0.7
      */
     final class Wrap implements Slice {
 
