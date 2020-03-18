@@ -28,8 +28,10 @@ import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import com.google.common.collect.Iterables;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import org.cactoos.map.MapEntry;
 import org.reactivestreams.Publisher;
 
 /**
@@ -60,6 +62,18 @@ public final class RsWithHeaders implements Response {
         final Iterable<Map.Entry<String, String>> headers) {
         this.origin = origin;
         this.headers = headers;
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param origin Response
+     */
+    public RsWithHeaders(Response origin, String name, String value) {
+        this.origin = origin;
+        this.headers = new ArrayList<Map.Entry<String, String>>(){{
+            add(new MapEntry<>(name, value));
+        }};
     }
 
     @Override
