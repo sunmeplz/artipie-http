@@ -37,7 +37,7 @@ import org.reactivestreams.Publisher;
 /**
  * Response with additional headers.
  *
- * @since 0.3
+ * @since 0.7
  */
 public final class RsWithHeaders implements Response {
 
