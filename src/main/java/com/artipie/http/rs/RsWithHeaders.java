@@ -35,9 +35,9 @@ import org.cactoos.map.MapEntry;
 import org.reactivestreams.Publisher;
 
 /**
- * RsWithHeaders.
+ * Response with additional headers.
  *
- * @since 0.1
+ * @since 0.3
  */
 public final class RsWithHeaders implements Response {
 
