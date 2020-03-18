@@ -31,9 +31,9 @@ import java.util.Map;
 import org.reactivestreams.Publisher;
 
 /**
- * SliceSimple.
+ * Simple decorator for Slice.
  *
- * @since 0.1
+ * @since 0.3
  */
 public final class SliceSimple implements Slice {
 
