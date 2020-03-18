@@ -26,16 +26,20 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import com.google.common.collect.Iterables;
 import java.nio.ByteBuffer;
-import java.util.Map.Entry;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import org.cactoos.map.MapEntry;
 import org.reactivestreams.Publisher;
 
 /**
- * Response with status.
- * @since 0.1
+ * Response with additional headers.
+ *
+ * @since 0.7
  */
-public final class RsWithStatus implements Response {
+public final class RsWithHeaders implements Response {
 
     /**
      * Origin response.
@@ -43,43 +47,47 @@ public final class RsWithStatus implements Response {
     private final Response origin;
 
     /**
-     * Status code.
+     * Headers.
      */
-    private final RsStatus status;
+    private final Iterable<Map.Entry<String, String>> headers;
 
     /**
-     * New response with status.
-     * @param status Status code
+     * Ctor.
+     *
+     * @param origin Response
+     * @param headers Headers
      */
-    public RsWithStatus(final RsStatus status) {
-        this(Response.EMPTY, status);
+    public RsWithHeaders(
+        final Response origin,
+        final Iterable<Map.Entry<String, String>> headers) {
+        this.origin = origin;
+        this.headers = headers;
     }
 
     /**
-     * Override status code for response.
-     * @param origin Response to override
-     * @param status Status code
+     * Ctor.
+     *
+     * @param origin Origin response.
+     * @param name Name of header.
+     * @param value Value of header.
      */
-    public RsWithStatus(final Response origin, final RsStatus status) {
-        this.origin = origin;
-        this.status = status;
+    public RsWithHeaders(
+        final Response origin,
+        final String name,
+        final String value) {
+        this(origin, Collections.singleton(new MapEntry<>(name, value)));
     }
 
     @Override
     public CompletionStage<Void> send(final Connection con) {
-        return this.origin.send(new RsWithStatus.ConWithStatus(con, this.status));
-    }
-
-    @Override
-    public String toString() {
-        return String.format("RsWithStatus{status=%s, origin=%s}", this.status, this.origin);
+        return this.origin.send(new RsWithHeaders.ConWithHeaders(con, this.headers));
     }
 
     /**
-     * Connection with overridden status code.
-     * @since 0.1
+     * Connection with additional headers.
+     * @since 0.3
      */
-    private static final class ConWithStatus implements Connection {
+    private static final class ConWithHeaders implements Connection {
 
         /**
          * Origin connection.
@@ -87,26 +95,29 @@ public final class RsWithStatus implements Response {
         private final Connection origin;
 
         /**
-         * New status.
+         * Additional headers.
          */
-        private final RsStatus status;
+        private final Iterable<Map.Entry<String, String>> headers;
 
         /**
-         * Override status code for connection.
+         * Ctor.
+         *
          * @param origin Connection
-         * @param status Code to override
+         * @param headers Headers
          */
-        ConWithStatus(final Connection origin, final RsStatus status) {
+        private ConWithHeaders(
+            final Connection origin,
+            final Iterable<Map.Entry<String, String>> headers) {
             this.origin = origin;
-            this.status = status;
+            this.headers = headers;
         }
 
         @Override
         public CompletionStage<Void> accept(
-            final RsStatus ignored,
-            final Iterable<Entry<String, String>> headers,
+            final RsStatus status,
+            final Iterable<Map.Entry<String, String>> hrs,
             final Publisher<ByteBuffer> body) {
-            return this.origin.accept(this.status, headers, body);
+            return this.origin.accept(status, Iterables.concat(this.headers, hrs), body);
         }
     }
 }
