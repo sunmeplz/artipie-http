@@ -24,6 +24,7 @@
 package com.artipie.http.rt;
 
 import com.artipie.http.rq.RequestLineFrom;
+import com.artipie.http.rq.RqMethod;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -103,13 +104,13 @@ public interface RtRule {
         /**
          * Method name.
          */
-        private final String method;
+        private final RqMethod method;
 
         /**
          * Route by method.
          * @param method Method name
          */
-        public ByMethod(final String method) {
+        public ByMethod(final RqMethod method) {
             this.method = method;
         }
 

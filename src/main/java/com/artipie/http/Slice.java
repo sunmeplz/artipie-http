@@ -57,7 +57,7 @@ public interface Slice {
      *
      * @since 0.7
      */
-    final class Wrap implements Slice {
+    abstract class Wrap implements Slice {
 
         /**
          * Origin slice.
@@ -69,12 +69,12 @@ public interface Slice {
          *
          * @param slice Slice.
          */
-        public Wrap(final Slice slice) {
+        protected Wrap(final Slice slice) {
             this.slice = slice;
         }
 
         @Override
-        public Response response(
+        public final Response response(
             final String line,
             final Iterable<Map.Entry<String, String>> headers,
             final Publisher<ByteBuffer> body) {
