@@ -33,7 +33,7 @@ import org.reactivestreams.Publisher;
 /**
  * Simple decorator for Slice.
  *
- * @since 0.3
+ * @since 0.7
  */
 public final class SliceSimple implements Slice {
 
