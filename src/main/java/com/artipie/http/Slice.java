@@ -74,7 +74,7 @@ public interface Slice {
         }
 
         @Override
-        public final Response response(
+        public Response response(
             final String line,
             final Iterable<Map.Entry<String, String>> headers,
             final Publisher<ByteBuffer> body) {
