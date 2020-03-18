@@ -61,29 +61,9 @@ public final class ByteByByteSplitTest {
     }
 
     private String flowOfString(final ByteByByteSplit split) {
-        return new String(
-            Flowable.fromPublisher(split)
-                .flatMap(pub -> pub)
-                .toList()
-                .blockingGet()
-                .stream()
-                .map(
-                    byteBuffer -> {
-                        final byte[] res = new byte[byteBuffer.remaining()];
-                        byteBuffer.get(res);
-                        return res;
-                    }
-                )
-                .reduce(
-                    (one, another) -> {
-                        final byte[] res = new byte[one.length + another.length];
-                        System.arraycopy(one, 0, res, 0, one.length);
-                        System.arraycopy(another, 0, res, one.length, another.length);
-                        return res;
-                    }
-                )
-                .get()
-        );
+        return new StringOfByteBufPublisher(
+            Flowable.fromPublisher(split).flatMap(pub -> pub)
+        ).string();
     }
 
     private Flowable<ByteBuffer> buffersOfOneByteFlow(final String str) {
