@@ -42,9 +42,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Multipart parser test.
- * @todo #32:60min Enable this test.
- *  In order to ensure that multipart parser works correctly we wrote a test for it. For now, it
- *  is disabled, but, later, we will enable it.
  * @since 0.4
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")

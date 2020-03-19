@@ -45,6 +45,10 @@ import org.reactivestreams.Subscription;
  * @todo #32:120min Implement Subscriber part.
  *  On subscribe is called when upstream wants to propagate elements to us. We should take it and
  *  use it.
+ * @todo #32:60min Finish implementation.
+ *  In order to ensure that multipart parser works correctly, the MultipartTest has been written.
+ *  The test is disabled for now, but, when this class will be fully implemented, the test should be
+ *  enable.
  * @since 0.4
  * @checkstyle ConstantUsageCheck (500 lines)
  */
