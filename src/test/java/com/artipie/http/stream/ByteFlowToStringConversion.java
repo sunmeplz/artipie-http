@@ -32,7 +32,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.1
  */
-public class StringOfByteBufPublisher {
+public class ByteFlowToStringConversion {
 
     /**
      * The flow of ByteBuffer's.
@@ -43,7 +43,7 @@ public class StringOfByteBufPublisher {
      * Ctor.
      * @param split The split.
      */
-    public StringOfByteBufPublisher(final ByteByByteSplit split) {
+    public ByteFlowToStringConversion(final ByteByByteSplit split) {
         this(Flowable.fromPublisher(split).flatMap(pub -> pub));
     }
 
@@ -51,7 +51,7 @@ public class StringOfByteBufPublisher {
      * Ctor.
      * @param publisher The flow
      */
-    public StringOfByteBufPublisher(final Publisher<ByteBuffer> publisher) {
+    public ByteFlowToStringConversion(final Publisher<ByteBuffer> publisher) {
         this.publisher = publisher;
     }
 
