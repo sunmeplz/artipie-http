@@ -41,6 +41,14 @@ public class StringOfByteBufPublisher {
 
     /**
      * Ctor.
+     * @param split The split.
+     */
+    public StringOfByteBufPublisher(final ByteByByteSplit split) {
+        this(Flowable.fromPublisher(split).flatMap(pub -> pub));
+    }
+
+    /**
+     * Ctor.
      * @param publisher The flow
      */
     public StringOfByteBufPublisher(final Publisher<ByteBuffer> publisher) {
@@ -51,7 +59,7 @@ public class StringOfByteBufPublisher {
      * Fetch stream elements and turn them into a single string.
      * @return The string
      */
-    public String string() {
+    public String asString() {
         return new String(
             Flowable.fromPublisher(this.publisher)
                 .toList()
