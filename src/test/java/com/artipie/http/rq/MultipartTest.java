@@ -48,7 +48,7 @@ import org.junit.jupiter.api.io.TempDir;
  * @since 0.4
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
-public class MpTest {
+public class MultipartTest {
 
     /**
      * The localhost.
@@ -61,7 +61,7 @@ public class MpTest {
         final Vertx vertx = Vertx.vertx();
         final Slice slice = (line, headers, body) -> connection -> {
             final int zero = 0;
-            final Mp mpp = new Mp(headers);
+            final Multipart mpp = new Multipart(headers);
             body.subscribe(mpp);
             Flowable.fromPublisher(mpp).subscribe();
             connection.accept(
@@ -77,7 +77,7 @@ public class MpTest {
         final Path resolve = dir.resolve("text.txt");
         Files.write(resolve, "Hello worrrrld!!!".getBytes());
         final WebClient web = WebClient.create(vertx);
-        web.post(port, MpTest.LOCALHOST, "/hello")
+        web.post(port, MultipartTest.LOCALHOST, "/hello")
             .rxSendMultipartForm(
                 MultipartForm.create()
                     .textFileUpload(

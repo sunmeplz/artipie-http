@@ -49,7 +49,7 @@ import org.reactivestreams.Subscription;
  * @checkstyle ConstantUsageCheck (500 lines)
  */
 @SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.UnusedPrivateField", "PMD.SingularField"})
-public final class Mp implements Processor<ByteBuffer, Part> {
+public final class Multipart implements Processor<ByteBuffer, Part> {
 
     /**
      * The CRLF.
@@ -68,7 +68,7 @@ public final class Mp implements Processor<ByteBuffer, Part> {
      * Ctor.
      * @param boundary The boundary supplier.
      */
-    public Mp(final Supplier<String> boundary) {
+    public Multipart(final Supplier<String> boundary) {
         this.boundary = boundary;
     }
 
@@ -77,7 +77,7 @@ public final class Mp implements Processor<ByteBuffer, Part> {
      *
      * @param boundary Multipart body boundary
      */
-    public Mp(final String boundary) {
+    public Multipart(final String boundary) {
         this(() -> boundary);
     }
 
@@ -86,7 +86,7 @@ public final class Mp implements Processor<ByteBuffer, Part> {
      *
      * @param headers Content type header value
      */
-    public Mp(final Iterable<Map.Entry<String, String>> headers) {
+    public Multipart(final Iterable<Map.Entry<String, String>> headers) {
         this(
             () -> {
                 final Pattern pattern = Pattern.compile("boundary=(\\w+)");
