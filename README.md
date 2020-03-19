@@ -65,16 +65,13 @@ it should be done by HTTP server implementation, e.g. vertex-server module.
 You can do routing in the following style:
 
 ```java
-@Override
-public Response response(
-    final String line,
-    final Iterable<Map.Entry<String, String>> headers,
-    final Publisher<ByteBuffer> body) {
-    return new SliceRoute(
-        new SliceRoute.Path(new RtRule.ByMethod(RqMethod.PUT.value()), new SliceUpload(storage)),
-        new SliceRoute.Path(new RtRule.ByMethod(RqMethod.GET.value()), new SliceDownload(storage)),
-        new SliceRoute.Path((line, headers) -> true, (line, headers, body) -> new RsWithStatus(RsStatus.METHOD_NOT_ALLOWED))
-    ).response(line, headers, body);
+class Repo extends Slice.Wrap {
+  Repo(Storage storage) {
+    super(
+      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.PUT.value()), new SliceUpload(storage)),
+      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.GET.value()), new SliceDownload(storage)),
+      SliceRoute.FALLBACK, new SliceSimple(RsStatus.METHOD_NOT_ALLOWED)
+    );
 }
 ```
 
@@ -92,7 +89,7 @@ final RqMethod = request.method();
 new RqHeaders.Single(headers, "x-header-name");
 ```
 
-### Setup for async response
+### Returning of async responses
 
 ```java
 return new AsyncResponse(
