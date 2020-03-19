@@ -59,6 +59,7 @@ public final class ByteByByteSplitTest {
             new IsEqual<>("howareyou")
         );
     }
+
     private Flowable<ByteBuffer> buffersOfOneByteFlow(final String str) {
         return Flowable.fromArray(
             Arrays.stream(
