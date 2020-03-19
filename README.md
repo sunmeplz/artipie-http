@@ -58,6 +58,53 @@ server asks response to send itself to connection, response asks connection
 to accept the data. Artipie adapter are not supposed to implement this interface,
 it should be done by HTTP server implementation, e.g. vertex-server module.
 
+## Some useful examples for different objects
+
+### Routing
+
+You can do routing in the following style:
+
+```java
+class Repo extends Slice.Wrap {
+  Repo(Storage storage) {
+    super(
+      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.PUT.value()), new SliceUpload(storage)),
+      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.GET.value()), new SliceDownload(storage)),
+      SliceRoute.FALLBACK, new SliceSimple(RsStatus.METHOD_NOT_ALLOWED)
+    );
+}
+```
+
+### Main components of request
+
+```java
+final RequestLineFrom request = new RequestLineFrom(line);
+final Uri uri = request.uri();
+final RqMethod = request.method();
+```
+
+### Specific header
+
+```java
+new RqHeaders.Single(headers, "x-header-name");
+```
+
+### Returning of async responses
+
+```java
+return new AsyncResponse(
+    CompletableFuture.supplyAsync(
+        /**
+         * Business logic here
+        **/
+    ).thenApply(
+        rsp -> new RsWithBody(
+            new RsWithStatus(RsStatus.OK), body
+        )
+    )
+)
+```
+
 ## How to contribute
 
 Fork repository, make changes, send us a pull request. We will review
