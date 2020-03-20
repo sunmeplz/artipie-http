@@ -45,7 +45,7 @@ public final class ByteByByteSplitTest {
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         this.buffersOfOneByteFlow("how are you").subscribe(split);
         MatcherAssert.assertThat(
-            new ByteFlowToStringConversion(split).asString(),
+            new ByteFlowAsString(split).value(),
             new IsEqual<>("howareyou")
         );
     }
@@ -55,7 +55,7 @@ public final class ByteByByteSplitTest {
         final ByteByByteSplit split = new ByteByByteSplit("__".getBytes());
         this.buffersOfOneByteFlow("how__are__you").subscribe(split);
         MatcherAssert.assertThat(
-            new ByteFlowToStringConversion(split).asString(),
+            new ByteFlowAsString(split).value(),
             new IsEqual<>("howareyou")
         );
     }
