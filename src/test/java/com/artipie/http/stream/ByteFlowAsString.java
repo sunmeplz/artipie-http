@@ -23,6 +23,7 @@
  */
 package com.artipie.http.stream;
 
+import com.artipie.asto.Remaining;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import org.reactivestreams.Publisher;
@@ -65,13 +66,7 @@ public class ByteFlowAsString {
                 .toList()
                 .blockingGet()
                 .stream()
-                .map(
-                    byteBuffer -> {
-                        final byte[] res = new byte[byteBuffer.remaining()];
-                        byteBuffer.get(res);
-                        return res;
-                    }
-                )
+                .map(byteBuffer -> new Remaining(byteBuffer).bytes())
                 .reduce(
                     (one, another) -> {
                         final byte[] res = new byte[one.length + another.length];
