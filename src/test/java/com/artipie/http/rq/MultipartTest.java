@@ -73,8 +73,7 @@ public class MultipartTest {
         server.start();
         final Path resolve = dir.resolve("text.txt");
         Files.write(resolve, "Hello worrrrld!!!".getBytes());
-        final WebClient web = WebClient.create(vertx);
-        web.post(port, MultipartTest.LOCALHOST, "/hello")
+        WebClient.create(vertx).post(port, MultipartTest.LOCALHOST, "/hello")
             .rxSendMultipartForm(
                 MultipartForm.create()
                     .textFileUpload(
