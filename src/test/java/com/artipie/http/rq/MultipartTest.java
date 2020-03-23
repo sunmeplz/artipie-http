@@ -23,7 +23,6 @@
  */
 package com.artipie.http.rq;
 
-import com.artipie.http.Slice;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.stream.ByteFlowAsString;
 import com.artipie.vertx.VertxSliceServer;
@@ -59,23 +58,26 @@ public class MultipartTest {
     @Disabled
     public void ableToParseBasic(@TempDir final Path dir) throws IOException {
         final Vertx vertx = Vertx.vertx();
-        final Slice slice = (line, headers, body) -> connection -> {
-            final int zero = 0;
-            final Multipart mpp = new Multipart(headers);
-            body.subscribe(mpp);
-            MatcherAssert.assertThat(
-                new ByteFlowAsString(Flowable.fromPublisher(mpp).flatMap(part -> part)).value(),
-                new IsEqual<>("Hello worrrrld!!!Hello worrrrld!!!")
-            );
-            connection.accept(
-                RsStatus.OK,
-                new HashSet<>(zero),
-                Flowable.empty()
-            );
-            return CompletableFuture.completedFuture(null);
-        };
         final int port = this.rndPort();
-        final VertxSliceServer server = new VertxSliceServer(vertx, slice, port);
+        final VertxSliceServer server = new VertxSliceServer(
+            vertx,
+            (line, headers, body) -> connection -> {
+                final int zero = 0;
+                final Multipart mpp = new Multipart(headers);
+                body.subscribe(mpp);
+                MatcherAssert.assertThat(
+                    new ByteFlowAsString(Flowable.fromPublisher(mpp).flatMap(part -> part)).value(),
+                    new IsEqual<>("Hello worrrrld!!!Hello worrrrld!!!")
+                );
+                connection.accept(
+                    RsStatus.OK,
+                    new HashSet<>(zero),
+                    Flowable.empty()
+                );
+                return CompletableFuture.completedFuture(null);
+            },
+            port
+        );
         server.start();
         final Path resolve = dir.resolve("text.txt");
         Files.write(resolve, "Hello worrrrld!!!".getBytes());
