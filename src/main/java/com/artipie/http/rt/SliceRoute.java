@@ -54,9 +54,6 @@ import org.reactivestreams.Publisher;
  * </code></pre>
  * </p>
  * @since 0.5
- * @todo #51:30min Refactor SliceRoute to get rid of null.
- *  This class is using null to iterate over optional responses and return first
- *  matched one in `response` method. Let's refactor it to avoid using null.
  */
 public final class SliceRoute implements Slice {
 
@@ -85,21 +82,17 @@ public final class SliceRoute implements Slice {
     public Response response(final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        Response response = null;
-        for (final Path item : this.routes) {
-            final Optional<Response> opt = item.response(line, headers, body);
-            if (opt.isPresent()) {
-                response = opt.get();
-                break;
-            }
-        }
-        if (response == null) {
-            response = new RsWithBody(
-                new RsWithStatus(RsStatus.NOT_FOUND),
-                "not found", StandardCharsets.UTF_8
+        return this.routes.stream()
+            .map(item -> item.response(line, headers, body))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst()
+            .orElse(
+                new RsWithBody(
+                    new RsWithStatus(RsStatus.NOT_FOUND),
+                    "not found", StandardCharsets.UTF_8
+                )
             );
-        }
-        return response;
     }
 
     /**

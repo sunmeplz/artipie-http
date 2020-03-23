@@ -51,4 +51,34 @@ public interface Slice {
         Iterable<Map.Entry<String, String>> headers,
         Publisher<ByteBuffer> body
     );
+
+    /**
+     * SliceWrap is a simple decorative envelope for Slice.
+     *
+     * @since 0.7
+     */
+    abstract class Wrap implements Slice {
+
+        /**
+         * Origin slice.
+         */
+        private final Slice slice;
+
+        /**
+         * Ctor.
+         *
+         * @param slice Slice.
+         */
+        protected Wrap(final Slice slice) {
+            this.slice = slice;
+        }
+
+        @Override
+        public final Response response(
+            final String line,
+            final Iterable<Map.Entry<String, String>> headers,
+            final Publisher<ByteBuffer> body) {
+            return this.slice.response(line, headers, body);
+        }
+    }
 }

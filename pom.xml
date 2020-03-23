@@ -30,9 +30,27 @@ SOFTWARE.
     <version>0.3</version>
   </parent>
   <artifactId>http</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.6</version>
   <name>Artipie HTTP</name>
   <url>https://github.com/artipie/http</url>
+  <description>HTTP layer of Artipie</description>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://github.com/artipie/http/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Kirill Che.</name>
+      <email>g4s8.public@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/artipie/http.git</connection>
+    <developerConnection>scm:git:ssh://github.com:artipie/http.git</developerConnection>
+    <url>https://github.com/artipie/http/tree/master</url>
+  </scm>
   <dependencies>
     <dependency>
       <groupId>org.cactoos</groupId>
