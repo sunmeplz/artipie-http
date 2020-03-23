@@ -1,0 +1,133 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Artipie
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.artipie.http.rq;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
+import org.reactivestreams.Processor;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+/**
+ * A multipart parser. Parses a Flow of Bytes into a flow of Multiparts
+ * See
+ * <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">rfc1341</a>
+ * spec.
+ * @todo #32:120min Implement Publisher part.
+ *  Subscribe is a part of publisher contract. Parts are emmited in a way, similar to stream parser,
+ *  but with an attention to headers.
+ * @todo #32:120min Implement Subscriber part.
+ *  On subscribe is called when upstream wants to propagate elements to us. We should take it and
+ *  use it.
+ * @todo #32:60min Finish implementation.
+ *  In order to ensure that multipart parser works correctly, the MultipartTest has been written.
+ *  The test is disabled for now, but, when this class will be fully implemented, the test should be
+ *  enable.
+ * @since 0.4
+ * @checkstyle ConstantUsageCheck (500 lines)
+ */
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.UnusedPrivateField", "PMD.SingularField"})
+public final class Multipart implements Processor<ByteBuffer, Part> {
+
+    /**
+     * The CRLF.
+     */
+    private static final String CRLF = "\r\n";
+
+    /**
+     * Content type header.
+     * <p>
+     * It's the main header of multipart request.
+     * </p>
+     */
+    private final Supplier<String> boundary;
+
+    /**
+     * Ctor.
+     * @param boundary The boundary supplier.
+     */
+    public Multipart(final Supplier<String> boundary) {
+        this.boundary = boundary;
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param boundary Multipart body boundary
+     */
+    public Multipart(final String boundary) {
+        this(() -> boundary);
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Content type header value
+     */
+    public Multipart(final Iterable<Map.Entry<String, String>> headers) {
+        this(
+            () -> {
+                final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+                final String type = StreamSupport.stream(headers.spliterator(), false)
+                    .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .get();
+                final Matcher matcher = pattern.matcher(type);
+                matcher.find();
+                return matcher.group(1);
+            }
+        );
+    }
+
+    @Override
+    public void subscribe(final Subscriber<? super Part> subscriber) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onSubscribe(final Subscription subscription) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onNext(final ByteBuffer item) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onError(final Throwable throwable) {
+        throw new IllegalStateException("not implemented");
+    }
+
+    @Override
+    public void onComplete() {
+        throw new IllegalStateException("not implemented");
+    }
+}

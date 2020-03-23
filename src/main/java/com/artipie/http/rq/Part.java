@@ -32,7 +32,7 @@ import org.reactivestreams.Publisher;
  * Multipart body part message.
  * @since 0.4
  */
-public interface RqPart extends Publisher<ByteBuffer> {
+public interface Part extends Publisher<ByteBuffer> {
 
     /**
      * Part headers.
