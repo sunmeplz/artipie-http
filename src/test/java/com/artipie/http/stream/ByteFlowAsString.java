@@ -26,6 +26,7 @@ package com.artipie.http.stream;
 import com.artipie.asto.Remaining;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import org.reactivestreams.Publisher;
 
 /**
@@ -75,7 +76,8 @@ public class ByteFlowAsString {
                         return res;
                     }
                 )
-                .get()
+                .get(),
+            StandardCharsets.UTF_8
         );
     }
 }
