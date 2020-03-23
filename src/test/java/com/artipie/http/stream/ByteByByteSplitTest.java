@@ -45,7 +45,7 @@ public final class ByteByByteSplitTest {
         final ByteByByteSplit split = new ByteByByteSplit(" ".getBytes());
         this.buffersOfOneByteFlow("how are you").subscribe(split);
         MatcherAssert.assertThat(
-            this.flowOfString(split),
+            new ByteFlowAsString(split).value(),
             new IsEqual<>("howareyou")
         );
     }
@@ -55,34 +55,8 @@ public final class ByteByByteSplitTest {
         final ByteByByteSplit split = new ByteByByteSplit("__".getBytes());
         this.buffersOfOneByteFlow("how__are__you").subscribe(split);
         MatcherAssert.assertThat(
-            this.flowOfString(split),
+            new ByteFlowAsString(split).value(),
             new IsEqual<>("howareyou")
-        );
-    }
-
-    private String flowOfString(final ByteByByteSplit split) {
-        return new String(
-            Flowable.fromPublisher(split)
-                .flatMap(pub -> pub)
-                .toList()
-                .blockingGet()
-                .stream()
-                .map(
-                    byteBuffer -> {
-                        final byte[] res = new byte[byteBuffer.remaining()];
-                        byteBuffer.get(res);
-                        return res;
-                    }
-                )
-                .reduce(
-                    (one, another) -> {
-                        final byte[] res = new byte[one.length + another.length];
-                        System.arraycopy(one, 0, res, 0, one.length);
-                        System.arraycopy(another, 0, res, one.length, another.length);
-                        return res;
-                    }
-                )
-                .get()
         );
     }
 
