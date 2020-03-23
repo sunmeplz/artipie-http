@@ -25,6 +25,7 @@ package com.artipie.http.rq;
 
 import com.artipie.http.Slice;
 import com.artipie.http.rs.RsStatus;
+import com.artipie.http.stream.ByteFlowAsString;
 import com.artipie.vertx.VertxSliceServer;
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
@@ -36,6 +37,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -60,7 +63,10 @@ public class MultipartTest {
             final int zero = 0;
             final Multipart mpp = new Multipart(headers);
             body.subscribe(mpp);
-            Flowable.fromPublisher(mpp).subscribe();
+            MatcherAssert.assertThat(
+                new ByteFlowAsString(Flowable.fromPublisher(mpp).flatMap(part -> part)).value(),
+                new IsEqual<>("Hello worrrrld!!!Hello worrrrld!!!")
+            );
             connection.accept(
                 RsStatus.OK,
                 new HashSet<>(zero),
