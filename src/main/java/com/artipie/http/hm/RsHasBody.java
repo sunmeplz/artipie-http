@@ -116,16 +116,22 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
                         .stream()
                         .reduce(
                             (left, right) -> {
+                                left.mark();
+                                right.mark();
                                 final ByteBuffer concat = ByteBuffer.allocate(
                                     left.remaining() + right.remaining()
                                 ).put(left).put(right);
+                                left.reset();
+                                right.reset();
                                 concat.flip();
                                 return concat;
                             }
                         )
                         .orElse(ByteBuffer.allocate(0));
                     final byte[] bytes = new byte[buffer.remaining()];
+                    buffer.mark();
                     buffer.get(bytes);
+                    buffer.reset();
                     this.container.set(bytes);
                     return null;
                 }
