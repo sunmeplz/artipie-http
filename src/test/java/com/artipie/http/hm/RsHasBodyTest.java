@@ -25,12 +25,17 @@ package com.artipie.http.hm;
 
 import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
+import com.artipie.http.rs.RsWithBody;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests for {@link RsHasBody}.
@@ -71,4 +76,23 @@ class RsHasBodyTest {
         );
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"data", "chunk1,chunk2"})
+    void shouldMatchResponseTwice(final String chunks) {
+        final String[] elements = chunks.split(",");
+        final byte[] data = String.join("", elements).getBytes();
+        final Response response = new RsWithBody(
+            Flowable.fromIterable(
+                Stream.of(elements)
+                    .map(String::getBytes)
+                    .map(ByteBuffer::wrap)
+                    .collect(Collectors.toList())
+            )
+        );
+        new RsHasBody(data).matches(response);
+        MatcherAssert.assertThat(
+            new RsHasBody(data).matches(response),
+            new IsEqual<>(true)
+        );
+    }
 }
