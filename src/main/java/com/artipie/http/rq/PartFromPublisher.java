@@ -31,8 +31,13 @@ import org.reactivestreams.Subscriber;
 /**
  * Turn {@link org.reactivestreams.Publisher} of bytes into a {@link Part}.
  *
+ * @todo #32:90min Implement delyaed publisher and header parsing.
+ *  Implemented delayed publisher and header parsing. First, headers should be parsed, then we can
+ *  emit the rest of the bytes.
+ *
  * @since 0.7.2
  */
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.UnusedPrivateField", "PMD.SingularField"})
 public final class PartFromPublisher implements Part {
 
     /**
