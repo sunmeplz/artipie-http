@@ -24,13 +24,16 @@
 
 package com.artipie.http.rq;
 
+import com.artipie.http.stream.ByteByByteSplit;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 import org.reactivestreams.Processor;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -42,9 +45,6 @@ import org.reactivestreams.Subscription;
  * @todo #32:120min Implement Publisher part.
  *  Subscribe is a part of publisher contract. Parts are emmited in a way, similar to stream parser,
  *  but with an attention to headers.
- * @todo #32:120min Implement Subscriber part.
- *  On subscribe is called when upstream wants to propagate elements to us. We should take it and
- *  use it.
  * @todo #32:60min Finish implementation.
  *  In order to ensure that multipart parser works correctly, the MultipartTest has been written.
  *  The test is disabled for now, but, when this class will be fully implemented, the test should be
@@ -61,19 +61,16 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
     private static final String CRLF = "\r\n";
 
     /**
-     * Content type header.
-     * <p>
-     * It's the main header of multipart request.
-     * </p>
+     * The subscriber part.
      */
-    private final Supplier<String> boundary;
+    private final Subscriber<ByteBuffer> subscriber;
 
     /**
      * Ctor.
-     * @param boundary The boundary supplier.
+     * @param processor The processor.
      */
-    public Multipart(final Supplier<String> boundary) {
-        this.boundary = boundary;
+    public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
+        this.subscriber = processor;
     }
 
     /**
@@ -82,52 +79,58 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
      * @param boundary Multipart body boundary
      */
     public Multipart(final String boundary) {
-        this(() -> boundary);
+        this(new ByteByByteSplit(boundary.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Ctor.
+     * @param boundary The boundary supplier.
+     */
+    public Multipart(final Supplier<String> boundary) {
+        this(boundary.get());
     }
 
     /**
      * Ctor.
      *
-     * @param headers Content type header value
+     * @param headers Request headers.
      */
     public Multipart(final Iterable<Map.Entry<String, String>> headers) {
-        this(
-            () -> {
-                final Pattern pattern = Pattern.compile("boundary=(\\w+)");
-                final String type = StreamSupport.stream(headers.spliterator(), false)
-                    .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
-                    .map(Map.Entry::getValue)
-                    .findFirst()
-                    .get();
-                final Matcher matcher = pattern.matcher(type);
-                matcher.find();
-                return matcher.group(1);
-            }
-        );
+        this(() -> {
+            final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+            final String type = StreamSupport.stream(headers.spliterator(), false)
+                .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .get();
+            final Matcher matcher = pattern.matcher(type);
+            matcher.find();
+            return matcher.group(1);
+        });
     }
 
     @Override
-    public void subscribe(final Subscriber<? super Part> subscriber) {
+    public void subscribe(final Subscriber<? super Part> sub) {
         throw new IllegalStateException("not implemented");
     }
 
     @Override
     public void onSubscribe(final Subscription subscription) {
-        throw new IllegalStateException("not implemented");
+        this.subscriber.onSubscribe(subscription);
     }
 
     @Override
     public void onNext(final ByteBuffer item) {
-        throw new IllegalStateException("not implemented");
+        this.subscriber.onNext(item);
     }
 
     @Override
     public void onError(final Throwable throwable) {
-        throw new IllegalStateException("not implemented");
+        this.subscriber.onError(throwable);
     }
 
     @Override
     public void onComplete() {
-        throw new IllegalStateException("not implemented");
+        this.subscriber.onComplete();
     }
 }
