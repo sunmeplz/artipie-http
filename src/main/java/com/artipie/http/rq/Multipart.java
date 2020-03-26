@@ -25,6 +25,7 @@
 package com.artipie.http.rq;
 
 import com.artipie.http.stream.ByteByByteSplit;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -66,11 +67,17 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
     private final Subscriber<ByteBuffer> subscriber;
 
     /**
+     * The publisher part.
+     */
+    private final Publisher<Part> publisher;
+
+    /**
      * Ctor.
      * @param processor The processor.
      */
     public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
         this.subscriber = processor;
+        this.publisher = Flowable.fromPublisher(processor).map(PartFromPublisher::new);
     }
 
     /**
@@ -111,7 +118,7 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
 
     @Override
     public void subscribe(final Subscriber<? super Part> sub) {
-        throw new IllegalStateException("not implemented");
+        this.publisher.subscribe(sub);
     }
 
     @Override
