@@ -75,6 +75,34 @@ class Repo extends Slice.Wrap {
 }
 ```
 
+### Authentication
+
+Authentication protocol is specified by `Identities` interface
+which parses user identity from request head (line and headers).
+
+Possible implementations are:
+ - Basic - from HTTP basic uthentication
+ - ... TBD
+
+### Authorization
+
+Authorization is specified by `Permissions` interface which checks user permissions
+for action. It can be encapsulated by `SliceAuth` wrapper to perform authorization checks:
+```java
+final Slice slice = new SliceAuth(
+  new SliceUpload(storage),
+  new SliceAuth.Permission(permissions, "upload"),
+  new BasicAuth(passwords)
+);
+```
+This slice reads user identity by authentication decoder (`Identities` implementation),
+if the identity was not found, then 401 error will be returned. Then the identity will be passed
+to authorizaton check (`Permissions` class) with specified permission (`upload` in the example).
+If user is not authorized to perform this action 403 error will be returned. If all check passed
+successfully, then request will be redirected to underlying `Slice` implementation (`SliceUpload`
+in the example).
+...TBD
+
 ### Main components of request
 
 ```java
