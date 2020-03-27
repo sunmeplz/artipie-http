@@ -31,17 +31,17 @@ import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link BytesAreString}.
+ * Tests for {@link IsString}.
  *
- * @since 0.7
+ * @since 0.7.2
  */
-class BytesAreStringTest {
+class IsStringTest {
 
     @Test
     void shouldMatchEqualString() {
         final Charset charset = StandardCharsets.UTF_8;
         final String string = "\u00F6";
-        final BytesAreString matcher = new BytesAreString(
+        final IsString matcher = new IsString(
             charset,
             new StringContains(false, string)
         );
@@ -54,7 +54,7 @@ class BytesAreStringTest {
     @Test
     void shouldNotMatchNotEqualString() {
         MatcherAssert.assertThat(
-            new BytesAreString("1").matches("2".getBytes()),
+            new IsString("1").matches("2".getBytes()),
             new IsEqual<>(false)
         );
     }

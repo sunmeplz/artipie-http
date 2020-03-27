@@ -32,9 +32,9 @@ import org.hamcrest.core.IsEqual;
 /**
  * Matcher to verify byte array as string.
  *
- * @since 0.7
+ * @since 0.7.2
  */
-public final class BytesAreString extends TypeSafeMatcher<byte[]> {
+public final class IsString extends TypeSafeMatcher<byte[]> {
 
     /**
      * Charset used to decode bytes to string.
@@ -51,7 +51,7 @@ public final class BytesAreString extends TypeSafeMatcher<byte[]> {
      *
      * @param string String the bytes should be equal to.
      */
-    public BytesAreString(final String string) {
+    public IsString(final String string) {
         this(Charset.defaultCharset(), new IsEqual<>(string));
     }
 
@@ -61,7 +61,7 @@ public final class BytesAreString extends TypeSafeMatcher<byte[]> {
      * @param charset Charset used to decode bytes to string.
      * @param string String the bytes should be equal to.
      */
-    public BytesAreString(final Charset charset, final String string) {
+    public IsString(final Charset charset, final String string) {
         this(charset, new IsEqual<>(string));
     }
 
@@ -70,7 +70,7 @@ public final class BytesAreString extends TypeSafeMatcher<byte[]> {
      *
      * @param matcher Matcher for string.
      */
-    public BytesAreString(final Matcher<String> matcher) {
+    public IsString(final Matcher<String> matcher) {
         this(Charset.defaultCharset(), matcher);
     }
 
@@ -80,7 +80,7 @@ public final class BytesAreString extends TypeSafeMatcher<byte[]> {
      * @param charset Charset used to decode bytes to string.
      * @param matcher Matcher for string.
      */
-    public BytesAreString(final Charset charset, final Matcher<String> matcher) {
+    public IsString(final Charset charset, final Matcher<String> matcher) {
         this.charset = charset;
         this.matcher = matcher;
     }
