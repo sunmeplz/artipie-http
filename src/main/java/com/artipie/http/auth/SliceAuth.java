@@ -39,7 +39,7 @@ import org.reactivestreams.Publisher;
  * <pre><code>
  * new SliceAuth(
  *   new SliceUpload(storage),
- *   new SliceAuth.Authorization(permissions, "upload"),
+ *   new Permission.ByName("upload", permissions),
  *   new AuthBasic(passwords)
  * );
  * </code></pre>
@@ -91,41 +91,5 @@ public final class SliceAuth implements Slice {
                     return rsp;
                 }
             ).orElse(new RsWithStatus(RsStatus.UNAUTHORIZED));
-    }
-
-    /**
-     * Authorization mechanism with single permission check for slice.
-     * @since 0.8
-     */
-    public static final class Permission {
-
-        /**
-         * All permissions.
-         */
-        private final Permissions perm;
-
-        /**
-         * Action to perform.
-         */
-        private final String action;
-
-        /**
-         * Ctor.
-         * @param perm Permissions
-         * @param action Action
-         */
-        public Permission(final Permissions perm, final String action) {
-            this.perm = perm;
-            this.action = action;
-        }
-
-        /**
-         * Check if user is authorized to perform an action.
-         * @param user User name
-         * @return True if authorized
-         */
-        public boolean allowed(final String user) {
-            return this.perm.allowed(user, this.action);
-        }
     }
 }
