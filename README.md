@@ -91,7 +91,7 @@ for action. It can be encapsulated by `SliceAuth` wrapper to perform authorizati
 ```java
 final Slice slice = new SliceAuth(
   new SliceUpload(storage),
-  new SliceAuth.Permission(permissions, "upload"),
+  new Permission.ByName("upload", permissions),
   new BasicAuth(passwords)
 );
 ```
