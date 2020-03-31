@@ -29,11 +29,13 @@ import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import org.cactoos.map.MapEntry;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -56,12 +58,27 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
     /**
      * Ctor.
      *
-     * @param headers Code to match
+     * @param headers Expected headers in any order.
+     */
+    @SafeVarargs
+    public RsHasHeaders(final Entry<String, String>... headers) {
+        this(Arrays.asList(headers));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Expected headers in any order.
      */
     public RsHasHeaders(final Collection<Entry<String, String>> headers) {
         this(
             Matchers.containsInAnyOrder(
-                headers.stream().map(IsEqual::new).collect(Collectors.toList())
+                headers.stream()
+                    .<Entry<String, String>>map(
+                        original -> new MapEntry<>(original.getKey(), original.getValue())
+                    )
+                    .map(IsEqual::new)
+                    .collect(Collectors.toList())
             )
         );
     }
@@ -69,7 +86,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
     /**
      * Ctor.
      *
-     * @param headers Code matcher
+     * @param headers Headers matcher
      */
     public RsHasHeaders(final Matcher<Iterable<? extends Entry<String, String>>> headers) {
         this.headers = headers;
@@ -90,7 +107,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
     /**
      * Fake connection.
      *
-     * @since 0.1
+     * @since 0.8
      */
     private static final class FakeConnection implements Connection {
 
@@ -115,7 +132,11 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
             final Publisher<ByteBuffer> body) {
             return CompletableFuture.supplyAsync(
                 () -> {
-                    this.container.set(ImmutableList.copyOf(headers));
+                    this.container.set(
+                        ImmutableList.copyOf(headers).stream().<Entry<String, String>>map(
+                            original -> new MapEntry<>(original.getKey(), original.getValue())
+                        ).collect(Collectors.toList())
+                    );
                     return null;
                 }
             );

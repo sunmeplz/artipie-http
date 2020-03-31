@@ -25,21 +25,16 @@ package com.artipie.http.hm;
 
 import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
-import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithHeaders;
 import com.artipie.http.rs.RsWithStatus;
-import io.reactivex.Flowable;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Collections;
+import java.util.Map;
 import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests for {@link RsHasHeaders}.
@@ -79,23 +74,56 @@ class RsHasHeadersTest {
         );
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"data", "chunk1,chunk2"})
-    void shouldMatchResponseTwice(final String chunks) {
-        final String[] elements = chunks.split(",");
-        final byte[] data = String.join("", elements).getBytes();
-        final Response response = new RsWithBody(
-            Flowable.fromIterable(
-                Stream.of(elements)
-                    .map(String::getBytes)
-                    .map(ByteBuffer::wrap)
-                    .collect(Collectors.toList())
-            )
+    @Test
+    void shouldMatchHeadersByValue() {
+        final String key = "k";
+        final String value = "v";
+        final Response response = new RsWithHeaders(
+            new RsWithStatus(RsStatus.OK),
+            Collections.singleton(new EntryWithoutEquals(key, value))
         );
-        new RsHasBody(data).matches(response);
+        final RsHasHeaders matcher = new RsHasHeaders(new EntryWithoutEquals(key, value));
         MatcherAssert.assertThat(
-            new RsHasBody(data).matches(response),
+            matcher.matches(response),
             new IsEqual<>(true)
         );
+    }
+
+    /**
+     * Implementation of {@link Map.Entry} with default equals & hashCode.
+     *
+     * @since 0.8
+     */
+    private static class EntryWithoutEquals implements Map.Entry<String, String> {
+
+        /**
+         * Key.
+         */
+        private final String key;
+
+        /**
+         * Value.
+         */
+        private final String value;
+
+        EntryWithoutEquals(final String key, final String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public String getKey() {
+            return this.key;
+        }
+
+        @Override
+        public String getValue() {
+            return this.value;
+        }
+
+        @Override
+        public String setValue(final String ignored) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
