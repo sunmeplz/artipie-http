@@ -35,7 +35,7 @@ import java.util.logging.Level;
 import org.reactivestreams.Publisher;
 
 /**
- * Slice logging incoming requests and outgoing responses.
+ * Slice that logs incoming requests and outgoing responses.
  *
  * @since 0.8
  */
@@ -77,11 +77,9 @@ public final class LoggingSlice implements Slice {
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body
     ) {
-        final StringBuilder msg = new StringBuilder();
-        msg.append(">> ").append(line);
+        final StringBuilder msg = new StringBuilder(">> ").append(line);
         LoggingSlice.append(msg, headers);
-        final Object source = this;
-        Logger.log(this.level, source, msg.toString());
+        Logger.log(this.level, this, msg.toString());
         return connection -> this.slice.response(line, headers, body)
             .send(new LoggingConnection(connection));
     }
@@ -128,8 +126,7 @@ public final class LoggingSlice implements Slice {
             final Iterable<Map.Entry<String, String>> headers,
             final Publisher<ByteBuffer> body
         ) {
-            final StringBuilder msg = new StringBuilder();
-            msg.append("<< ").append(status);
+            final StringBuilder msg = new StringBuilder("<< ").append(status);
             LoggingSlice.append(msg, headers);
             Logger.log(LoggingSlice.this.level, LoggingSlice.this, msg.toString());
             return this.connection.accept(status, headers, body);
