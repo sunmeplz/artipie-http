@@ -43,9 +43,6 @@ import org.reactivestreams.Subscription;
  * See
  * <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">rfc1341</a>
  * spec.
- * @todo #32:120min Implement Publisher part.
- *  Subscribe is a part of publisher contract. Parts are emmited in a way, similar to stream parser,
- *  but with an attention to headers.
  * @todo #32:60min Finish implementation.
  *  In order to ensure that multipart parser works correctly, the MultipartTest has been written.
  *  The test is disabled for now, but, when this class will be fully implemented, the test should be
