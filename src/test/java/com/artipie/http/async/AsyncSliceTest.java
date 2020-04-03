@@ -31,7 +31,6 @@ import com.artipie.http.slice.SliceSimple;
 import io.reactivex.Flowable;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
@@ -45,11 +44,12 @@ class AsyncSliceTest {
 
     @Test
     void shouldRespond() {
-        final CompletableFuture<SliceSimple> future = CompletableFuture.completedFuture(
-            new SliceSimple(new RsWithStatus(RsStatus.OK))
-        );
         MatcherAssert.assertThat(
-            new AsyncSlice(future).response("", Collections.emptySet(), Flowable.empty()),
+            new AsyncSlice(
+                CompletableFuture.completedFuture(
+                    new SliceSimple(new RsWithStatus(RsStatus.OK))
+                )
+            ).response("", Collections.emptySet(), Flowable.empty()),
             new RsHasStatus(RsStatus.OK)
         );
     }
@@ -58,11 +58,12 @@ class AsyncSliceTest {
     void shouldPropagateFailure() {
         final CompletableFuture<Slice> future = new CompletableFuture<>();
         future.completeExceptionally(new IllegalStateException());
-        final CompletionStage<Void> result = new AsyncSlice(future)
-            .response("GET /index.html HTTP_1_1", Collections.emptySet(), Flowable.empty())
-            .send((status, headers, body) -> CompletableFuture.allOf());
         MatcherAssert.assertThat(
-            result.toCompletableFuture().isCompletedExceptionally(),
+            new AsyncSlice(future)
+                .response("GET /index.html HTTP_1_1", Collections.emptySet(), Flowable.empty())
+                .send((status, headers, body) -> CompletableFuture.allOf())
+                .toCompletableFuture()
+                .isCompletedExceptionally(),
             new IsEqual<>(true)
         );
     }
