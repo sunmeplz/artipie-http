@@ -70,32 +70,6 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
 
     /**
      * Ctor.
-     * @param processor The processor.
-     */
-    public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
-        this.subscriber = processor;
-        this.publisher = Flowable.fromPublisher(processor).map(PartFromPublisher::new);
-    }
-
-    /**
-     * Ctor.
-     *
-     * @param boundary Multipart body boundary
-     */
-    public Multipart(final String boundary) {
-        this(new ByteByByteSplit(boundary.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    /**
-     * Ctor.
-     * @param boundary The boundary supplier.
-     */
-    public Multipart(final Supplier<String> boundary) {
-        this(boundary.get());
-    }
-
-    /**
-     * Ctor.
      *
      * @param headers Request headers.
      */
@@ -111,6 +85,32 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
             matcher.find();
             return matcher.group(1);
         });
+    }
+
+    /**
+     * Ctor.
+     * @param boundary The boundary supplier.
+     */
+    public Multipart(final Supplier<String> boundary) {
+        this(boundary.get());
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param boundary Multipart body boundary
+     */
+    public Multipart(final String boundary) {
+        this(new ByteByByteSplit(boundary.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Ctor.
+     * @param processor The processor.
+     */
+    public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
+        this.subscriber = processor;
+        this.publisher = Flowable.fromPublisher(processor).map(PartFromPublisher::new);
     }
 
     @Override
