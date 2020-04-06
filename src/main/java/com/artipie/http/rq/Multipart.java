@@ -74,17 +74,7 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
      * @param headers Request headers.
      */
     public Multipart(final Iterable<Map.Entry<String, String>> headers) {
-        this(() -> {
-            final Pattern pattern = Pattern.compile("boundary=(\\w+)");
-            final String type = StreamSupport.stream(headers.spliterator(), false)
-                .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
-            final Matcher matcher = pattern.matcher(type);
-            matcher.find();
-            return matcher.group(1);
-        });
+        this(() -> boundary(headers));
     }
 
     /**
@@ -136,5 +126,23 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
     @Override
     public void onComplete() {
         this.subscriber.onComplete();
+    }
+
+    /**
+     * Boundary from headers.
+     *
+     * @param headers Request headers.
+     * @return Request boundary
+     */
+    private static String boundary(final Iterable<Map.Entry<String, String>> headers) {
+        final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+        final String type = StreamSupport.stream(headers.spliterator(), false)
+            .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .get();
+        final Matcher matcher = pattern.matcher(type);
+        matcher.find();
+        return matcher.group(1);
     }
 }
