@@ -60,6 +60,11 @@ public enum RqMethod {
     PUT("PUT"),
 
     /**
+     * PATCH.
+     */
+    PATCH("PATCH"),
+
+    /**
      * DELETE.
      */
     DELETE("DELETE"),
