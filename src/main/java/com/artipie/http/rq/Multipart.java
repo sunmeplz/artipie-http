@@ -43,9 +43,6 @@ import org.reactivestreams.Subscription;
  * See
  * <a href="https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html">rfc1341</a>
  * spec.
- * @todo #32:120min Implement Publisher part.
- *  Subscribe is a part of publisher contract. Parts are emmited in a way, similar to stream parser,
- *  but with an attention to headers.
  * @todo #32:60min Finish implementation.
  *  In order to ensure that multipart parser works correctly, the MultipartTest has been written.
  *  The test is disabled for now, but, when this class will be fully implemented, the test should be
@@ -73,20 +70,11 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
 
     /**
      * Ctor.
-     * @param processor The processor.
-     */
-    public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
-        this.subscriber = processor;
-        this.publisher = Flowable.fromPublisher(processor).map(PartFromPublisher::new);
-    }
-
-    /**
-     * Ctor.
      *
-     * @param boundary Multipart body boundary
+     * @param headers Request headers.
      */
-    public Multipart(final String boundary) {
-        this(new ByteByByteSplit(boundary.getBytes(StandardCharsets.UTF_8)));
+    public Multipart(final Iterable<Map.Entry<String, String>> headers) {
+        this(() -> boundary(headers));
     }
 
     /**
@@ -100,20 +88,19 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
     /**
      * Ctor.
      *
-     * @param headers Request headers.
+     * @param boundary Multipart body boundary
      */
-    public Multipart(final Iterable<Map.Entry<String, String>> headers) {
-        this(() -> {
-            final Pattern pattern = Pattern.compile("boundary=(\\w+)");
-            final String type = StreamSupport.stream(headers.spliterator(), false)
-                .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
-            final Matcher matcher = pattern.matcher(type);
-            matcher.find();
-            return matcher.group(1);
-        });
+    public Multipart(final String boundary) {
+        this(new ByteByByteSplit(boundary.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Ctor.
+     * @param processor The processor.
+     */
+    public Multipart(final Processor<ByteBuffer, Publisher<ByteBuffer>> processor) {
+        this.subscriber = processor;
+        this.publisher = Flowable.fromPublisher(processor).map(PartFromPublisher::new);
     }
 
     @Override
@@ -139,5 +126,23 @@ public final class Multipart implements Processor<ByteBuffer, Part> {
     @Override
     public void onComplete() {
         this.subscriber.onComplete();
+    }
+
+    /**
+     * Boundary from headers.
+     *
+     * @param headers Request headers.
+     * @return Request boundary
+     */
+    private static String boundary(final Iterable<Map.Entry<String, String>> headers) {
+        final Pattern pattern = Pattern.compile("boundary=(\\w+)");
+        final String type = StreamSupport.stream(headers.spliterator(), false)
+            .filter(header -> header.getKey().equalsIgnoreCase("content-type"))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .get();
+        final Matcher matcher = pattern.matcher(type);
+        matcher.find();
+        return matcher.group(1);
     }
 }
