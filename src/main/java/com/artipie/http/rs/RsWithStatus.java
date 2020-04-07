@@ -79,7 +79,7 @@ public final class RsWithStatus implements Response {
      * Connection with overridden status code.
      * @since 0.1
      */
-    private static final class ConWithStatus implements Connection {
+    public static final class ConWithStatus implements Connection {
 
         /**
          * Origin connection.

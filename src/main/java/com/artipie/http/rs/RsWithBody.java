@@ -116,7 +116,7 @@ public final class RsWithBody implements Response {
      * Connection with body publisher.
      * @since 0.3
      */
-    private static final class ConWithBody implements Connection {
+    public static final class ConWithBody implements Connection {
 
         /**
          * Origin connection.
