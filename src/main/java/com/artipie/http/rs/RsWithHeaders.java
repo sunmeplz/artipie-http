@@ -105,7 +105,7 @@ public final class RsWithHeaders implements Response {
          * @param origin Connection
          * @param headers Headers
          */
-        public ConWithHeaders(
+        private ConWithHeaders(
             final Connection origin,
             final Iterable<Map.Entry<String, String>> headers) {
             this.origin = origin;

@@ -85,14 +85,6 @@ public final class RsFull implements Response {
 
     @Override
     public CompletionStage<Void> send(final Connection connection) {
-        return this.origin.send(
-            new RsWithStatus.ConWithStatus(
-                new RsWithHeaders.ConWithHeaders(
-                    new RsWithBody.ConWithBody(
-                        connection, this.body
-                    ), this.headers
-                ), this.status
-            )
-        );
+        return this.origin.send(connection);
     }
 }
