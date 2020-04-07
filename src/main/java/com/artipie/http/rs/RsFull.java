@@ -45,21 +45,6 @@ public final class RsFull implements Response {
     private final Response origin;
 
     /**
-     * Status code.
-     */
-    private final RsStatus status;
-
-    /**
-     * Headers.
-     */
-    private final Iterable<Map.Entry<String, String>> headers;
-
-    /**
-     * Body publisher.
-     */
-    private final Publisher<ByteBuffer> body;
-
-    /**
      * Ctor.
      * @param origin Origin response
      * @param status Status code
@@ -78,9 +63,6 @@ public final class RsFull implements Response {
                 ), headers
             ), status
         );
-        this.status = status;
-        this.headers = headers;
-        this.body = body;
     }
 
     @Override
