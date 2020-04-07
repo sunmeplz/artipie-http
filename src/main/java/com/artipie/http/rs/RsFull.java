@@ -32,7 +32,7 @@ import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
- * RsFull.
+ * RsFull, response with status code, headers and body.
  *
  * @since 0.8
  * @checkstyle ParameterNumberCheck (500 lines)
