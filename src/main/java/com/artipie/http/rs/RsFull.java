@@ -35,7 +35,6 @@ import org.reactivestreams.Publisher;
  * RsFull, response with status code, headers and body.
  *
  * @since 0.8
- * @checkstyle ParameterNumberCheck (500 lines)
  */
 public final class RsFull implements Response {
 
@@ -46,20 +45,18 @@ public final class RsFull implements Response {
 
     /**
      * Ctor.
-     * @param origin Origin response
      * @param status Status code
      * @param headers Headers
      * @param body Response body
      */
     public RsFull(
-        final Response origin,
         final RsStatus status,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
         this.origin = new RsWithStatus(
             new RsWithHeaders(
                 new RsWithBody(
-                    origin, body
+                    body
                 ), headers
             ), status
         );
