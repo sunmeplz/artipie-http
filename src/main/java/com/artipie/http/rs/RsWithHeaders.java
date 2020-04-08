@@ -87,7 +87,7 @@ public final class RsWithHeaders implements Response {
      * Connection with additional headers.
      * @since 0.3
      */
-    public static final class ConWithHeaders implements Connection {
+    private static final class ConWithHeaders implements Connection {
 
         /**
          * Origin connection.
