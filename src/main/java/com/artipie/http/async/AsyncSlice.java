@@ -37,32 +37,30 @@ import org.reactivestreams.Publisher;
  * This slice encapsulates {@link CompletionStage} of {@link Slice} and returns {@link Response}.
  * </p>
  * @since 0.4
- * @todo #41:30min Add unit tests for AsyncSlice and RsAsync.
- *  Tests should verify the positive case, when slice and response
- *  completes normally; And exceptional behavior, when 500 error should be
- *  sent to connection.
  */
 public final class AsyncSlice implements Slice {
 
     /**
      * Async slice.
      */
-    private final CompletionStage<Slice> slice;
+    private final CompletionStage<? extends Slice> slice;
 
     /**
      * Ctor.
      * @param slice Async slice.
      */
-    public AsyncSlice(final CompletionStage<Slice> slice) {
+    public AsyncSlice(final CompletionStage<? extends Slice> slice) {
         this.slice = slice;
     }
 
     @Override
-    public Response response(final String line,
+    public Response response(
+        final String line,
         final Iterable<Map.Entry<String, String>> headers,
-        final Publisher<ByteBuffer> body) {
-        return connection -> this.slice.thenCompose(
-            target -> target.response(line, headers, body).send(connection)
+        final Publisher<ByteBuffer> body
+    ) {
+        return new AsyncResponse(
+            this.slice.thenApply(target -> target.response(line, headers, body))
         );
     }
 }

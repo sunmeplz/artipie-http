@@ -21,33 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.async;
-
-import com.artipie.http.Connection;
-import com.artipie.http.Response;
-import java.util.concurrent.CompletionStage;
 
 /**
- * Async response from {@link CompletionStage}.
- * @since 0.6
+ * Tests for async package classes.
+ *
+ * @since 0.8
  */
-public final class AsyncResponse implements Response {
+package com.artipie.http.async;
 
-    /**
-     * Source stage.
-     */
-    private final CompletionStage<? extends Response> future;
-
-    /**
-     * Response from {@link CompletionStage}.
-     * @param future Stage
-     */
-    public AsyncResponse(final CompletionStage<? extends Response> future) {
-        this.future = future;
-    }
-
-    @Override
-    public CompletionStage<Void> send(final Connection connection) {
-        return this.future.thenCompose(rsp -> rsp.send(connection));
-    }
-}

@@ -23,31 +23,42 @@
  */
 package com.artipie.http.async;
 
-import com.artipie.http.Connection;
 import com.artipie.http.Response;
-import java.util.concurrent.CompletionStage;
+import com.artipie.http.hm.RsHasStatus;
+import com.artipie.http.rs.RsStatus;
+import com.artipie.http.rs.RsWithStatus;
+import java.util.concurrent.CompletableFuture;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.Test;
 
 /**
- * Async response from {@link CompletionStage}.
- * @since 0.6
+ * Tests for {@link AsyncResponse}.
+ *
+ * @since 0.8
  */
-public final class AsyncResponse implements Response {
+class AsyncResponseTest {
 
-    /**
-     * Source stage.
-     */
-    private final CompletionStage<? extends Response> future;
-
-    /**
-     * Response from {@link CompletionStage}.
-     * @param future Stage
-     */
-    public AsyncResponse(final CompletionStage<? extends Response> future) {
-        this.future = future;
+    @Test
+    void shouldSend() {
+        MatcherAssert.assertThat(
+            new AsyncResponse(
+                CompletableFuture.completedFuture(new RsWithStatus(RsStatus.OK))
+            ),
+            new RsHasStatus(RsStatus.OK)
+        );
     }
 
-    @Override
-    public CompletionStage<Void> send(final Connection connection) {
-        return this.future.thenCompose(rsp -> rsp.send(connection));
+    @Test
+    void shouldPropagateFailure() {
+        final CompletableFuture<Response> future = new CompletableFuture<>();
+        future.completeExceptionally(new IllegalStateException());
+        MatcherAssert.assertThat(
+            new AsyncResponse(future)
+                .send((status, headers, body) -> CompletableFuture.allOf())
+                .toCompletableFuture()
+                .isCompletedExceptionally(),
+            new IsEqual<>(true)
+        );
     }
 }
