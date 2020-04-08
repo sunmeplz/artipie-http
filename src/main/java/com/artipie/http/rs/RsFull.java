@@ -39,9 +39,9 @@ import org.reactivestreams.Publisher;
 public final class RsFull implements Response {
 
     /**
-     * Origin response.
+     * Response.
      */
-    private final Response origin;
+    private final Response response;
 
     /**
      * Ctor.
@@ -53,7 +53,7 @@ public final class RsFull implements Response {
         final RsStatus status,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        this.origin = new RsWithStatus(
+        this.response = new RsWithStatus(
             new RsWithHeaders(
                 new RsWithBody(
                     body
@@ -64,6 +64,6 @@ public final class RsFull implements Response {
 
     @Override
     public CompletionStage<Void> send(final Connection connection) {
-        return this.origin.send(connection);
+        return this.response.send(connection);
     }
 }
