@@ -21,7 +21,7 @@ To install add this dependency to `pom.xml` file:
 
 This module tends to be reactive and provides these interfaces:
  - `Slice` - Arti-pie slice, should be implemented by adapter interface
- or Artipie application, it can receive request data and return reactive responses
+ or Artipie application, it can receive request data and return reactive response
  - `Response` - returned by `Slice` from adapters, can be sent to `Connection`
  - `Connection` - response asks connection to accept response data, `Connection`
  should be implemented by HTTP web server implementation to accept HTTP responses
@@ -39,7 +39,7 @@ class Maven implements Slice {
 }
 ```
 
-Response is reactive object whith single method `send`. This method is called by
+Response is reactive object with single method `send`. This method is called by
 server implementation, server provides connection implementation as `send` parameter
 which can accept response data: the server asks response to send itself to connection.
 
@@ -55,7 +55,7 @@ class MavenResponse implements Response {
 
 HTTP server implements `Connection` interface which can accept response data:
 server asks response to send itself to connection, response asks connection
-to accept the data. Artipie adapter are not supposed to implement this interface,
+to accept the data. Artipie adapters are not supposed to implement this interface,
 it should be done by HTTP server implementation, e.g. vertex-server module.
 
 ## Some useful examples for different objects
@@ -81,7 +81,7 @@ Authentication protocol is specified by `Identities` interface
 which parses user identity from request head (line and headers).
 
 Possible implementations are:
- - Basic - from HTTP basic uthentication
+ - Basic - from HTTP basic authentication
  - ... TBD
 
 ### Authorization
@@ -97,8 +97,8 @@ final Slice slice = new SliceAuth(
 ```
 This slice reads user identity by authentication decoder (`Identities` implementation),
 if the identity was not found, then 401 error will be returned. Then the identity will be passed
-to authorizaton check (`Permissions` class) with specified permission (`upload` in the example).
-If user is not authorized to perform this action 403 error will be returned. If all check passed
+to authorization check (`Permissions` class) with specified permission (`upload` in the example).
+If user is not authorized to perform this action 403 error will be returned. If all checks passed
 successfully, then request will be redirected to underlying `Slice` implementation (`SliceUpload`
 in the example).
 ...TBD
