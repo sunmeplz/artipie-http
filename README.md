@@ -68,9 +68,11 @@ You can do routing in the following style:
 class Repo extends Slice.Wrap {
   Repo(Storage storage) {
     super(
-      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.PUT.value()), new SliceUpload(storage)),
-      new SliceRoute.Path(new RtRule.ByMethod(RqMethod.GET.value()), new SliceDownload(storage)),
-      SliceRoute.FALLBACK, new SliceSimple(RsStatus.METHOD_NOT_ALLOWED)
+      new SliceRoute(
+        new SliceRoute.Path(new RtRule.ByMethod(RqMethod.PUT), new SliceUpload(storage)),
+        new SliceRoute.Path(new RtRule.ByMethod(RqMethod.GET), new SliceDownload(storage)),
+        new SliceRoute.Path(RtRule.FALLBACK, new SliceSimple(new RsWithStatus(RsStatus.METHOD_NOT_ALLOWED)))
+      )
     );
 }
 ```
