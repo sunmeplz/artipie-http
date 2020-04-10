@@ -47,6 +47,11 @@ public enum RsStatus {
     ACCEPTED("202"),
 
     /**
+     * No Content.
+     */
+    NO_CONTENT("204"),
+
+    /**
      * Moved Permanently.
      */
     MOVED_PERMANENTLY("301"),
@@ -102,6 +107,11 @@ public enum RsStatus {
      * Conflict.
      */
     CONFLICT("409"),
+
+    /**
+     * Requested Range Not Satisfiable.
+     */
+    BAD_RANGE("416"),
 
     /**
      * Internal Server Error.
