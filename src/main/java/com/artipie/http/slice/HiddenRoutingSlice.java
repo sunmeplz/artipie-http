@@ -31,10 +31,13 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.reactivestreams.Publisher;
 
 /**
- * Slice that removes the first part from the request.
+ * Slice that removes the first part from the request URI.
+ * for example `GET http://www.w3.org/pub/WWW/TheProject.html HTTP/1.1`
+ * would be `GET http://www.w3.org/WWW/TheProject.html HTTP/1.1`
+ *
  * @since 0.8
  */
-public class RemoveFirstPart implements Slice {
+public class HiddenRoutingSlice implements Slice {
 
     /**
      * Delegate slice.
@@ -46,7 +49,7 @@ public class RemoveFirstPart implements Slice {
      *
      * @param slice Slice.
      */
-    public RemoveFirstPart(final Slice slice) {
+    public HiddenRoutingSlice(final Slice slice) {
         this.slice = slice;
     }
 
@@ -56,7 +59,7 @@ public class RemoveFirstPart implements Slice {
         final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body
-    ) {
+    ) throws IndexOutOfBoundsException {
         // @checkstyle MagicNumberCheck (1 line)
         final String newline = String.join("/", ArrayUtils.remove(line.split("/"), 3));
         return this.slice.response(newline, headers, body);

@@ -41,17 +41,17 @@ import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
 /**
- * Test case for {@link RemoveFirstPart}.
+ * Test case for {@link HiddenRoutingSlice}.
  * @since 0.8
  */
-class RemoveFirstPartTest {
+class HiddenRoutingSliceTest {
 
     @Test
-    void response() {
-        final String allurl = get("http://www.w3.org/pub/WWW/TheProject.html");
-        final String partedurl = get("http://www.w3.org/WWW/TheProject.html");
-        new RemoveFirstPart(new LineSlice()).response(
-            allurl,
+    void isFirstPartRemoved() {
+        final String url = requestLine("http://www.w3.org/pub/WWW/TheProject.html");
+        final String partedurl = requestLine("http://www.w3.org/WWW/TheProject.html");
+        new HiddenRoutingSlice(new LineSlice()).response(
+            url,
             Arrays.asList(
                 new MapEntry<>("Content-Length", "0"),
                 new MapEntry<>("Content-Type", "whatever")
@@ -70,7 +70,7 @@ class RemoveFirstPartTest {
         );
     }
 
-    private static String get(final String path) {
+    private static String requestLine(final String path) {
         return new RequestLine("GET", path, "HTTP/1.1").toString();
     }
 
