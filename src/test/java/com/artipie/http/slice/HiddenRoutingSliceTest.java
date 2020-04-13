@@ -47,11 +47,9 @@ import org.reactivestreams.Publisher;
 class HiddenRoutingSliceTest {
 
     @Test
-    void isFirstPartRemoved() {
-        final String url = requestLine("http://www.w3.org/pub/WWW/TheProject.html");
-        final String partedurl = requestLine("http://www.w3.org/WWW/TheProject.html");
+    void removesInitialPartOfUri() {
         new HiddenRoutingSlice(new LineSlice()).response(
-            url,
+            requestLine("http://www.w3.org/pub/WWW/TheProject.html"),
             Arrays.asList(
                 new MapEntry<>("Content-Length", "0"),
                 new MapEntry<>("Content-Type", "whatever")
@@ -63,7 +61,27 @@ class HiddenRoutingSliceTest {
                 MatcherAssert.assertThat(
                     "url retrieved",
                     line,
-                    IsEqual.equalTo(partedurl)
+                    IsEqual.equalTo(requestLine("http://www.w3.org/WWW/TheProject.html"))
+                );
+                return CompletableFuture.allOf();
+            }
+        );
+    }
+
+    @Test
+    void shortRequestLine() {
+        final String url = requestLine("http://www.w3.org");
+        new HiddenRoutingSlice(new LineSlice()).response(
+            url,
+            Arrays.asList(),
+            Flowable.empty()
+        ).send(
+            (status, headers, body) -> {
+                final String line = headers.iterator().next().getValue();
+                MatcherAssert.assertThat(
+                    "short url retrieved",
+                    line,
+                    IsEqual.equalTo(url)
                 );
                 return CompletableFuture.allOf();
             }

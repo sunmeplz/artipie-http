@@ -59,9 +59,15 @@ public class HiddenRoutingSlice implements Slice {
         final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body
-    ) throws IndexOutOfBoundsException {
-        // @checkstyle MagicNumberCheck (1 line)
-        final String newline = String.join("/", ArrayUtils.remove(line.split("/"), 3));
+    ) {
+        final String[] parts = line.split("/");
+        String newline = "";
+        // @checkstyle MagicNumberCheck (4 line)
+        if (parts.length < 5) {
+            newline = line;
+        } else {
+            newline = String.join("/", ArrayUtils.remove(parts, 3));
+        }
         return this.slice.response(newline, headers, body);
     }
 }
