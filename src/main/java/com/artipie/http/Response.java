@@ -25,8 +25,11 @@ package com.artipie.http;
 
 import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.concurrent.CompletionStage;
+import org.cactoos.list.ListOf;
+import org.cactoos.map.MapEntry;
 
 /**
  * HTTP response.
@@ -42,6 +45,15 @@ public interface Response {
         RsStatus.OK,
         Collections.emptyList(),
         Flowable.empty()
+    );
+
+    /**
+     * Not found response.
+     */
+    Response NOT_FOUND = con -> con.accept(
+        RsStatus.NOT_FOUND,
+        new ListOf<>(new MapEntry<>("Content-Type", "application/json")),
+        Flowable.fromArray(ByteBuffer.wrap("{\"error\" : \"not found\"}".getBytes()))
     );
 
     /**
