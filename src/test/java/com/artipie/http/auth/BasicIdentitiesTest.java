@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test case for {@link BasicIdentities}.
  *
- * @since 0.6
+ * @since 0.8
  */
 @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
 class BasicIdentitiesTest {
