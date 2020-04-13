@@ -42,7 +42,7 @@ class BasicIdentitiesTest {
     /**
      * Stub for interface.
      */
-    private final IdentityProvider idprovider = (login, password) -> {
+    private final Authentication auth = (username, password) -> {
         return;
     };
 
@@ -52,7 +52,7 @@ class BasicIdentitiesTest {
             new MapEntry<>("x-header", "header")
         );
         MatcherAssert.assertThat(
-            new BasicIdentities(this.idprovider).user("", headers),
+            new BasicIdentities(this.auth).user("", headers),
             new IsEqual<>(Optional.empty())
         );
     }
@@ -68,7 +68,7 @@ class BasicIdentitiesTest {
             new MapEntry<>("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
         );
         MatcherAssert.assertThat(
-            new BasicIdentities(this.idprovider).user("", headers),
+            new BasicIdentities(this.auth).user("", headers),
             new IsEqual<>(Optional.of("Aladdin"))
         );
     }

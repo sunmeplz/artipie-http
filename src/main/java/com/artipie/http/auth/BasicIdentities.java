@@ -39,14 +39,14 @@ public final class BasicIdentities implements Identities {
     /**
      * Concrete implementation for User Identification.
      */
-    private final IdentityProvider idprovider;
+    private final Authentication auth;
 
     /**
      * Ctor.
-     * @param idprovider Concrete implementation for User Identification.
+     * @param auth Concrete implementation for User Identification.
      */
-    BasicIdentities(final IdentityProvider idprovider) {
-        this.idprovider = idprovider;
+    BasicIdentities(final Authentication auth) {
+        this.auth = auth;
     }
 
     @Override
@@ -59,15 +59,12 @@ public final class BasicIdentities implements Identities {
         if (!hdrs.isEmpty()) {
             final String cred = hdrs.get(0);
             if (cred.startsWith(prefix)) {
-                final String credentials =
-                    new Base64Decoded(cred.substring(prefix.length())).toString();
-                final int delimiter = credentials.indexOf(':');
-                if (delimiter != -1) {
-                    final String username = credentials.substring(0, delimiter).trim();
-                    final String password = credentials.substring(delimiter + 1).trim();
-                    this.idprovider.verify(username, password);
-                    result = Optional.of(username);
-                }
+                final String[] credentials =
+                    new Base64Decoded(cred.substring(prefix.length())).toString().split(":");
+                final String username = credentials[0].trim();
+                final String password = credentials[1].trim();
+                this.auth.verify(username, password);
+                result = Optional.of(username);
             }
         }
         return result;

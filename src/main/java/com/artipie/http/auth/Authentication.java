@@ -24,16 +24,16 @@
 package com.artipie.http.auth;
 
 /**
- * Authorization mechanism to verify user.
+ * Authentication mechanism to verify user.
  * @since 0.6
  */
-public interface IdentityProvider {
+public interface Authentication {
 
     /**
      * Check does user exist.
-     * @param login Username
+     * @param username Username
      * @param password Base64 encoded password
      */
-    void verify(String login, String password);
+    void verify(String username, String password);
 
 }
