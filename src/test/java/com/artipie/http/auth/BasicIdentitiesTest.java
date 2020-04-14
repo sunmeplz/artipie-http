@@ -24,6 +24,7 @@
 package com.artipie.http.auth;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import org.cactoos.iterable.IterableOf;
 import org.cactoos.map.MapEntry;
@@ -36,8 +37,7 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.8
  */
-@SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
-class BasicIdentitiesTest {
+public final class BasicIdentitiesTest {
 
     /**
      * Stub for interface.
@@ -48,7 +48,7 @@ class BasicIdentitiesTest {
 
     @Test
     void userWithEmptyHeaders() {
-        final Iterable<Map.Entry<String, String>> headers = new IterableOf<>(
+        final Iterable<Map.Entry<String, String>> headers = new IterableOf<Entry<String, String>>(
             new MapEntry<String, String>("x-header", "header")
         );
         MatcherAssert.assertThat(
@@ -64,7 +64,7 @@ class BasicIdentitiesTest {
      */
     @Test
     void userWithBasicHeaders() {
-        final Iterable<Map.Entry<String, String>> headers = new IterableOf<>(
+        final Iterable<Map.Entry<String, String>> headers = new IterableOf<Entry<String, String>>(
             new MapEntry<String, String>("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
         );
         MatcherAssert.assertThat(
