@@ -52,7 +52,9 @@ public interface Response {
      */
     Response NOT_FOUND = con -> con.accept(
         RsStatus.NOT_FOUND,
-        new ListOf<>(new MapEntry<>("Content-Type", "application/json")),
+        new ListOf<java.util.Map.Entry<String, String>>(
+            new MapEntry<>("Content-Type", "application/json")
+        ),
         Flowable.fromArray(ByteBuffer.wrap("{\"error\" : \"not found\"}".getBytes()))
     );
 
