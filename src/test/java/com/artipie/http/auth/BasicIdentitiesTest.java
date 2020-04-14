@@ -49,7 +49,7 @@ class BasicIdentitiesTest {
     @Test
     void userWithEmptyHeaders() {
         final Iterable<Map.Entry<String, String>> headers = new IterableOf<>(
-            new MapEntry<>("x-header", "header")
+            new MapEntry<String, String>("x-header", "header")
         );
         MatcherAssert.assertThat(
             new BasicIdentities(this.auth).user("", headers),
@@ -65,7 +65,7 @@ class BasicIdentitiesTest {
     @Test
     void userWithBasicHeaders() {
         final Iterable<Map.Entry<String, String>> headers = new IterableOf<>(
-            new MapEntry<>("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
+            new MapEntry<String, String>("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
         );
         MatcherAssert.assertThat(
             new BasicIdentities(this.auth).user("", headers),
