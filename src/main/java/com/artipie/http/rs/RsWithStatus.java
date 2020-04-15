@@ -52,7 +52,7 @@ public final class RsWithStatus implements Response {
      * @param status Status code
      */
     public RsWithStatus(final RsStatus status) {
-        this(Response.EMPTY, status);
+        this(StandardRs.EMPTY, status);
     }
 
     /**
