@@ -77,7 +77,7 @@ public final class RsWithBody implements Response {
      * @param buf Buffer body
      */
     public RsWithBody(final ByteBuffer buf) {
-        this(Response.EMPTY, buf);
+        this(StandardRs.EMPTY, buf);
     }
 
     /**
@@ -94,7 +94,7 @@ public final class RsWithBody implements Response {
      * @param body Publisher
      */
     public RsWithBody(final Publisher<ByteBuffer> body) {
-        this(Response.EMPTY, body);
+        this(StandardRs.EMPTY, body);
     }
 
     /**
