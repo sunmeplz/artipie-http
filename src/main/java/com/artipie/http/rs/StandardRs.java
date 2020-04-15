@@ -25,7 +25,9 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import org.cactoos.list.ListOf;
@@ -39,7 +41,7 @@ public enum StandardRs implements Response {
     /**
      * Empty response.
      */
-    EMPTY(new RsWithStatus(RsStatus.OK)),
+    EMPTY(con -> con.accept(RsStatus.OK, Collections.emptyList(), Flowable.empty())),
 
     /**
      * Not found response.
