@@ -21,36 +21,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http;
+package com.artipie.http.rs;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
+import com.artipie.http.Connection;
+import com.artipie.http.Response;
+import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import org.cactoos.list.ListOf;
+import org.cactoos.map.MapEntry;
 
 /**
- * HTTP response.
- * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
- * @since 0.1
+ * Standard responses.
+ * @since 0.8
  */
-public interface Response {
-
+public enum StandardRs implements Response {
     /**
      * Empty response.
-     * @deprecated Use {@link com.artipie.http.rs.StandardRs#EMPTY}.
      */
-    @Deprecated
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
+    EMPTY(new RsWithStatus(RsStatus.OK)),
+
+    /**
+     * Not found response.
+     */
+    NOT_FOUND(new RsWithStatus(RsStatus.NOT_FOUND)),
+
+    /**
+     * Not found with json.
+     */
+    JSON_NOT_FOUND(
+        new RsWithBody(
+            new RsWithHeaders(
+                new RsWithStatus(RsStatus.NOT_FOUND),
+                new ListOf<Map.Entry<String, String>>(
+                    new MapEntry<>("Content-Type", "application/json")
+                )
+            ),
+            ByteBuffer.wrap("{\"error\" : \"not found\"}".getBytes())
+        )
     );
 
     /**
-     * Send the response.
-     *
-     * @param connection Connection to send the response to
-     * @return Completion stage for sending response to the connection.
+     * Origin response.
      */
-    CompletionStage<Void> send(Connection connection);
+    private final Response origin;
+
+    /**
+     * Ctor.
+     * @param origin Origin response
+     */
+    StandardRs(final Response origin) {
+        this.origin = origin;
+    }
+
+    @Override
+    public CompletionStage<Void> send(final Connection connection) {
+        return this.origin.send(connection);
+    }
 }
