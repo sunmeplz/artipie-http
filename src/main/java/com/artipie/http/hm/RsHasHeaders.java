@@ -25,6 +25,7 @@
 package com.artipie.http.hm;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
 import com.google.common.collect.ImmutableList;
@@ -128,7 +129,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
         @Override
         public CompletableFuture<Void> accept(
             final RsStatus status,
-            final Iterable<Entry<String, String>> headers,
+            final Headers headers,
             final Publisher<ByteBuffer> body) {
             return CompletableFuture.supplyAsync(
                 () -> {

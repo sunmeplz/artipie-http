@@ -23,12 +23,12 @@
  */
 package com.artipie.http.hm;
 
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.hamcrest.MatcherAssert;
@@ -48,7 +48,7 @@ class RsHasBodyTest {
     void shouldMatchEqualBody() {
         final Response response = connection -> connection.accept(
             RsStatus.OK,
-            Collections.emptyList(),
+            Headers.EMPTY,
             Flowable.fromArray(
                 ByteBuffer.wrap("he".getBytes()),
                 ByteBuffer.wrap("ll".getBytes()),
@@ -66,7 +66,7 @@ class RsHasBodyTest {
     void shouldNotMatchNotEqualBody() {
         final Response response = connection -> connection.accept(
             RsStatus.OK,
-            Collections.emptyList(),
+            Headers.EMPTY,
             Flowable.fromArray(ByteBuffer.wrap("1".getBytes()))
         );
         MatcherAssert.assertThat(
