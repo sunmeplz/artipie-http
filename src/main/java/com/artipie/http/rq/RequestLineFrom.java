@@ -44,6 +44,12 @@ import java.net.URI;
 public final class RequestLineFrom {
 
     /**
+     * Valid HTTP request line must contains 3 parts which can be splitted by
+     * whitespace char.
+     */
+    private static final int PARTS_AMOUNT = 3;
+
+    /**
      * HTTP request line.
      */
     private final String line;
@@ -91,11 +97,15 @@ public final class RequestLineFrom {
      * Part of request line.
      * @param idx Part index
      * @return Part string
-     * @todo #12:30min Check idx value to avoid ArrayIndexOfBoundsException.
-     *  Valid HTTP request line must contains 3 parts which can be splitted by
-     *  whitespace char. If line doesn't contain 3 parts, let's throw an exception.
      */
     private String part(final int idx) {
-        return this.line.trim().split("\\s")[idx];
+        final String[] parts = this.line.trim().split("\\s");
+        if (parts.length == RequestLineFrom.PARTS_AMOUNT) {
+            return parts[idx];
+        } else {
+            throw new IllegalArgumentException(
+                String.format("Invalid HTTP request line \n%s", this.line)
+            );
+        }
     }
 }
