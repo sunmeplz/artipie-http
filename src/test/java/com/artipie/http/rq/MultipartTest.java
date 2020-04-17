@@ -23,6 +23,7 @@
  */
 package com.artipie.http.rq;
 
+import com.artipie.http.Headers;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.stream.ByteFlowAsString;
 import com.artipie.vertx.VertxSliceServer;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
@@ -62,7 +62,6 @@ public class MultipartTest {
         final VertxSliceServer server = new VertxSliceServer(
             vertx,
             (line, headers, body) -> connection -> {
-                final int zero = 0;
                 final Multipart mpp = new Multipart(headers);
                 body.subscribe(mpp);
                 MatcherAssert.assertThat(
@@ -71,7 +70,7 @@ public class MultipartTest {
                 );
                 connection.accept(
                     RsStatus.OK,
-                    new HashSet<>(zero),
+                    Headers.EMPTY,
                     Flowable.empty()
                 );
                 return CompletableFuture.completedFuture(null);

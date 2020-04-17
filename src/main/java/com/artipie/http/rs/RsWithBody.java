@@ -25,11 +25,11 @@
 package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
@@ -141,7 +141,7 @@ public final class RsWithBody implements Response {
         @Override
         public CompletionStage<Void> accept(
             final RsStatus status,
-            final Iterable<Entry<String, String>> headers,
+            final Headers headers,
             final Publisher<ByteBuffer> none) {
             return this.origin.accept(status, headers, this.body);
         }

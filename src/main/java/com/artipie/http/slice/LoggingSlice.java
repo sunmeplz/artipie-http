@@ -24,6 +24,7 @@
 package com.artipie.http.slice;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.rs.RsStatus;
@@ -123,7 +124,7 @@ public final class LoggingSlice implements Slice {
         @Override
         public CompletionStage<Void> accept(
             final RsStatus status,
-            final Iterable<Map.Entry<String, String>> headers,
+            final Headers headers,
             final Publisher<ByteBuffer> body
         ) {
             final StringBuilder msg = new StringBuilder("<< ").append(status);

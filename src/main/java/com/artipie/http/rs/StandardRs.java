@@ -24,14 +24,11 @@
 package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import org.cactoos.list.ListOf;
-import org.cactoos.map.MapEntry;
 
 /**
  * Standard responses.
@@ -41,7 +38,7 @@ public enum StandardRs implements Response {
     /**
      * Empty response.
      */
-    EMPTY(con -> con.accept(RsStatus.OK, Collections.emptyList(), Flowable.empty())),
+    EMPTY(con -> con.accept(RsStatus.OK, Headers.EMPTY, Flowable.empty())),
 
     /**
      * Not found response.
@@ -55,9 +52,7 @@ public enum StandardRs implements Response {
         new RsWithBody(
             new RsWithHeaders(
                 new RsWithStatus(RsStatus.NOT_FOUND),
-                new ListOf<Map.Entry<String, String>>(
-                    new MapEntry<>("Content-Type", "application/json")
-                )
+                new Headers.From("Content-Type", "application/json")
             ),
             ByteBuffer.wrap("{\"error\" : \"not found\"}".getBytes())
         )

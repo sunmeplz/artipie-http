@@ -25,11 +25,11 @@
 package com.artipie.http.hm;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
@@ -105,7 +105,7 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
         @Override
         public CompletionStage<Void> accept(
             final RsStatus status,
-            final Iterable<Entry<String, String>> headers,
+            final Headers headers,
             final Publisher<ByteBuffer> body
         ) {
             return CompletableFuture.supplyAsync(

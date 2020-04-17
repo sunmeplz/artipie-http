@@ -42,8 +42,22 @@ public interface Connection {
      * @param body The http response body.
      * @return Completion stage for accepting HTTP response.
      */
-    CompletionStage<Void> accept(
+    CompletionStage<Void> accept(RsStatus status, Headers headers, Publisher<ByteBuffer> body);
+
+    /**
+     * Respond on connection.
+     * @param status The http status code.
+     * @param headers The http response headers.
+     * @param body The http response body.
+     * @return Completion stage for accepting HTTP response.
+     * @deprecated Use {@link Connection#accept(RsStatus, Headers, Publisher)}.
+     */
+    @Deprecated
+    default CompletionStage<Void> accept(
         RsStatus status,
         Iterable<Map.Entry<String, String>> headers,
-        Publisher<ByteBuffer> body);
+        Publisher<ByteBuffer> body
+    ) {
+        return this.accept(status, new Headers.From(headers), body);
+    }
 }

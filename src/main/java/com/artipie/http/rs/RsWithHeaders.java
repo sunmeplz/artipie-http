@@ -25,13 +25,12 @@
 package com.artipie.http.rs;
 
 import com.artipie.http.Connection;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.google.common.collect.Iterables;
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import org.cactoos.map.MapEntry;
 import org.reactivestreams.Publisher;
 
 /**
@@ -49,7 +48,7 @@ public final class RsWithHeaders implements Response {
     /**
      * Headers.
      */
-    private final Iterable<Map.Entry<String, String>> headers;
+    private final Headers headers;
 
     /**
      * Ctor.
@@ -57,11 +56,19 @@ public final class RsWithHeaders implements Response {
      * @param origin Response
      * @param headers Headers
      */
-    public RsWithHeaders(
-        final Response origin,
-        final Iterable<Map.Entry<String, String>> headers) {
+    public RsWithHeaders(final Response origin, final Headers headers) {
         this.origin = origin;
         this.headers = headers;
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param origin Origin response.
+     * @param headers Headers
+     */
+    public RsWithHeaders(final Response origin, final Iterable<Map.Entry<String, String>> headers) {
+        this(origin, new Headers.From(headers));
     }
 
     /**
@@ -71,11 +78,8 @@ public final class RsWithHeaders implements Response {
      * @param name Name of header.
      * @param value Value of header.
      */
-    public RsWithHeaders(
-        final Response origin,
-        final String name,
-        final String value) {
-        this(origin, Collections.singleton(new MapEntry<>(name, value)));
+    public RsWithHeaders(final Response origin, final String name, final String value) {
+        this(origin, new Headers.From(name, value));
     }
 
     @Override
@@ -115,9 +119,14 @@ public final class RsWithHeaders implements Response {
         @Override
         public CompletionStage<Void> accept(
             final RsStatus status,
-            final Iterable<Map.Entry<String, String>> hrs,
-            final Publisher<ByteBuffer> body) {
-            return this.origin.accept(status, Iterables.concat(this.headers, hrs), body);
+            final Headers hrs,
+            final Publisher<ByteBuffer> body
+        ) {
+            return this.origin.accept(
+                status,
+                new Headers.From(Iterables.concat(this.headers, hrs)),
+                body
+            );
         }
     }
 }

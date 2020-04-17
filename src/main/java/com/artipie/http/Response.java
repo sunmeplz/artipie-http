@@ -23,9 +23,7 @@
  */
 package com.artipie.http;
 
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
+import com.artipie.http.rs.StandardRs;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -40,11 +38,7 @@ public interface Response {
      * @deprecated Use {@link com.artipie.http.rs.StandardRs#EMPTY}.
      */
     @Deprecated
-    Response EMPTY = con -> con.accept(
-        RsStatus.OK,
-        Collections.emptyList(),
-        Flowable.empty()
-    );
+    Response EMPTY = StandardRs.EMPTY;
 
     /**
      * Send the response.
