@@ -48,7 +48,7 @@ class IsHeaderTest {
     }
 
     @Test
-    void shouldMatchNameMatching() {
+    void shouldMatchUsingValueMatcher() {
         final IsHeader matcher = new IsHeader(
             "content-type", new StringStartsWith(false, "text/plain")
         );
