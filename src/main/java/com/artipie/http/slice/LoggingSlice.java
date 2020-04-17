@@ -80,7 +80,7 @@ public final class LoggingSlice implements Slice {
     ) {
         final StringBuilder msg = new StringBuilder(">> ").append(line);
         LoggingSlice.append(msg, headers);
-        Logger.log(this.level, this, msg.toString());
+        Logger.log(this.level, this.slice, msg.toString());
         return connection -> this.slice.response(line, headers, body)
             .send(new LoggingConnection(connection));
     }
@@ -129,7 +129,7 @@ public final class LoggingSlice implements Slice {
         ) {
             final StringBuilder msg = new StringBuilder("<< ").append(status);
             LoggingSlice.append(msg, headers);
-            Logger.log(LoggingSlice.this.level, LoggingSlice.this, msg.toString());
+            Logger.log(LoggingSlice.this.level, LoggingSlice.this.slice, msg.toString());
             return this.connection.accept(status, headers, body);
         }
     }
