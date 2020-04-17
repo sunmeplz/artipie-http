@@ -40,6 +40,12 @@ import org.junit.jupiter.api.Test;
  * @since 0.1
  */
 public final class RequestLineFromTest {
+
+    /**
+     * Exception message.
+     */
+    private static final String EX_MSG = "Invalid HTTP request line \n%s";
+
     @Test
     void parsesMethodName() {
         MatcherAssert.assertThat(
@@ -95,14 +101,26 @@ public final class RequestLineFromTest {
     }
 
     @Test
-    void throwsExceptionIfLineIsInvalid() {
+    void throwsExceptionIfLineIsShortInvalid() {
         final String line = "fake";
         MatcherAssert.assertThat(
             Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> new RequestLineFrom(line).version()
             ).getMessage(),
-            new IsEqual<>(String.format("Invalid HTTP request line \n%s", line))
+            new IsEqual<>(String.format(RequestLineFromTest.EX_MSG, line))
+        );
+    }
+
+    @Test
+    void throwsExceptionIfLineIsLongInvalid() {
+        final String line = "GET /beer/in/the/pub.html /wine/in/the/restaurant.html HTTP/1.1\n";
+        MatcherAssert.assertThat(
+            Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new RequestLineFrom(line).version()
+            ).getMessage(),
+            new IsEqual<>(String.format(RequestLineFromTest.EX_MSG, line))
         );
     }
 }
