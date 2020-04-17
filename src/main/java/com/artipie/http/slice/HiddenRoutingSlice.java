@@ -25,9 +25,12 @@ package com.artipie.http.slice;
 
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.reactivestreams.Publisher;
 
 /**
@@ -60,13 +63,19 @@ public class HiddenRoutingSlice implements Slice {
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body
     ) {
-        final String[] parts = line.split("/");
         String newline = "";
-        // @checkstyle MagicNumberCheck (4 line)
-        if (parts.length < 5) {
+        try {
+            final String[] parts = line.split(" ");
+            final URI uri = new URI(parts[1]);
+            final String path = String.join(
+                "/",
+                ArrayUtils.remove(uri.getPath().split("/"), 1)
+            );
+            final URIBuilder builder = new URIBuilder(uri).setPath(path);
+            parts[1] = builder.toString();
+            newline = String.join(" ", parts);
+        } catch (final URISyntaxException | IndexOutOfBoundsException exception) {
             newline = line;
-        } else {
-            newline = String.join("/", ArrayUtils.remove(parts, 3));
         }
         return this.slice.response(newline, headers, body);
     }

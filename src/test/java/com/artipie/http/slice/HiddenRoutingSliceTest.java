@@ -34,7 +34,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
@@ -50,10 +49,7 @@ class HiddenRoutingSliceTest {
     void removesInitialPartOfUri() {
         new HiddenRoutingSlice(new LineSlice()).response(
             requestLine("http://www.w3.org/pub/WWW/TheProject.html"),
-            Arrays.asList(
-                new MapEntry<>("Content-Length", "0"),
-                new MapEntry<>("Content-Type", "whatever")
-            ),
+            Arrays.asList(),
             Flowable.empty()
         ).send(
             (status, headers, body) -> {
