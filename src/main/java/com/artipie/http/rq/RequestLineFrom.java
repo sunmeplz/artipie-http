@@ -88,14 +88,15 @@ public final class RequestLineFrom {
     }
 
     /**
-     * Part of request line.
+     * Part of request line. Valid HTTP request line must contains 3 parts which can be
+     * splitted by whitespace char.
      * @param idx Part index
      * @return Part string
      */
     private String part(final int idx) {
-        final int pcount = 3;
         final String[] parts = this.line.trim().split("\\s");
-        if (parts.length == pcount) {
+        // @checkstyle MagicNumberCheck (1 line)
+        if (parts.length == 3) {
             return parts[idx];
         } else {
             throw new IllegalArgumentException(
