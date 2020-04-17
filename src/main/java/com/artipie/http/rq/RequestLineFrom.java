@@ -88,14 +88,20 @@ public final class RequestLineFrom {
     }
 
     /**
-     * Part of request line.
+     * Part of request line. Valid HTTP request line must contains 3 parts which can be
+     * splitted by whitespace char.
      * @param idx Part index
      * @return Part string
-     * @todo #12:30min Check idx value to avoid ArrayIndexOfBoundsException.
-     *  Valid HTTP request line must contains 3 parts which can be splitted by
-     *  whitespace char. If line doesn't contain 3 parts, let's throw an exception.
      */
     private String part(final int idx) {
-        return this.line.trim().split("\\s")[idx];
+        final String[] parts = this.line.trim().split("\\s");
+        // @checkstyle MagicNumberCheck (1 line)
+        if (parts.length == 3) {
+            return parts[idx];
+        } else {
+            throw new IllegalArgumentException(
+                String.format("Invalid HTTP request line \n%s", this.line)
+            );
+        }
     }
 }
