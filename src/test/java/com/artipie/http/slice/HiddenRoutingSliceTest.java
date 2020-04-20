@@ -84,6 +84,25 @@ class HiddenRoutingSliceTest {
         );
     }
 
+    @Test
+    void absoluteLine() {
+        new HiddenRoutingSlice(new LineSlice()).response(
+                requestLine("/one/two/three"),
+                Arrays.asList(),
+                Flowable.empty()
+        ).send(
+                (status, headers, body) -> {
+                    final String line = headers.iterator().next().getValue();
+                    MatcherAssert.assertThat(
+                            "short url retrieved",
+                            line,
+                            IsEqual.equalTo(requestLine("/two/three"))
+                    );
+                    return CompletableFuture.allOf();
+                }
+        );
+    }
+
     private static String requestLine(final String path) {
         return new RequestLine("GET", path, "HTTP/1.1").toString();
     }

@@ -40,7 +40,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.8
  */
-public class HiddenRoutingSlice implements Slice {
+public final class HiddenRoutingSlice implements Slice {
 
     /**
      * Delegate slice.
@@ -56,7 +56,6 @@ public class HiddenRoutingSlice implements Slice {
         this.slice = slice;
     }
 
-    // @checkstyle DesignForExtensionCheck (1 line)
     @Override
     public Response response(
         final String line,
