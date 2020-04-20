@@ -87,19 +87,19 @@ class HiddenRoutingSliceTest {
     @Test
     void absoluteLine() {
         new HiddenRoutingSlice(new LineSlice()).response(
-                requestLine("/one/two/three"),
-                Arrays.asList(),
-                Flowable.empty()
+            requestLine("/one/two/three"),
+            Arrays.asList(),
+            Flowable.empty()
         ).send(
-                (status, headers, body) -> {
-                    final String line = headers.iterator().next().getValue();
-                    MatcherAssert.assertThat(
-                            "short url retrieved",
-                            line,
-                            IsEqual.equalTo(requestLine("/two/three"))
-                    );
-                    return CompletableFuture.allOf();
-                }
+            (status, headers, body) -> {
+                final String line = headers.iterator().next().getValue();
+                MatcherAssert.assertThat(
+                    "absolute url retrieved",
+                    line,
+                    IsEqual.equalTo(requestLine("/two/three"))
+                );
+                return CompletableFuture.allOf();
+            }
         );
     }
 
