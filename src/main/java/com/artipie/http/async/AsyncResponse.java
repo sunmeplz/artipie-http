@@ -25,6 +25,8 @@ package com.artipie.http.async;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import hu.akarnokd.rxjava2.interop.SingleInterop;
+import io.reactivex.Single;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -37,6 +39,14 @@ public final class AsyncResponse implements Response {
      * Source stage.
      */
     private final CompletionStage<? extends Response> future;
+
+    /**
+     * Response from {@link Single}.
+     * @param single Single
+     */
+    public AsyncResponse(final Single<? extends Response> single) {
+        this(single.to(SingleInterop.get()));
+    }
 
     /**
      * Response from {@link CompletionStage}.
