@@ -27,6 +27,7 @@ package com.artipie.http.hm;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
+import com.artipie.http.rs.Header;
 import com.artipie.http.rs.RsStatus;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;
@@ -36,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import org.cactoos.map.MapEntry;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -69,19 +69,29 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
     /**
      * Ctor.
      *
-     * @param headers Expected headers in any order.
+     * @param headers Expected header matchers in any order.
      */
-    public RsHasHeaders(final Collection<Entry<String, String>> headers) {
+    public RsHasHeaders(final Collection<? extends Entry<String, String>> headers) {
         this(
             Matchers.containsInAnyOrder(
                 headers.stream()
                     .<Entry<String, String>>map(
-                        original -> new MapEntry<>(original.getKey(), original.getValue())
+                        original -> new Header(original.getKey(), original.getValue())
                     )
                     .map(IsEqual::new)
                     .collect(Collectors.toList())
             )
         );
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Expected header matchers in any order.
+     */
+    @SafeVarargs
+    public RsHasHeaders(final Matcher<? super Entry<String, String>>... headers) {
+        this(Matchers.<Entry<String, String>>containsInAnyOrder(Arrays.asList(headers)));
     }
 
     /**
@@ -135,7 +145,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
                 () -> {
                     this.container.set(
                         ImmutableList.copyOf(headers).stream().<Entry<String, String>>map(
-                            original -> new MapEntry<>(original.getKey(), original.getValue())
+                            original -> new Header(original.getKey(), original.getValue())
                         ).collect(Collectors.toList())
                     );
                     return null;

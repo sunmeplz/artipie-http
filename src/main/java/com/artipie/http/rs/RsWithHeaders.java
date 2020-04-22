@@ -75,6 +75,17 @@ public final class RsWithHeaders implements Response {
      * Ctor.
      *
      * @param origin Origin response.
+     * @param headers Headers
+     */
+    @SafeVarargs
+    public RsWithHeaders(final Response origin, final Map.Entry<String, String>... headers) {
+        this(origin, new Headers.From(headers));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param origin Origin response.
      * @param name Name of header.
      * @param value Value of header.
      */
