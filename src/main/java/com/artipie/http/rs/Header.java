@@ -72,7 +72,7 @@ public final class Header implements Map.Entry<String, String> {
 
     @Override
     public String getValue() {
-        return this.value;
+        return this.value.replaceAll("^\\s+", "");
     }
 
     @Override
@@ -91,17 +91,17 @@ public final class Header implements Map.Entry<String, String> {
         }
         final Header header = (Header) that;
         return this.lowercaseName().equals(header.lowercaseName())
-            && this.value.equals(header.value);
+            && this.getValue().equals(header.getValue());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.lowercaseName(), this.value);
+        return Objects.hash(this.lowercaseName(), this.getValue());
     }
 
     @Override
     public String toString() {
-        return String.format("%s:%s", this.name, this.value);
+        return String.format("%s: %s", this.name, this.getValue());
     }
 
     /**

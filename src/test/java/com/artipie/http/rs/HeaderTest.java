@@ -41,10 +41,12 @@ final class HeaderTest {
         "abc:xyz,abc:xyz,true",
         "abc:xyz,ABC:xyz,true",
         "ABC:xyz,abc:xyz,true",
+        "abc:xyz,abc: xyz,true",
         "abc:xyz,foo:bar,false",
         "abc:xyz,abc:bar,false",
         "abc:xyz,abc:XYZ,false",
-        "abc:xyz,foo:xyz,false"
+        "abc:xyz,foo:xyz,false",
+        "abc:xyz,abc:xyz ,true"
     })
     void shouldBeEqual(final String one, final String another, final boolean equal) {
         MatcherAssert.assertThat(
@@ -54,6 +56,20 @@ final class HeaderTest {
         MatcherAssert.assertThat(
             fromString(one).hashCode() == fromString(another).hashCode(),
             new IsEqual<>(equal)
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "abc,abc",
+        " abc,abc",
+        "\tabc,abc",
+        "abc ,abc "
+    })
+    void shouldTrimValueLeadingWhitespaces(final String original, final String expected) {
+        MatcherAssert.assertThat(
+            new Header("whatever", original).getValue(),
+            new IsEqual<>(expected)
         );
     }
 
