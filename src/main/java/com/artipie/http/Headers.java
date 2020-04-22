@@ -23,12 +23,13 @@
  */
 package com.artipie.http;
 
+import com.artipie.http.rs.Header;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import org.cactoos.map.MapEntry;
 
 /**
  * HTTP request headers.
@@ -62,7 +63,17 @@ public interface Headers extends Iterable<Map.Entry<String, String>> {
          * @param value Header value.
          */
         public From(final String name, final String value) {
-            this(Collections.singleton(new MapEntry<>(name, value)));
+            this(Collections.singleton(new Header(name, value)));
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param origin Origin headers.
+         */
+        @SafeVarargs
+        public From(final Map.Entry<String, String>... origin) {
+            this(Arrays.asList(origin));
         }
 
         /**
