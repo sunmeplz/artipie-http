@@ -45,7 +45,7 @@ public final class BasicIdentities implements Identities {
      * Ctor.
      * @param auth Concrete implementation for User Identification.
      */
-    BasicIdentities(final Authentication auth) {
+    public BasicIdentities(final Authentication auth) {
         this.auth = auth;
     }
 
