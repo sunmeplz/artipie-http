@@ -24,11 +24,9 @@
 
 package com.artipie.http.rs;
 
-import com.artipie.http.Connection;
 import com.artipie.http.Response;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 import org.reactivestreams.Publisher;
 
 /**
@@ -36,12 +34,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.8
  */
-public final class RsFull implements Response {
-
-    /**
-     * Response.
-     */
-    private final Response response;
+public final class RsFull extends Response.Wrap {
 
     /**
      * Ctor.
@@ -53,17 +46,14 @@ public final class RsFull implements Response {
         final RsStatus status,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        this.response = new RsWithStatus(
-            new RsWithHeaders(
-                new RsWithBody(
-                    body
-                ), headers
-            ), status
+        super(
+            new RsWithStatus(
+                new RsWithHeaders(
+                    new RsWithBody(
+                        body
+                    ), headers
+                ), status
+            )
         );
-    }
-
-    @Override
-    public CompletionStage<Void> send(final Connection connection) {
-        return this.response.send(connection);
     }
 }
