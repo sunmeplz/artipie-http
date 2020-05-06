@@ -86,7 +86,7 @@ public final class Header implements Map.Entry<String, String> {
         if (this == that) {
             return true;
         }
-        if (that == null || getClass() != that.getClass()) {
+        if (that == null) {
             return false;
         }
         final Header header = (Header) that;
@@ -111,5 +111,57 @@ public final class Header implements Map.Entry<String, String> {
      */
     private String lowercaseName() {
         return this.name.toLowerCase(Locale.US);
+    }
+
+    /**
+     * Abstract decorator for Header.
+     *
+     * @since 0.9
+     */
+    abstract static class Wrap implements Map.Entry<String, String> {
+
+        /**
+         * Origin header.
+         */
+        private final Map.Entry<String, String> header;
+
+        /**
+         * Ctor.
+         *
+         * @param header Header.
+         */
+        protected Wrap(final Map.Entry<String, String> header) {
+            this.header = header;
+        }
+
+        @Override
+        public String getKey() {
+            return this.header.getKey();
+        }
+
+        @Override
+        public String getValue() {
+            return this.header.getValue();
+        }
+
+        @Override
+        public String setValue(final String value) {
+            return this.header.setValue(value);
+        }
+
+        @Override
+        public boolean equals(final Object that) {
+            return this.header.equals(that);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.header.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return this.header.toString();
+        }
     }
 }
