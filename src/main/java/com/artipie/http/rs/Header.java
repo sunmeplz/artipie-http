@@ -112,4 +112,64 @@ public final class Header implements Map.Entry<String, String> {
     private String lowercaseName() {
         return this.name.toLowerCase(Locale.US);
     }
+
+    /**
+     * Abstract decorator for Header.
+     *
+     * @since 0.9
+     */
+    abstract static class Wrap implements Map.Entry<String, String> {
+
+        /**
+         * Origin header.
+         */
+        private final Map.Entry<String, String> header;
+
+        /**
+         * Ctor.
+         *
+         * @param header Header.
+         */
+        protected Wrap(final Map.Entry<String, String> header) {
+            this.header = header;
+        }
+
+        @Override
+        public final String getKey() {
+            return this.header.getKey();
+        }
+
+        @Override
+        public final String getValue() {
+            return this.header.getValue();
+        }
+
+        @Override
+        public final String setValue(final String value) {
+            return this.header.setValue(value);
+        }
+
+        @Override
+        @SuppressWarnings("PMD.OnlyOneReturn")
+        public final boolean equals(final Object that) {
+            if (this == that) {
+                return true;
+            }
+            if (that == null || getClass() != that.getClass()) {
+                return false;
+            }
+            final Wrap wrap = (Wrap) that;
+            return Objects.equals(this.header, wrap.header);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(this.header);
+        }
+
+        @Override
+        public final String toString() {
+            return this.header.toString();
+        }
+    }
 }
