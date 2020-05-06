@@ -86,7 +86,7 @@ public final class Header implements Map.Entry<String, String> {
         if (this == that) {
             return true;
         }
-        if (that == null) {
+        if (that == null || getClass() != that.getClass()) {
             return false;
         }
         final Header header = (Header) that;
@@ -135,32 +135,40 @@ public final class Header implements Map.Entry<String, String> {
         }
 
         @Override
-        public String getKey() {
+        public final String getKey() {
             return this.header.getKey();
         }
 
         @Override
-        public String getValue() {
+        public final String getValue() {
             return this.header.getValue();
         }
 
         @Override
-        public String setValue(final String value) {
+        public final String setValue(final String value) {
             return this.header.setValue(value);
         }
 
         @Override
-        public boolean equals(final Object that) {
-            return this.header.equals(that);
+        @SuppressWarnings("PMD.OnlyOneReturn")
+        public final boolean equals(final Object that) {
+            if (this == that) {
+                return true;
+            }
+            if (that == null || getClass() != that.getClass()) {
+                return false;
+            }
+            final Wrap wrap = (Wrap) that;
+            return Objects.equals(this.header, wrap.header);
         }
 
         @Override
-        public int hashCode() {
-            return this.header.hashCode();
+        public final int hashCode() {
+            return Objects.hash(this.header);
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return this.header.toString();
         }
     }
