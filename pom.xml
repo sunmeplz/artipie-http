@@ -30,7 +30,7 @@ SOFTWARE.
     <version>0.3</version>
   </parent>
   <artifactId>http</artifactId>
-  <version>0.6</version>
+  <version>0.9.1</version>
   <name>Artipie HTTP</name>
   <url>https://github.com/artipie/http</url>
   <description>HTTP layer of Artipie</description>
@@ -169,12 +169,12 @@ SOFTWARE.
                     <limit>
                       <counter>LINE</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.75</minimum>
+                      <minimum>0.74</minimum>
                     </limit>
                     <limit>
                       <counter>BRANCH</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.65</minimum>
+                      <minimum>0.64</minimum>
                     </limit>
                     <limit>
                       <counter>COMPLEXITY</counter>
