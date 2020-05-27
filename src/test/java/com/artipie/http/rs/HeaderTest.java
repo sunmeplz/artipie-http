@@ -26,6 +26,7 @@ package com.artipie.http.rs;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -73,8 +74,19 @@ final class HeaderTest {
         );
     }
 
+    @Test
+    void toStringHeader() throws Exception {
+        final String name = "name";
+        final String value = "value";
+        MatcherAssert.assertThat(
+            new Header(name, value).toString(),
+            new IsEqual<>("name: value")
+        );
+    }
+
     private static Header fromString(final String raw) {
         final String[] split = raw.split(":");
         return new Header(split[0], split[1]);
     }
+
 }
