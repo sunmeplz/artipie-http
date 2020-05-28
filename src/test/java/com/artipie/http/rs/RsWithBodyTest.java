@@ -23,10 +23,12 @@
  */
 package com.artipie.http.rs;
 
-import com.artipie.http.hm.ResponseMatcher;
+import com.artipie.http.hm.RsHasBody;
+import com.artipie.http.hm.RsHasStatus;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -40,7 +42,10 @@ final class RsWithBodyTest {
         final byte[] body = "abc".getBytes();
         MatcherAssert.assertThat(
             new RsWithBody(ByteBuffer.wrap(body)),
-            new ResponseMatcher(body)
+            Matchers.allOf(
+                new RsHasBody(body),
+                new RsHasStatus(RsStatus.OK)
+            )
         );
     }
 
@@ -49,7 +54,10 @@ final class RsWithBodyTest {
         final String body = "def";
         MatcherAssert.assertThat(
             new RsWithBody(new RsWithStatus(RsStatus.CREATED), body, StandardCharsets.UTF_8),
-            new ResponseMatcher(RsStatus.CREATED, body, StandardCharsets.UTF_8)
+            Matchers.allOf(
+                new RsHasBody(body.getBytes()),
+                new RsHasStatus(RsStatus.CREATED)
+            )
         );
     }
 
