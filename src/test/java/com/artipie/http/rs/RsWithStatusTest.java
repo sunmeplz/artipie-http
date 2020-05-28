@@ -24,7 +24,6 @@
 
 package com.artipie.http.rs;
 
-import com.artipie.http.Response;
 import com.artipie.http.hm.RsHasStatus;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
@@ -45,12 +44,10 @@ final class RsWithStatusTest {
     }
 
     @Test
-    void toStringRsWithStatus() throws Exception {
-        final RsStatus status = RsStatus.OK;
-        final Response origin = new RsWithStatus(RsStatus.OK);
+    void toStringRsWithStatus() {
         MatcherAssert.assertThat(
-            new RsWithStatus(origin, status).toString(),
-            new IsEqual<>("RsWithStatus{status=OK, origin=RsWithStatus{status=OK, origin=EMPTY}}")
+            new RsWithStatus(RsStatus.OK).toString(),
+            new IsEqual<>("RsWithStatus{status=OK, origin=EMPTY}")
         );
     }
 

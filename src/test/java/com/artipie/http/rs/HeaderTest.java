@@ -76,10 +76,8 @@ final class HeaderTest {
 
     @Test
     void toStringHeader() throws Exception {
-        final String name = "name";
-        final String value = "value";
         MatcherAssert.assertThat(
-            new Header(name, value).toString(),
+            new Header("name", "value").toString(),
             new IsEqual<>("name: value")
         );
     }
