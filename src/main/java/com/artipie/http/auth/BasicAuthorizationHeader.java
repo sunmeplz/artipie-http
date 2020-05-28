@@ -31,7 +31,7 @@ import org.cactoos.text.Base64Encoded;
  *
  * @since 0.9.5
  */
-public class BasicAuthorizationHeader extends Header.Wrap {
+public final class BasicAuthorizationHeader extends Header.Wrap {
 
     /**
      * Ctor.
@@ -39,7 +39,7 @@ public class BasicAuthorizationHeader extends Header.Wrap {
      * @param username User name.
      * @param password Password.
      */
-    protected BasicAuthorizationHeader(final String username, final String password) {
+    public BasicAuthorizationHeader(final String username, final String password) {
         super(
             new Header(
                 "Authorization",
