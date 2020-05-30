@@ -97,35 +97,9 @@ public final class SliceRoute implements Slice {
 
     /**
      * Route path.
-     * <p>
-     * A path to slice with routing rule. If
-     * {@link RtRule} passed, then the request will be redirected to
-     * underlying {@link Slice}.
-     * </p>
-     * @since 0.5
+     * @since 0.10
      */
-    public static final class Path {
-
-        /**
-         * Routing rule.
-         */
-        private final RtRule rule;
-
-        /**
-         * Slice under route.
-         */
-        private final Slice slice;
-
-        /**
-         * New routing path.
-         * @param rule Rules to apply
-         * @param slice Slice to call
-         */
-        public Path(final RtRule rule, final Slice slice) {
-            this.rule = rule;
-            this.slice = slice;
-        }
-
+    public interface Path {
         /**
          * Try respond.
          * @param line Request line
@@ -133,16 +107,10 @@ public final class SliceRoute implements Slice {
          * @param body Body
          * @return Response if passed routing rule
          */
-        Optional<Response> response(final String line,
-            final Iterable<Map.Entry<String, String>> headers,
-            final Publisher<ByteBuffer> body) {
-            final Optional<Response> res;
-            if (this.rule.apply(line, headers)) {
-                res = Optional.of(this.slice.response(line, headers, body));
-            } else {
-                res = Optional.empty();
-            }
-            return res;
-        }
+        Optional<Response> response(
+            String line,
+            Iterable<Map.Entry<String, String>> headers,
+            Publisher<ByteBuffer> body
+        );
     }
 }
