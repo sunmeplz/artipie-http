@@ -34,6 +34,7 @@ import io.reactivex.Flowable;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
@@ -112,6 +113,18 @@ final class TrimPathSliceTest {
                     Matchers.anything()
                 ),
                 "/a/b"
+            ),
+            requestLine(path)
+        );
+    }
+
+    @Test
+    void trimPathByPattern() throws Exception {
+        final String path = "/repo/version/artifact";
+        verify(
+            new TrimPathSlice(
+                new AssertSlice(new RqLineHasUri(new RqLineHasUri.HasPath("/version/artifact"))),
+                Pattern.compile("/[a-zA-Z0-9]+/")
             ),
             requestLine(path)
         );
