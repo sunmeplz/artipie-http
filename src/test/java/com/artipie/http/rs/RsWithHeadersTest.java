@@ -21,34 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.artipie.http.rs;
 
-import com.artipie.http.hm.RsHasStatus;
+import com.artipie.http.hm.RsHasHeaders;
+import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link RsWithStatus}.
- * @since 0.1
+ * Test case for {@link RsWithHeaders}.
+ * @since 0.9
  */
-final class RsWithStatusTest {
-    @Test
-    void usesStatus() throws Exception {
-        final RsStatus status = RsStatus.NOT_FOUND;
-        MatcherAssert.assertThat(
-            new RsWithStatus(status),
-            new RsHasStatus(status)
-        );
-    }
+public class RsWithHeadersTest {
 
     @Test
-    void toStringRsWithStatus() {
+    void testRsWithHeadersMapEntry() {
+        final String name = "Content-Type";
+        final String value = "text/plain; charset=us-ascii";
         MatcherAssert.assertThat(
-            new RsWithStatus(RsStatus.OK).toString(),
-            new IsEqual<>("RsWithStatus{status=OK, origin=EMPTY}")
+            new RsWithHeaders(new RsWithStatus(RsStatus.OK), new MapEntry<>(name, value)),
+            new RsHasHeaders(new Header(name, value))
         );
     }
-
 }
