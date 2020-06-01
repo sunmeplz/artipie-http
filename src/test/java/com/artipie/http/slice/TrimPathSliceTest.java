@@ -25,9 +25,9 @@ package com.artipie.http.slice;
 
 import com.artipie.http.Slice;
 import com.artipie.http.hm.AssertSlice;
+import com.artipie.http.hm.RqHasHeader;
 import com.artipie.http.hm.RqLineHasUri;
 import com.artipie.http.rq.RequestLine;
-import com.artipie.http.rq.RqHeaders;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.StandardRs;
 import io.reactivex.Flowable;
@@ -43,11 +43,10 @@ import org.junit.jupiter.api.Test;
  * Test case for {@link TrimPathSlice}.
  * @since 0.8
  */
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 final class TrimPathSliceTest {
 
     @Test
-    void removesInitialPartOfUri() throws Exception {
+    void changesOnlyUriPath() throws Exception {
         verify(
             new TrimPathSlice(
                 new AssertSlice(
@@ -62,7 +61,7 @@ final class TrimPathSliceTest {
     }
 
     @Test
-    void shortRequestLine() {
+    void failIfUriPathDoesntMatch() throws Exception {
         new TrimPathSlice((line, headers, body) -> StandardRs.EMPTY, "none").response(
             requestLine("http://www.w3.org").toString(),
             Collections.emptyList(),
@@ -76,11 +75,11 @@ final class TrimPathSliceTest {
                 );
                 return CompletableFuture.allOf();
             }
-        );
+        ).toCompletableFuture().get();
     }
 
     @Test
-    void absoluteLine() throws Exception {
+    void replacesFirstPartOfAbsoluteUriPath() throws Exception {
         verify(
             new TrimPathSlice(
                 new AssertSlice(new RqLineHasUri(new RqLineHasUri.HasPath("/three"))),
@@ -91,33 +90,31 @@ final class TrimPathSliceTest {
     }
 
     @Test
-    void trimFully() throws Exception {
+    void replaceFullUriPath() throws Exception {
+        final String path = "/foo/bar";
         verify(
             new TrimPathSlice(
                 new AssertSlice(new RqLineHasUri(new RqLineHasUri.HasPath("/"))),
-                "/foo/bar"
+                path
             ),
-            requestLine("/foo/bar")
+            requestLine(path)
         );
     }
 
     @Test
-    void hasFullPathHeader() throws Exception {
-        new TrimPathSlice(
-            (line, headers, body) -> {
-                MatcherAssert.assertThat(
-                    new RqHeaders.Single(headers, "x-fullpath").asString(),
-                    Matchers.equalTo("/foo/bar/baz")
-                );
-                return StandardRs.EMPTY;
-            },
-            "/foo/bar"
-        ).response(
-            requestLine("/foo/bar/baz").toString(),
-            Collections.emptyList(),
-            Flowable.empty()
-        ).send((status, headers, body) -> CompletableFuture.completedFuture(null))
-            .toCompletableFuture().get();
+    void appendsFullPathHeaderToRequest() throws Exception {
+        final String path = "/a/b/c";
+        verify(
+            new TrimPathSlice(
+                new AssertSlice(
+                    Matchers.anything(),
+                    new RqHasHeader.Single("x-fullpath", path),
+                    Matchers.anything()
+                ),
+                "/a/b"
+            ),
+            requestLine(path)
+        );
     }
 
     private static RequestLine requestLine(final String path) {
