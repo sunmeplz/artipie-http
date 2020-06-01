@@ -129,17 +129,17 @@ public interface Headers extends Iterable<Map.Entry<String, String>> {
         }
 
         @Override
-        public Iterator<Map.Entry<String, String>> iterator() {
+        public final Iterator<Map.Entry<String, String>> iterator() {
             return this.origin.iterator();
         }
 
         @Override
-        public void forEach(final Consumer<? super Map.Entry<String, String>> action) {
+        public final void forEach(final Consumer<? super Map.Entry<String, String>> action) {
             this.origin.forEach(action);
         }
 
         @Override
-        public Spliterator<Map.Entry<String, String>> spliterator() {
+        public final Spliterator<Map.Entry<String, String>> spliterator() {
             return this.origin.spliterator();
         }
     }
