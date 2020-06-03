@@ -40,7 +40,7 @@ import org.reactivestreams.Publisher;
  * Routing slice.
  * <p>
  * {@link Slice} implementation which redirect requests to {@link Slice}
- * in {@link SliceRoute.Path} if {@link RtRule} matched.<br/>
+ * in {@link Path} if {@link RtRule} matched.<br/>
  * Usage:
  * <pre><code>
  * new SliceRoute(
@@ -60,13 +60,13 @@ public final class SliceRoute implements Slice {
     /**
      * Routes.
      */
-    private final List<Path> routes;
+    private final List<RtPath> routes;
 
     /**
      * New slice route.
      * @param routes Routes
      */
-    public SliceRoute(final Path... routes) {
+    public SliceRoute(final RtPath... routes) {
         this(new ListOf<>(routes));
     }
 
@@ -74,7 +74,7 @@ public final class SliceRoute implements Slice {
      * New slice route.
      * @param routes Routes
      */
-    public SliceRoute(final List<Path> routes) {
+    public SliceRoute(final List<RtPath> routes) {
         this.routes = routes;
     }
 
@@ -103,18 +103,15 @@ public final class SliceRoute implements Slice {
      * underlying {@link Slice}.
      * </p>
      * @since 0.5
+     * @deprecated Use {@link RtRulePath} instead
      */
-    public static final class Path {
+    @Deprecated
+    public static final class Path implements RtPath {
 
         /**
-         * Routing rule.
+         * Wrapped.
          */
-        private final RtRule rule;
-
-        /**
-         * Slice under route.
-         */
-        private final Slice slice;
+        private final RtPath wrapped;
 
         /**
          * New routing path.
@@ -122,27 +119,16 @@ public final class SliceRoute implements Slice {
          * @param slice Slice to call
          */
         public Path(final RtRule rule, final Slice slice) {
-            this.rule = rule;
-            this.slice = slice;
+            this.wrapped = new RtRulePath(rule, slice);
         }
 
-        /**
-         * Try respond.
-         * @param line Request line
-         * @param headers Headers
-         * @param body Body
-         * @return Response if passed routing rule
-         */
-        Optional<Response> response(final String line,
+        @Override
+        public Optional<Response> response(
+            final String line,
             final Iterable<Map.Entry<String, String>> headers,
-            final Publisher<ByteBuffer> body) {
-            final Optional<Response> res;
-            if (this.rule.apply(line, headers)) {
-                res = Optional.of(this.slice.response(line, headers, body));
-            } else {
-                res = Optional.empty();
-            }
-            return res;
+            final Publisher<ByteBuffer> body
+        ) {
+            return this.wrapped.response(line, headers, body);
         }
     }
 }
