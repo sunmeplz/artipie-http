@@ -100,4 +100,47 @@ public interface Headers extends Iterable<Map.Entry<String, String>> {
             return this.origin.spliterator();
         }
     }
+
+    /**
+     * Abstract decorator for {@link Headers}.
+     * @since 0.10
+     */
+    abstract class Wrap implements Headers {
+
+        /**
+         * Origin headers.
+         */
+        private final Iterable<Map.Entry<String, String>> origin;
+
+        /**
+         * Ctor.
+         * @param origin Origin headers
+         */
+        protected Wrap(final Iterable<Map.Entry<String, String>> origin) {
+            this.origin = origin;
+        }
+
+        /**
+         * Ctor.
+         * @param origin Origin headers
+         */
+        protected Wrap(final Header... origin) {
+            this(Arrays.asList(origin));
+        }
+
+        @Override
+        public final Iterator<Map.Entry<String, String>> iterator() {
+            return this.origin.iterator();
+        }
+
+        @Override
+        public final void forEach(final Consumer<? super Map.Entry<String, String>> action) {
+            this.origin.forEach(action);
+        }
+
+        @Override
+        public final Spliterator<Map.Entry<String, String>> spliterator() {
+            return this.origin.spliterator();
+        }
+    }
 }
