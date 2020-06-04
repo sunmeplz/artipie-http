@@ -189,7 +189,7 @@ SOFTWARE.
                     <limit>
                       <counter>CLASS</counter>
                       <value>MISSEDCOUNT</value>
-                      <maximum>14</maximum>
+                      <maximum>15</maximum>
                     </limit>
                   </limits>
                 </rule>
