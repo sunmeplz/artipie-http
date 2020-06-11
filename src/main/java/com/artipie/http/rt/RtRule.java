@@ -55,7 +55,7 @@ public interface RtRule {
     boolean apply(String line, Iterable<Map.Entry<String, String>> headers);
 
     /**
-     * Route by multiple rules.
+     * This rule is matched only when all of the rules is matched.
      * @since 0.5
      */
     final class Multiple implements RtRule {
@@ -94,6 +94,48 @@ public interface RtRule {
             return match;
         }
     }
+
+    /**
+     * This rule is matched only when any of the rules is matched.
+     * @since 0.10
+     */
+    final class Any implements RtRule {
+
+        /**
+         * Rules.
+         */
+        private final Iterable<RtRule> rules;
+
+        /**
+         * Route by any of the rules.
+         * @param rules Rules array
+         */
+        public Any(final RtRule... rules) {
+            this(new ListOf<>(rules));
+        }
+
+        /**
+         * Route by any of the rules.
+         * @param rules Rules
+         */
+        public Any(final Iterable<RtRule> rules) {
+            this.rules = rules;
+        }
+
+        @Override
+        public boolean apply(final String line,
+                             final Iterable<Map.Entry<String, String>> headers) {
+            boolean match = false;
+            for (final RtRule rule : this.rules) {
+                if (rule.apply(line, headers)) {
+                    match = true;
+                    break;
+                }
+            }
+            return match;
+        }
+    }
+
 
     /**
      * Route by method.
