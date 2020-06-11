@@ -124,7 +124,7 @@ public interface RtRule {
 
         @Override
         public boolean apply(final String line,
-                             final Iterable<Map.Entry<String, String>> headers) {
+            final Iterable<Map.Entry<String, String>> headers) {
             boolean match = false;
             for (final RtRule rule : this.rules) {
                 if (rule.apply(line, headers)) {
@@ -135,7 +135,6 @@ public interface RtRule {
             return match;
         }
     }
-
 
     /**
      * Route by method.
