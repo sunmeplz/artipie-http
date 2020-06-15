@@ -55,10 +55,20 @@ public interface RtRule {
     boolean apply(String line, Iterable<Map.Entry<String, String>> headers);
 
     /**
-     * This rule is matched only when all of the rules is matched.
+     * This rule is matched only when all of the rules are matched.
+     * This class is kept for backward compatibility reasons.
      * @since 0.5
+     * @deprecated use {@link All} instead
      */
-    final class Multiple implements RtRule {
+    @Deprecated
+    final class Multiple extends All {
+    }
+
+    /**
+     * This rule is matched only when all of the rules are matched.
+     * @since 0.10
+     */
+    class All implements RtRule {
 
         /**
          * Rules.
@@ -69,7 +79,7 @@ public interface RtRule {
          * Route by multiple rules.
          * @param rules Rules array
          */
-        public Multiple(final RtRule... rules) {
+        public All(final RtRule... rules) {
             this(new ListOf<>(rules));
         }
 
@@ -77,7 +87,7 @@ public interface RtRule {
          * Route by multiple rules.
          * @param rules Rules
          */
-        public Multiple(final Iterable<RtRule> rules) {
+        public All(final Iterable<RtRule> rules) {
             this.rules = rules;
         }
 
