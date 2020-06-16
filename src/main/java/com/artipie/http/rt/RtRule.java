@@ -62,6 +62,23 @@ public interface RtRule {
      */
     @Deprecated
     final class Multiple extends All {
+
+        /**
+         * Ctor.
+         * @param rules Rules array
+         */
+        public Multiple(final RtRule... rules) {
+            super(new ListOf<>(rules));
+        }
+
+        /**
+         * Ctor.
+         * @param rules Rules
+         */
+        public Multiple(final Iterable<RtRule> rules) {
+            super(rules);
+        }
+
     }
 
     /**
