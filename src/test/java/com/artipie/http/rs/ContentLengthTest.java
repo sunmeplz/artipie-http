@@ -21,46 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.artipie.http.rs;
 
-package com.artipie.http.slice;
-
-import com.artipie.asto.Storage;
-import com.artipie.http.Response;
-import com.artipie.http.Slice;
-import java.nio.ByteBuffer;
-import java.util.Map;
-import org.reactivestreams.Publisher;
+import com.artipie.http.Headers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Delete decorator for Slice.
+ * Test case for {@link ContentLength}.
  *
  * @since 0.10
- * @todo #138:30min Implement SliceDelete
- *  Implement SliceDelete, which removes a key from storage. After that, enable
- *  the tests in SliceDeleteTest and put back the coverage missedclass metric to
- *  15 in pom.xml.
  */
-@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-public final class SliceDelete implements Slice {
+public final class ContentLengthTest {
 
-    /**
-     * Storage.
-     */
-    private final Storage storage;
-
-    /**
-     * Constructor.
-     * @param storage Storage.
-     */
-    public SliceDelete(final Storage storage) {
-        this.storage = storage;
+    @Test
+    void shouldHaveExpectedValue() {
+        MatcherAssert.assertThat(
+            new ContentLength("10").getKey(),
+            new IsEqual<>("Content-Length")
+        );
     }
 
-    @Override
-    public Response response(
-        final String line,
-        final Iterable<Map.Entry<String, String>> headers,
-        final Publisher<ByteBuffer> body) {
-        throw new UnsupportedOperationException();
+    @Test
+    void shouldExtractLongValueFromHeaders() {
+        final long length = 123;
+        final ContentLength header = new ContentLength(
+            new Headers.From(
+                new Header("Content-Type", "application/octet-stream"),
+                new Header("content-length", String.valueOf(length)),
+                new Header("X-Something", "Some Value")
+            )
+        );
+        MatcherAssert.assertThat(header.longValue(), new IsEqual<>(length));
+    }
+
+    @Test
+    void shouldFailToExtractLongValueFromEmptyHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentLength(Headers.EMPTY).longValue()
+        );
     }
 }

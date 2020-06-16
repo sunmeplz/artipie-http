@@ -27,7 +27,9 @@ import com.artipie.asto.Content;
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.rq.RequestLine;
+import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -40,7 +42,7 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.10
  */
-public class SliceDeleteTest {
+public final class SliceDeleteTest {
 
     /**
      * Deleted key.
@@ -66,8 +68,7 @@ public class SliceDeleteTest {
             new Content.From("deleted content".getBytes())
         ).join();
         new SliceDelete(
-            storage,
-            new Key.From(SliceDeleteTest.KEY)
+            storage
         ).response(
             new RequestLine(
                 SliceDeleteTest.METHOD,
@@ -97,8 +98,7 @@ public class SliceDeleteTest {
             new Content.From("preserved content".getBytes())
         ).join();
         new SliceDelete(
-            storage,
-            new Key.From(SliceDeleteTest.KEY)
+            storage
         ).response(
             new RequestLine(
                 SliceDeleteTest.METHOD,
@@ -111,6 +111,28 @@ public class SliceDeleteTest {
         MatcherAssert.assertThat(
             storage.exists(preserved),
             new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    @Disabled
+    void returnsNotFound() {
+        final Storage storage = new InMemoryStorage();
+        MatcherAssert.assertThat(
+            new SliceDelete(
+                storage
+            ).response(
+                new RequestLine(
+                    SliceDeleteTest.METHOD,
+                    "notfound",
+                    SliceDeleteTest.HTTP
+                ).toString(),
+                Collections.emptyList(),
+                Flowable.empty()
+            ),
+            new RsHasStatus(
+                RsStatus.NOT_FOUND
+            )
         );
     }
 }
