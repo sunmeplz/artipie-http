@@ -165,7 +165,7 @@ public enum RsStatus {
     }
 
     /**
-     * RsStatus by code.
+     * Searches {@link RsStatus} instance by response code.
      * @since 0.11
      */
     public static class ByCode {
@@ -181,6 +181,14 @@ public enum RsStatus {
          */
         public ByCode(@Nullable final String code) {
             this.code = code;
+        }
+
+        /**
+         * Ctor.
+         * @param code Code
+         */
+        public ByCode(final int code) {
+            this.code = String.valueOf(code);
         }
 
         /**
