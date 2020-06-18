@@ -23,6 +23,9 @@
  */
 package com.artipie.http.rs;
 
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
 /**
  * HTTP response status code.
  * See <a href="https://tools.ietf.org/html/rfc2616#section-6.1.1">RFC 2616 6.1.1 Status Code and Reason Phrase</a>
@@ -160,4 +163,42 @@ public enum RsStatus {
     public String code() {
         return this.string;
     }
+
+    /**
+     * RsStatus by code.
+     * @since 0.11
+     */
+    public static class ByCode {
+
+        /**
+         * Status code.
+         */
+        private final String code;
+
+        /**
+         * Ctor.
+         * @param code Code
+         */
+        public ByCode(@Nullable final String code) {
+            this.code = code;
+        }
+
+        /**
+         * Searches RsStatus by code.
+         * @return RsStatus instance if found
+         * @throws IllegalArgumentException If RsStatus is not found
+         */
+        public RsStatus find() {
+            return Stream.of(RsStatus.values())
+                .filter(status -> status.code().equals(this.code))
+                .findAny()
+                .orElseThrow(
+                    () -> new IllegalArgumentException(
+                        String.format("Unknown status code: `%s`", this.code)
+                    )
+                );
+        }
+
+    }
+
 }
