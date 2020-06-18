@@ -188,7 +188,7 @@ public enum RsStatus {
          * @param code Code
          */
         public ByCode(final int code) {
-            this.code = String.valueOf(code);
+            this(String.valueOf(code));
         }
 
         /**
