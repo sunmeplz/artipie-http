@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test case for {@link ContentType}.
  *
- * @since 0.10
+ * @since 0.11
  */
 public final class ContentTypeTest {
 
@@ -70,6 +70,29 @@ public final class ContentTypeTest {
         Assertions.assertThrows(
             IllegalStateException.class,
             () -> new ContentType(Headers.EMPTY).getValue()
+        );
+    }
+
+    @Test
+    void shouldFailToExtractValueWhenNoContentTypeHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentType(
+                new Headers.From("Location", "http://artipie.com")
+            ).getValue()
+        );
+    }
+
+    @Test
+    void shouldFailToExtractValueFromMultipleHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentType(
+                new Headers.From(
+                    new ContentType("application/json"),
+                    new ContentType("text/plain")
+                )
+            ).getValue()
         );
     }
 }
