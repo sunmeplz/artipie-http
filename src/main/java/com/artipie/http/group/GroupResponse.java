@@ -25,13 +25,16 @@ package com.artipie.http.group;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.IntStream;
 
 /**
  * Group response.
+ * <p>
+ * The list of responses which can be send to connection by specified order.
+ * </p>
  * @since 0.11
  */
 final class GroupResponse implements Response {
@@ -52,15 +55,13 @@ final class GroupResponse implements Response {
     @Override
     public CompletionStage<Void> send(final Connection con) {
         final GroupResults results = new GroupResults(this.responses.size());
-        final List<CompletableFuture<Void>> futures = new ArrayList<>(this.responses.size());
-        for (int pos = 0; pos < this.responses.size(); ++pos) {
-            futures.add(
-                pos,
-                this.responses.get(pos)
-                    .send(new GroupConnection(con, pos, results))
-                    .toCompletableFuture()
-            );
-        }
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]));
+        return CompletableFuture.allOf(
+            IntStream.range(0, this.responses.size())
+                .mapToObj(
+                    pos -> this.responses.get(pos)
+                        .send(new GroupConnection(con, pos, results))
+                        .toCompletableFuture()
+                ).toArray(CompletableFuture<?>[]::new)
+        );
     }
 }

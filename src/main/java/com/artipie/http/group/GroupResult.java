@@ -34,6 +34,10 @@ import org.reactivestreams.Subscription;
 
 /**
  * Response result.
+ * <p>
+ * The result of {@link GroupResponse}, it's waiting in order for all previous responses
+ * to be completed, and may be replied to connection or cancelled.
+ * </p>
  * @since 0.11
  */
 final class GroupResult {
