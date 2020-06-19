@@ -27,6 +27,7 @@ import com.artipie.http.Connection;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithStatus;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -54,7 +55,7 @@ final class GroupResults {
      * @param cap Capacity
      */
     GroupResults(final int cap) {
-        this(new ArrayList<>(cap));
+        this(new ArrayList<>(Collections.nCopies(cap, null)));
     }
 
     /**
@@ -83,6 +84,9 @@ final class GroupResults {
     @SuppressWarnings("PMD.OnlyOneReturn")
     public CompletionStage<Void> complete(final int order, final GroupResult result,
         final Connection con) {
+        if (order >= this.list.size()) {
+            throw new IllegalStateException("Wrong order of result");
+        }
         if (this.done.get()) {
             result.cancel();
             return CompletableFuture.completedFuture(null);
