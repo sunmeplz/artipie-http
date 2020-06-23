@@ -116,27 +116,19 @@ public final class RsWithBody implements Response {
 
     @Override
     public CompletionStage<Void> send(final Connection con) {
-        return this.origin.send(
-            new RsWithBody.ConWithBody(
-                this.body.size()
-                    .map(size -> RsWithBody.withSize(con, size))
-                    .orElse(con),
-                this.body
-            )
-        );
+        return withHeaders(this.origin, this.body.size()).send(new ConWithBody(con, this.body));
     }
 
     /**
-     * Connection with {@code Content-Length} size header.
-     * @param con Origin connection
-     * @param size Content size
-     * @return Wrapped connection
+     * Wrap response with headers if size provided.
+     * @param origin Origin response
+     * @param size Maybe size
+     * @return Wrapped response
      */
-    private static Connection withSize(final Connection con, final long size) {
-        return new RsWithHeaders.ConWithHeaders(
-            con,
-            new Headers.From(new ContentLength(String.valueOf(size)))
-        );
+    private static Response withHeaders(final Response origin, final Optional<Long> size) {
+        return size.<Response>map(
+            val -> new RsWithHeaders(origin, new ContentLength(String.valueOf(val)))
+        ).orElse(origin);
     }
 
     /**

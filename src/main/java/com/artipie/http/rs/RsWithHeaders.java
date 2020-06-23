@@ -102,7 +102,7 @@ public final class RsWithHeaders implements Response {
      * Connection with additional headers.
      * @since 0.3
      */
-    static final class ConWithHeaders implements Connection {
+    private static final class ConWithHeaders implements Connection {
 
         /**
          * Origin connection.
@@ -120,7 +120,7 @@ public final class RsWithHeaders implements Response {
          * @param origin Connection
          * @param headers Headers
          */
-        ConWithHeaders(
+        private ConWithHeaders(
             final Connection origin,
             final Iterable<Map.Entry<String, String>> headers) {
             this.origin = origin;
