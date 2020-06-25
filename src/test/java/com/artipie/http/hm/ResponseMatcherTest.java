@@ -123,13 +123,16 @@ class ResponseMatcherTest {
 
     @Test
     void matchesStatusBodyAndHeaders() {
-        final Header header = new Header("Accept", "all");
         final String body = "123";
         MatcherAssert.assertThat(
-            new ResponseMatcher(RsStatus.OK, body.getBytes(), header)
+            new ResponseMatcher(RsStatus.OK, body.getBytes())
                 .matches(
                     new RsWithBody(
-                        new RsWithHeaders(StandardRs.EMPTY, header), body, StandardCharsets.UTF_8
+                        new RsWithHeaders(
+                            StandardRs.EMPTY,
+                            new Header("Content-Length", "3")
+                        ),
+                        body, StandardCharsets.UTF_8
                     )
                 ),
             new IsEqual<>(true)
