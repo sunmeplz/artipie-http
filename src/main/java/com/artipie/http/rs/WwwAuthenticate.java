@@ -29,14 +29,14 @@ import com.artipie.http.rq.RqHeaders;
 /**
  * WWW-Authenticate header.
  *
- * @since 0.11
+ * @since 0.12
  */
 public final class WwwAuthenticate extends Header.Wrap {
 
     /**
      * Header name.
      */
-    public static final String NAME = "WWW-Authenticate";
+    private static final String NAME = "WWW-Authenticate";
 
     /**
      * Ctor.

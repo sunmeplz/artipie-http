@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test case for {@link WwwAuthenticate}.
  *
- * @since 0.11
+ * @since 0.12
  */
 public final class WwwAuthenticateTest {
 
