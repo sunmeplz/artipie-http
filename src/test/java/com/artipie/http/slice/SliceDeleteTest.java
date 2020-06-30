@@ -27,11 +27,13 @@ import com.artipie.asto.Content;
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.http.Slice;
 import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Disabled;
@@ -42,71 +44,48 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.10
  */
-public final class SliceDeleteTest {
-
-    /**
-     * Deleted key.
-     */
-    private static final String KEY = "deletedKey";
-
-    /**
-     * Delete method.
-     */
-    private static final String METHOD = "DELETE";
-
-    /**
-     * HTTP.
-     */
-    private static final String HTTP = "HTTP/1.1";
+final class SliceDeleteTest {
 
     @Test
     @Disabled
-    void deleteCorrectEntry() {
+    void deleteCorrectEntry() throws Exception {
         final Storage storage = new InMemoryStorage();
+        final String key = "deletedKey";
         storage.save(
-            new Key.From(SliceDeleteTest.KEY),
+            new Key.From(key),
             new Content.From("deleted content".getBytes())
         ).join();
-        new SliceDelete(
-            storage
-        ).response(
-            new RequestLine(
-                SliceDeleteTest.METHOD,
-                SliceDeleteTest.KEY,
-                SliceDeleteTest.HTTP
-            ).toString(),
-            Collections.emptyList(),
-            Flowable.empty()
+        verify(
+            new SliceDelete(
+                storage
+            ),
+            line(key)
         );
         MatcherAssert.assertThat(
-            storage.exists(new Key.From(SliceDeleteTest.KEY)),
+            storage.exists(new Key.From(key)),
             new IsEqual<>(false)
         );
     }
 
     @Test
     @Disabled
-    void doNotDeleteOtherEntry() {
+    void doNotDeleteOtherEntry() throws Exception {
         final Storage storage = new InMemoryStorage();
         final Key preserved = new Key.From("preservedKey");
+        final String deleted = "deleted";
         storage.save(
-            new Key.From(SliceDeleteTest.KEY),
+            new Key.From(deleted),
             new Content.From("any content".getBytes())
         ).join();
         storage.save(
             preserved,
             new Content.From("preserved content".getBytes())
         ).join();
-        new SliceDelete(
-            storage
-        ).response(
-            new RequestLine(
-                SliceDeleteTest.METHOD,
-                SliceDeleteTest.KEY,
-                SliceDeleteTest.HTTP
-            ).toString(),
-            Collections.emptyList(),
-            Flowable.empty()
+        verify(
+            new SliceDelete(
+                storage
+            ),
+            line(deleted)
         );
         MatcherAssert.assertThat(
             storage.exists(preserved),
@@ -122,11 +101,7 @@ public final class SliceDeleteTest {
             new SliceDelete(
                 storage
             ).response(
-                new RequestLine(
-                    SliceDeleteTest.METHOD,
-                    "notfound",
-                    SliceDeleteTest.HTTP
-                ).toString(),
+                line("notfound").toString(),
                 Collections.emptyList(),
                 Flowable.empty()
             ),
@@ -134,6 +109,21 @@ public final class SliceDeleteTest {
                 RsStatus.NOT_FOUND
             )
         );
+    }
+
+    private static RequestLine line(final String path) {
+        return new RequestLine(
+            "DELETE",
+            path,
+            "HTTP/1.1"
+        );
+    }
+
+    private static void verify(final Slice slice, final RequestLine line) throws Exception {
+        slice.response(line.toString(), Collections.emptyList(), Flowable.empty())
+            .send((status, headers, body) -> CompletableFuture.completedFuture(null))
+            .toCompletableFuture()
+            .get();
     }
 }
 
