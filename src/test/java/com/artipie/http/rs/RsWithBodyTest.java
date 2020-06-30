@@ -23,7 +23,9 @@
  */
 package com.artipie.http.rs;
 
+import com.artipie.asto.Content;
 import com.artipie.http.hm.ResponseMatcher;
+import com.artipie.http.hm.RsHasHeaders;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import org.hamcrest.MatcherAssert;
@@ -53,4 +55,12 @@ final class RsWithBodyTest {
         );
     }
 
+    @Test
+    void appendsContentSizeHeader() {
+        final int size = 100;
+        MatcherAssert.assertThat(
+            new RsWithBody(StandardRs.EMPTY, new Content.From(new byte[size])),
+            new RsHasHeaders(new Header("Content-Length", String.valueOf(size)))
+        );
+    }
 }

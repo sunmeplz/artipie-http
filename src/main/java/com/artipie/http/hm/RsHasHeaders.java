@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -113,6 +114,17 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
         final AtomicReference<Iterable<Entry<String, String>>> out = new AtomicReference<>();
         item.send(new FakeConnection(out)).toCompletableFuture().join();
         return this.headers.matches(out.get());
+    }
+
+    @Override
+    public void describeMismatchSafely(final Response item, final Description desc) {
+        final AtomicReference<Iterable<Entry<String, String>>> out = new AtomicReference<>();
+        item.send(new FakeConnection(out)).toCompletableFuture().join();
+        desc.appendText("was ").appendValue(
+            StreamSupport.stream(out.get().spliterator(), false)
+                .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(";"))
+        );
     }
 
     /**
