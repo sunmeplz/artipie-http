@@ -23,11 +23,13 @@
  */
 package com.artipie.http.auth;
 
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithHeaders;
 import com.artipie.http.rs.RsWithStatus;
+import com.artipie.http.rs.WwwAuthenticate;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import org.reactivestreams.Publisher;
@@ -99,7 +101,7 @@ public final class SliceAuth implements Slice {
                     } else {
                         rsp = new RsWithHeaders(
                             new RsWithStatus(RsStatus.UNAUTHORIZED),
-                            "WWW-Authenticate", "Basic"
+                            new Headers.From(new WwwAuthenticate("Basic"))
                         );
                     }
                     return rsp;
