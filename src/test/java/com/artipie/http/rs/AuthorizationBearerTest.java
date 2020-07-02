@@ -21,33 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.auth;
+package com.artipie.http.rs;
 
-import com.artipie.http.rs.Authorization;
-import com.artipie.http.rs.Header;
-import org.cactoos.text.Base64Encoded;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.Test;
 
 /**
- * Basic authentication `Authorization` header.
+ * Tests for {@link Authorization.Bearer}.
  *
- * @since 0.9.5
+ * @since 0.11
  */
-public final class BasicAuthorizationHeader extends Header.Wrap {
+public final class AuthorizationBearerTest {
 
-    /**
-     * Ctor.
-     *
-     * @param username User name.
-     * @param password Password.
-     */
-    public BasicAuthorizationHeader(final String username, final String password) {
-        super(
-            new Authorization(
-                String.format(
-                    "Basic %s",
-                    new Base64Encoded(String.format("%s:%s", username, password))
-                )
-            )
+    @Test
+    void shouldHaveExpectedValue() {
+        MatcherAssert.assertThat(
+            new Authorization.Bearer("mF_9.B5f-4.1JqM").getValue(),
+            new IsEqual<>("Bearer mF_9.B5f-4.1JqM")
         );
     }
 }
