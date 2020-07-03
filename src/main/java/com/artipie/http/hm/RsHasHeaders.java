@@ -27,7 +27,7 @@ package com.artipie.http.hm;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import com.artipie.http.rs.RsStatus;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;

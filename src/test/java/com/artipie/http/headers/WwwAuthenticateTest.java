@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
 import org.hamcrest.MatcherAssert;
@@ -30,36 +30,36 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link Location}.
+ * Test case for {@link WwwAuthenticate}.
  *
- * @since 0.11
+ * @since 0.12
  */
-public final class LocationTest {
+public final class WwwAuthenticateTest {
 
     @Test
     void shouldHaveExpectedName() {
         MatcherAssert.assertThat(
-            new Location("http://artipie.com/").getKey(),
-            new IsEqual<>("Location")
+            new WwwAuthenticate("Basic").getKey(),
+            new IsEqual<>("WWW-Authenticate")
         );
     }
 
     @Test
     void shouldHaveExpectedValue() {
-        final String value = "http://artipie.com/something";
+        final String value = "Basic realm=\"http://artipie.com\"";
         MatcherAssert.assertThat(
-            new Location(value).getValue(),
+            new WwwAuthenticate(value).getValue(),
             new IsEqual<>(value)
         );
     }
 
     @Test
     void shouldExtractValueFromHeaders() {
-        final String value = "http://artipie.com/resource";
-        final Location header = new Location(
+        final String value = "Basic realm=\"http://artipie.com/my-repo\"";
+        final WwwAuthenticate header = new WwwAuthenticate(
             new Headers.From(
                 new Header("Content-Length", "11"),
-                new Header("location", value),
+                new Header("www-authenticate", value),
                 new Header("X-Something", "Some Value")
             )
         );
@@ -70,15 +70,15 @@ public final class LocationTest {
     void shouldFailToExtractValueFromEmptyHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new Location(Headers.EMPTY).getValue()
+            () -> new WwwAuthenticate(Headers.EMPTY).getValue()
         );
     }
 
     @Test
-    void shouldFailToExtractValueWhenNoLocationHeaders() {
+    void shouldFailToExtractValueWhenNoWwwAuthenticateHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new Location(
+            () -> new WwwAuthenticate(
                 new Headers.From("Content-Type", "text/plain")
             ).getValue()
         );
@@ -88,10 +88,10 @@ public final class LocationTest {
     void shouldFailToExtractValueFromMultipleHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new Location(
+            () -> new WwwAuthenticate(
                 new Headers.From(
-                    new Location("http://artipie.com/1"),
-                    new Location("http://artipie.com/2")
+                    new WwwAuthenticate("Basic realm=\"https://artipie.com\""),
+                    new WwwAuthenticate("Bearer realm=\"https://artipie.com/token\"")
                 )
             ).getValue()
         );

@@ -21,38 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
-
-import com.artipie.http.Headers;
-import com.artipie.http.rq.RqHeaders;
 
 /**
- * Content-Type header.
+ * HTTP header classes.
  *
- * @since 0.11
+ * @since 0.13
  */
-public final class ContentType extends Header.Wrap {
+package com.artipie.http.headers;
 
-    /**
-     * Header name.
-     */
-    public static final String NAME = "Content-Type";
-
-    /**
-     * Ctor.
-     *
-     * @param value Header value.
-     */
-    public ContentType(final String value) {
-        super(new Header(ContentType.NAME, value));
-    }
-
-    /**
-     * Ctor.
-     *
-     * @param headers Headers to extract header from.
-     */
-    public ContentType(final Headers headers) {
-        this(new RqHeaders.Single(headers, ContentType.NAME).asString());
-    }
-}

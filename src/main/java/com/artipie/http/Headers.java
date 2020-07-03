@@ -23,7 +23,7 @@
  */
 package com.artipie.http;
 
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.Collections;

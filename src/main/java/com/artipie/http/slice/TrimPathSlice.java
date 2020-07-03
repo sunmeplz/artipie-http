@@ -25,9 +25,9 @@ package com.artipie.http.slice;
 
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import com.artipie.http.headers.Header;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rq.RequestLineFrom;
-import com.artipie.http.rs.Header;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithStatus;

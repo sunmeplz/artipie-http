@@ -21,38 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
-
-import com.artipie.http.Headers;
-import com.artipie.http.rq.RqHeaders;
 
 /**
- * WWW-Authenticate header.
+ * Tests for HTTP header classes.
  *
- * @since 0.12
+ * @since 0.13
  */
-public final class WwwAuthenticate extends Header.Wrap {
+package com.artipie.http.headers;
 
-    /**
-     * Header name.
-     */
-    private static final String NAME = "WWW-Authenticate";
-
-    /**
-     * Ctor.
-     *
-     * @param value Header value.
-     */
-    public WwwAuthenticate(final String value) {
-        super(new Header(WwwAuthenticate.NAME, value));
-    }
-
-    /**
-     * Ctor.
-     *
-     * @param headers Headers to extract header from.
-     */
-    public WwwAuthenticate(final Headers headers) {
-        this(new RqHeaders.Single(headers, WwwAuthenticate.NAME).asString());
-    }
-}

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
 import org.hamcrest.MatcherAssert;
@@ -30,38 +30,69 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link ContentLength}.
+ * Test case for {@link ContentType}.
  *
- * @since 0.10
+ * @since 0.11
  */
-public final class ContentLengthTest {
+public final class ContentTypeTest {
+
+    @Test
+    void shouldHaveExpectedName() {
+        MatcherAssert.assertThat(
+            new ContentType("10").getKey(),
+            new IsEqual<>("Content-Type")
+        );
+    }
 
     @Test
     void shouldHaveExpectedValue() {
         MatcherAssert.assertThat(
-            new ContentLength("10").getKey(),
-            new IsEqual<>("Content-Length")
+            new ContentType("10").getValue(),
+            new IsEqual<>("10")
         );
     }
 
     @Test
-    void shouldExtractLongValueFromHeaders() {
-        final long length = 123;
-        final ContentLength header = new ContentLength(
+    void shouldExtractValueFromHeaders() {
+        final String value = "application/octet-stream";
+        final ContentType header = new ContentType(
             new Headers.From(
-                new Header("Content-Type", "application/octet-stream"),
-                new Header("content-length", String.valueOf(length)),
+                new Header("Content-Length", "11"),
+                new Header("content-type", value),
                 new Header("X-Something", "Some Value")
             )
         );
-        MatcherAssert.assertThat(header.longValue(), new IsEqual<>(length));
+        MatcherAssert.assertThat(header.getValue(), new IsEqual<>(value));
     }
 
     @Test
-    void shouldFailToExtractLongValueFromEmptyHeaders() {
+    void shouldFailToExtractValueFromEmptyHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new ContentLength(Headers.EMPTY).longValue()
+            () -> new ContentType(Headers.EMPTY).getValue()
+        );
+    }
+
+    @Test
+    void shouldFailToExtractValueWhenNoContentTypeHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentType(
+                new Headers.From("Location", "http://artipie.com")
+            ).getValue()
+        );
+    }
+
+    @Test
+    void shouldFailToExtractValueFromMultipleHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentType(
+                new Headers.From(
+                    new ContentType("application/json"),
+                    new ContentType("text/plain")
+                )
+            ).getValue()
         );
     }
 }

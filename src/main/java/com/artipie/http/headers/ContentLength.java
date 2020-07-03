@@ -21,33 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.auth;
+package com.artipie.http.headers;
 
-import com.artipie.http.rs.Header;
-import org.cactoos.text.Base64Encoded;
+import com.artipie.http.Headers;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * Basic authentication `Authorization` header.
+ * Content-Length header.
  *
- * @since 0.9.5
+ * @since 0.10
  */
-public final class BasicAuthorizationHeader extends Header.Wrap {
+public final class ContentLength extends Header.Wrap {
+
+    /**
+     * Header name.
+     */
+    public static final String NAME = "Content-Length";
 
     /**
      * Ctor.
      *
-     * @param username User name.
-     * @param password Password.
+     * @param value Header value.
      */
-    public BasicAuthorizationHeader(final String username, final String password) {
-        super(
-            new Header(
-                "Authorization",
-                String.format(
-                    "Basic %s",
-                    new Base64Encoded(String.format("%s:%s", username, password))
-                )
-            )
-        );
+    public ContentLength(final String value) {
+        super(new Header(ContentLength.NAME, value));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public ContentLength(final Headers headers) {
+        this(new RqHeaders.Single(headers, ContentLength.NAME).asString());
+    }
+
+    /**
+     * Read header as long value.
+     *
+     * @return Header value.
+     */
+    public long longValue() {
+        return Long.parseLong(this.getValue());
     }
 }

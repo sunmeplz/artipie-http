@@ -21,24 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.auth;
+package com.artipie.http.headers;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Test;
+import com.artipie.http.Headers;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * Tests for {@link BasicAuthorizationHeader}.
+ * WWW-Authenticate header.
  *
- * @since 0.9.5
+ * @since 0.12
  */
-public final class BasicAuthorizationHeaderTest {
+public final class WwwAuthenticate extends Header.Wrap {
 
-    @Test
-    void shouldHaveExpectedValue() {
-        MatcherAssert.assertThat(
-            new BasicAuthorizationHeader("Aladdin", "open sesame").getValue(),
-            new IsEqual<>("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
-        );
+    /**
+     * Header name.
+     */
+    private static final String NAME = "WWW-Authenticate";
+
+    /**
+     * Ctor.
+     *
+     * @param value Header value.
+     */
+    public WwwAuthenticate(final String value) {
+        super(new Header(WwwAuthenticate.NAME, value));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public WwwAuthenticate(final Headers headers) {
+        this(new RqHeaders.Single(headers, WwwAuthenticate.NAME).asString());
     }
 }
