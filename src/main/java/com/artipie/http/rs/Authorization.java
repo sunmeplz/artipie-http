@@ -25,11 +25,12 @@ package com.artipie.http.rs;
 
 import com.artipie.http.Headers;
 import com.artipie.http.rq.RqHeaders;
+import org.cactoos.text.Base64Encoded;
 
 /**
  * Authorization header.
  *
- * @since 0.11
+ * @since 0.12
  * @todo #191:60min Extract header value parsing logic from `BasicIdentities`
  *  Now there is code for parsing `Authorization` header content,
  *  but it is contained in `BasicIdentities` class. The code could be generalized and extracted to
@@ -61,9 +62,34 @@ public final class Authorization extends Header.Wrap {
     }
 
     /**
+     * Basic authentication `Authorization` header.
+     *
+     * @since 0.12
+     */
+    public static final class Basic extends Header.Wrap {
+
+        /**
+         * Ctor.
+         *
+         * @param username User name.
+         * @param password Password.
+         */
+        public Basic(final String username, final String password) {
+            super(
+                new Authorization(
+                    String.format(
+                        "Basic %s",
+                        new Base64Encoded(String.format("%s:%s", username, password))
+                    )
+                )
+            );
+        }
+    }
+
+    /**
      * Bearer authentication `Authorization` header.
      *
-     * @since 0.11
+     * @since 0.12
      */
     public static final class Bearer extends Header.Wrap {
 

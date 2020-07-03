@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link Authorization.Bearer}.
  *
- * @since 0.11
+ * @since 0.12
  */
 public final class AuthorizationBearerTest {
 
