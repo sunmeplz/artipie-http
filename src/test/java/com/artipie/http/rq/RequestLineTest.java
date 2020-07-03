@@ -43,7 +43,7 @@ public class RequestLineTest {
     }
 
     @Test
-    public void defaultVersion() {
+    public void shouldHaveDefaultVersionWhenNoneSpecified() {
         MatcherAssert.assertThat(
             new RequestLine(RqMethod.PUT, "/file.txt").toString(),
             Matchers.equalTo("PUT /file.txt HTTP/1.1\r\n")
