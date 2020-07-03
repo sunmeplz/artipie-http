@@ -23,6 +23,7 @@
  */
 package com.artipie.http.rs;
 
+import com.artipie.http.headers.Header;
 import com.artipie.http.hm.RsHasHeaders;
 import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;

@@ -21,24 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.headers;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Test;
+import com.artipie.http.Headers;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * Tests for {@link Authorization.Bearer}.
+ * Location header.
  *
- * @since 0.12
+ * @since 0.11
  */
-public final class AuthorizationBearerTest {
+public final class Location extends Header.Wrap {
 
-    @Test
-    void shouldHaveExpectedValue() {
-        MatcherAssert.assertThat(
-            new Authorization.Bearer("mF_9.B5f-4.1JqM").getValue(),
-            new IsEqual<>("Bearer mF_9.B5f-4.1JqM")
-        );
+    /**
+     * Header name.
+     */
+    public static final String NAME = "Location";
+
+    /**
+     * Ctor.
+     *
+     * @param value Header value.
+     */
+    public Location(final String value) {
+        super(new Header(Location.NAME, value));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public Location(final Headers headers) {
+        this(new RqHeaders.Single(headers, Location.NAME).asString());
     }
 }

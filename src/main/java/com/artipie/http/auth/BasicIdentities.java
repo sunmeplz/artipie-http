@@ -23,8 +23,8 @@
  */
 package com.artipie.http.auth;
 
+import com.artipie.http.headers.Authorization;
 import com.artipie.http.rq.RqHeaders;
-import com.artipie.http.rs.Authorization;
 import java.util.Map;
 import java.util.Optional;
 import org.cactoos.text.Base64Decoded;

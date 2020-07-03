@@ -23,7 +23,7 @@
  */
 package com.artipie.http;
 
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

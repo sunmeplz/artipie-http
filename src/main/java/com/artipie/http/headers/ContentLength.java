@@ -21,47 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * Test case for {@link ContentLength}.
+ * Content-Length header.
  *
  * @since 0.10
  */
-public final class ContentLengthTest {
+public final class ContentLength extends Header.Wrap {
 
-    @Test
-    void shouldHaveExpectedValue() {
-        MatcherAssert.assertThat(
-            new ContentLength("10").getKey(),
-            new IsEqual<>("Content-Length")
-        );
+    /**
+     * Header name.
+     */
+    public static final String NAME = "Content-Length";
+
+    /**
+     * Ctor.
+     *
+     * @param value Header value.
+     */
+    public ContentLength(final String value) {
+        super(new Header(ContentLength.NAME, value));
     }
 
-    @Test
-    void shouldExtractLongValueFromHeaders() {
-        final long length = 123;
-        final ContentLength header = new ContentLength(
-            new Headers.From(
-                new Header("Content-Type", "application/octet-stream"),
-                new Header("content-length", String.valueOf(length)),
-                new Header("X-Something", "Some Value")
-            )
-        );
-        MatcherAssert.assertThat(header.longValue(), new IsEqual<>(length));
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public ContentLength(final Headers headers) {
+        this(new RqHeaders.Single(headers, ContentLength.NAME).asString());
     }
 
-    @Test
-    void shouldFailToExtractLongValueFromEmptyHeaders() {
-        Assertions.assertThrows(
-            IllegalStateException.class,
-            () -> new ContentLength(Headers.EMPTY).longValue()
-        );
+    /**
+     * Read header as long value.
+     *
+     * @return Header value.
+     */
+    public long longValue() {
+        return Long.parseLong(this.getValue());
     }
 }
