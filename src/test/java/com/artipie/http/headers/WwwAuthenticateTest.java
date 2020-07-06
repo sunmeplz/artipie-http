@@ -103,8 +103,8 @@ public final class WwwAuthenticateTest {
     @Test
     void shouldParseHeaderWithoutParams() {
         final WwwAuthenticate header = new WwwAuthenticate("Basic");
-        MatcherAssert.assertThat(header.scheme(), new IsEqual<>("Basic"));
-        MatcherAssert.assertThat(header.params(), new IsEmptyCollection<>());
+        MatcherAssert.assertThat("Wrong scheme", header.scheme(), new IsEqual<>("Basic"));
+        MatcherAssert.assertThat("Wrong params", header.params(), new IsEmptyCollection<>());
     }
 
     @Test
@@ -114,38 +114,46 @@ public final class WwwAuthenticateTest {
             "Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\",scope=\"repository:busybox:pull\""
         );
         MatcherAssert.assertThat(
+            "Wrong scheme",
             header.scheme(),
             new IsEqual<>("Bearer")
         );
         MatcherAssert.assertThat(
+            "Wrong realm",
             header.realm(),
             new IsEqual<>("https://auth.docker.io/token")
         );
         final Iterator<WwwAuthenticate.Param> params = header.params().iterator();
         final WwwAuthenticate.Param first = params.next();
         MatcherAssert.assertThat(
+            "Wrong name of param #1",
             first.name(),
             new IsEqual<>("realm")
         );
         MatcherAssert.assertThat(
+            "Wrong value of param #1",
             first.value(),
             new IsEqual<>("https://auth.docker.io/token")
         );
         final WwwAuthenticate.Param second = params.next();
         MatcherAssert.assertThat(
+            "Wrong name of param #2",
             second.name(),
             new IsEqual<>("service")
         );
         MatcherAssert.assertThat(
+            "Wrong value of param #2",
             second.value(),
             new IsEqual<>("registry.docker.io")
         );
         final WwwAuthenticate.Param third = params.next();
         MatcherAssert.assertThat(
+            "Wrong name of param #3",
             third.name(),
             new IsEqual<>("scope")
         );
         MatcherAssert.assertThat(
+            "Wrong value of param #3",
             third.value(),
             new IsEqual<>("repository:busybox:pull")
         );
