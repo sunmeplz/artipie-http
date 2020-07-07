@@ -23,6 +23,7 @@
  */
 package com.artipie.http.hm;
 
+import com.artipie.http.Headers;
 import com.artipie.http.headers.Header;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for {@link ResponseMatcher}.
  * @since 0.10
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 class ResponseMatcherTest {
 
@@ -133,6 +135,23 @@ class ResponseMatcherTest {
                             new Header("Content-Length", "3")
                         ),
                         body, StandardCharsets.UTF_8
+                    )
+                ),
+            new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void matchesStatusAndHeaderMatcher() {
+        final RsStatus status = RsStatus.ACCEPTED;
+        final String header = "Some-header";
+        final String value = "Some value";
+        MatcherAssert.assertThat(
+            new ResponseMatcher(status, new IsHeader(header, value))
+                .matches(
+                    new RsWithHeaders(
+                        new RsWithStatus(status),
+                        new Headers.From(header, value)
                     )
                 ),
             new IsEqual<>(true)
