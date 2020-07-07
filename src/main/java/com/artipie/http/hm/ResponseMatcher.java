@@ -135,4 +135,18 @@ public final class ResponseMatcher extends AllOf<Response> {
             )
         );
     }
+
+    /**
+     * Ctor.
+     * @param status Expected status
+     * @param headers Matchers for expected headers
+     */
+    public ResponseMatcher(final RsStatus status, final IsHeader... headers) {
+        super(
+            new ListOf<Matcher<? super Response>>(
+                new RsHasStatus(status),
+                new RsHasHeaders(headers)
+            )
+        );
+    }
 }
