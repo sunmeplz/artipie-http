@@ -21,38 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
-
-import com.artipie.http.Headers;
-import com.artipie.http.rq.RqHeaders;
 
 /**
- * Location header.
+ * HTTP header classes.
  *
- * @since 0.11
+ * @since 0.13
  */
-public final class Location extends Header.Wrap {
+package com.artipie.http.headers;
 
-    /**
-     * Header name.
-     */
-    public static final String NAME = "Location";
-
-    /**
-     * Ctor.
-     *
-     * @param value Header value.
-     */
-    public Location(final String value) {
-        super(new Header(Location.NAME, value));
-    }
-
-    /**
-     * Ctor.
-     *
-     * @param headers Headers to extract header from.
-     */
-    public Location(final Headers headers) {
-        this(new RqHeaders.Single(headers, Location.NAME).asString());
-    }
-}

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
 import org.hamcrest.MatcherAssert;
@@ -30,36 +30,36 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link WwwAuthenticate}.
+ * Test case for {@link Authorization}.
  *
  * @since 0.12
  */
-public final class WwwAuthenticateTest {
+public final class AuthorizationTest {
 
     @Test
     void shouldHaveExpectedName() {
         MatcherAssert.assertThat(
-            new WwwAuthenticate("Basic").getKey(),
-            new IsEqual<>("WWW-Authenticate")
+            new Authorization("Basic abc").getKey(),
+            new IsEqual<>("Authorization")
         );
     }
 
     @Test
     void shouldHaveExpectedValue() {
-        final String value = "Basic realm=\"http://artipie.com\"";
+        final String value = "Basic 123";
         MatcherAssert.assertThat(
-            new WwwAuthenticate(value).getValue(),
+            new Authorization(value).getValue(),
             new IsEqual<>(value)
         );
     }
 
     @Test
     void shouldExtractValueFromHeaders() {
-        final String value = "Basic realm=\"http://artipie.com/my-repo\"";
-        final WwwAuthenticate header = new WwwAuthenticate(
+        final String value = "Bearer abc";
+        final Authorization header = new Authorization(
             new Headers.From(
                 new Header("Content-Length", "11"),
-                new Header("www-authenticate", value),
+                new Header("authorization", value),
                 new Header("X-Something", "Some Value")
             )
         );
@@ -70,15 +70,15 @@ public final class WwwAuthenticateTest {
     void shouldFailToExtractValueFromEmptyHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new WwwAuthenticate(Headers.EMPTY).getValue()
+            () -> new Authorization(Headers.EMPTY).getValue()
         );
     }
 
     @Test
-    void shouldFailToExtractValueWhenNoWwwAuthenticateHeaders() {
+    void shouldFailToExtractValueWhenNoAuthorizationHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new WwwAuthenticate(
+            () -> new Authorization(
                 new Headers.From("Content-Type", "text/plain")
             ).getValue()
         );
@@ -88,10 +88,10 @@ public final class WwwAuthenticateTest {
     void shouldFailToExtractValueFromMultipleHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
-            () -> new WwwAuthenticate(
+            () -> new Authorization(
                 new Headers.From(
-                    new WwwAuthenticate("Basic realm=\"https://artipie.com\""),
-                    new WwwAuthenticate("Bearer realm=\"https://artipie.com/token\"")
+                    new Authorization("Bearer one"),
+                    new Authorization("Bearer two")
                 )
             ).getValue()
         );

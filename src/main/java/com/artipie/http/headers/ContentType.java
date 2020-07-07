@@ -21,24 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.auth;
+package com.artipie.http.headers;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Test;
+import com.artipie.http.Headers;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * Tests for {@link BasicAuthorizationHeader}.
+ * Content-Type header.
  *
- * @since 0.9.5
+ * @since 0.11
  */
-public final class BasicAuthorizationHeaderTest {
+public final class ContentType extends Header.Wrap {
 
-    @Test
-    void shouldHaveExpectedValue() {
-        MatcherAssert.assertThat(
-            new BasicAuthorizationHeader("Aladdin", "open sesame").getValue(),
-            new IsEqual<>("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
-        );
+    /**
+     * Header name.
+     */
+    public static final String NAME = "Content-Type";
+
+    /**
+     * Ctor.
+     *
+     * @param value Header value.
+     */
+    public ContentType(final String value) {
+        super(new Header(ContentType.NAME, value));
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public ContentType(final Headers headers) {
+        this(new RqHeaders.Single(headers, ContentType.NAME).asString());
     }
 }

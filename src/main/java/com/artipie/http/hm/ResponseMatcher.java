@@ -24,7 +24,7 @@
 package com.artipie.http.hm;
 
 import com.artipie.http.Response;
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import com.artipie.http.rs.RsStatus;
 import java.nio.charset.Charset;
 import org.cactoos.list.ListOf;

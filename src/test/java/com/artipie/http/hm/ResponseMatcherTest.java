@@ -24,7 +24,7 @@
 package com.artipie.http.hm;
 
 import com.artipie.http.Headers;
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithHeaders;
