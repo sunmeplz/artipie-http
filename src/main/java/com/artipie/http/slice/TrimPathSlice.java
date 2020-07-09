@@ -105,7 +105,10 @@ public final class TrimPathSlice implements Slice {
         final String full = uri.getPath();
         final Matcher matcher = this.ptn.matcher(full);
         final Response response;
-        if (matcher.matches() && !new RqHeaders(headers, TrimPathSlice.HDR_FULL_PATH).isEmpty()) {
+        final boolean recursion = !new RqHeaders(headers, TrimPathSlice.HDR_FULL_PATH).isEmpty();
+        if (matcher.matches() && recursion) {
+            response = this.slice.response(line, headers, body);
+        } else if (matcher.matches() && !recursion) {
             response = this.slice.response(
                 new RequestLine(
                     rline.method().toString(),
