@@ -85,12 +85,12 @@ final class GroupResults {
     @SuppressWarnings("PMD.OnlyOneReturn")
     public CompletionStage<Void> complete(final int order, final GroupResult result,
         final Connection con) {
-        if (order >= this.list.size()) {
-            throw new IllegalStateException("Wrong order of result");
-        }
         if (this.done.get()) {
             result.cancel();
             return CompletableFuture.completedFuture(null);
+        }
+        if (order >= this.list.size()) {
+            throw new IllegalStateException("Wrong order of result");
         }
         this.list.set(order, result);
         for (int pos = 0; pos < this.list.size(); ++pos) {
@@ -100,7 +100,6 @@ final class GroupResults {
             }
             if (target.success()) {
                 this.done.set(true);
-                this.list.remove(target);
                 this.list.stream().filter(Objects::nonNull).forEach(GroupResult::cancel);
                 return target.replay(con);
             }
