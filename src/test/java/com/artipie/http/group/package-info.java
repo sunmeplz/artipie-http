@@ -23,6 +23,6 @@
  */
 /**
  * Tests for group http components.
- * @since 0.10
+ * @since 0.16
  */
 package com.artipie.http.group;

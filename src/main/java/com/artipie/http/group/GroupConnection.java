@@ -23,7 +23,6 @@
  */
 package com.artipie.http.group;
 
-import com.artipie.asto.OneTimePublisher;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.rs.RsStatus;
@@ -70,9 +69,7 @@ final class GroupConnection implements Connection {
         final Publisher<ByteBuffer> body) {
         synchronized (this.results) {
             return this.results.complete(
-                this.pos,
-                new GroupResult(status, headers, new OneTimePublisher<>(body)),
-                this.origin
+                this.pos, new GroupResult(status, headers, body), this.origin
             );
         }
     }
