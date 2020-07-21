@@ -28,6 +28,7 @@ import com.artipie.http.Response;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -62,6 +63,14 @@ final class GroupResponse implements Response {
                         .send(new GroupConnection(con, pos, results))
                         .toCompletableFuture()
                 ).toArray(CompletableFuture<?>[]::new)
+        );
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%s: [%s]", this.getClass().getSimpleName(),
+            this.responses.stream().map(Object::toString).collect(Collectors.joining(", "))
         );
     }
 }
