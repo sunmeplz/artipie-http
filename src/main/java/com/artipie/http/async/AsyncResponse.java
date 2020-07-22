@@ -28,7 +28,6 @@ import com.artipie.http.Response;
 import hu.akarnokd.rxjava2.interop.SingleInterop;
 import io.reactivex.Single;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Async response from {@link CompletionStage}.
@@ -62,21 +61,12 @@ public final class AsyncResponse implements Response {
         return this.future.thenCompose(rsp -> rsp.send(connection));
     }
 
-    // @checkstyle ReturnCountCheck (15 lines)
     @Override
-    @SuppressWarnings("PMD.OnlyOneReturn")
     public String toString() {
-        try {
-            return String.format(
-                "%s: %s",
-                this.getClass().getSimpleName(),
-                this.future.toCompletableFuture().get()
-            );
-        } catch (final InterruptedException ignore) {
-            Thread.currentThread().interrupt();
-            return "";
-        } catch (final ExecutionException err) {
-            throw new IllegalStateException(err);
-        }
+        return String.format(
+            "(%s: %s)",
+            this.getClass().getSimpleName(),
+            this.future.toString()
+        );
     }
 }
