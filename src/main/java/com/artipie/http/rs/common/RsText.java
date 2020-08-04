@@ -34,21 +34,17 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonStructure;
 
 /**
- * Response with JSON document.
+ * Response with text.
  * @since 0.16
  */
-public final class RsJson implements Response {
+public final class RsText implements Response {
 
     /**
-     * Json supplier.
+     * Text char sequence.
      */
-    private final Supplier<? extends JsonStructure> json;
+    private final CharSequence text;
 
     /**
      * Charset encoding.
@@ -56,55 +52,31 @@ public final class RsJson implements Response {
     private final Charset encoding;
 
     /**
-     * Response from Json structure.
-     * @param json Json structure
+     * New text response with {@link CharSequence} and {@code UT8} encoding.
+     * @param text Char sequence
      */
-    public RsJson(final JsonStructure json) {
-        this(() -> json);
+    public RsText(final CharSequence text) {
+        this(text, StandardCharsets.UTF_8);
     }
 
     /**
-     * Json response from builder.
-     * @param builder JSON object builder
+     * New text response with {@link CharSequence} and encoding {@link Charset}.
+     * @param text Char sequence
+     * @param encoding Charset
      */
-    public RsJson(final JsonObjectBuilder builder) {
-        this(builder::build);
-    }
-
-    /**
-     * Json response from builder.
-     * @param builder JSON array builder
-     */
-    public RsJson(final JsonArrayBuilder builder) {
-        this(builder::build);
-    }
-
-    /**
-     * Response from Json supplier.
-     * @param json Json supplier
-     */
-    public RsJson(final Supplier<? extends JsonStructure> json) {
-        this(json, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Response from Json supplier with charset encoding.
-     * @param json Json supplier
-     * @param encoding Charset encoding
-     */
-    public RsJson(final Supplier<? extends JsonStructure> json, final Charset encoding) {
-        this.json = json;
+    public RsText(final CharSequence text, final Charset encoding) {
+        this.text = text;
         this.encoding = encoding;
     }
 
     @Override
     public CompletionStage<Void> send(final Connection connection) {
-        final byte[] bytes = this.json.get().toString().getBytes(this.encoding);
+        final byte[] bytes = this.text.toString().getBytes(this.encoding);
         return connection.accept(
             RsStatus.OK,
             new Headers.From(
                 new ContentType(
-                    String.format("application/json; charset=%s", this.encoding.displayName())
+                    String.format("text/plain; charset=%s", this.encoding.displayName())
                 ),
                 new ContentLength(bytes.length)
             ),
