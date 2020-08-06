@@ -179,7 +179,7 @@ class ResponseMatcherTest {
         );
         final byte[] body = "1234".getBytes();
         MatcherAssert.assertThat(
-            new ResponseMatcher(status, body, headers).matches(
+            new ResponseMatcher(status, headers, body).matches(
                 new RsFull(status, headers, Flowable.just(ByteBuffer.wrap(body)))
             ),
             new IsEqual<>(true)

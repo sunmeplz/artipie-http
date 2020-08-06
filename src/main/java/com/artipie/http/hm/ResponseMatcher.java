@@ -41,13 +41,13 @@ public final class ResponseMatcher extends AllOf<Response> {
      * Ctor.
      *
      * @param status Expected status
-     * @param body Expected body
      * @param headers Expected headers
+     * @param body Expected body
      */
     public ResponseMatcher(
         final RsStatus status,
-        final byte[] body,
-        final Iterable<? extends Map.Entry<String, String>> headers
+        final Iterable<? extends Map.Entry<String, String>> headers,
+        final byte[] body
     ) {
         super(
             new ListOf<Matcher<? super Response>>(
