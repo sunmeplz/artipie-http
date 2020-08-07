@@ -28,6 +28,7 @@ import com.artipie.asto.Content;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
+import com.artipie.http.headers.ContentLength;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -117,6 +118,16 @@ public final class RsWithBody implements Response {
     @Override
     public CompletionStage<Void> send(final Connection con) {
         return withHeaders(this.origin, this.body.size()).send(new ConWithBody(con, this.body));
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "(%s: origin='%s', body='%s')",
+            this.getClass().getSimpleName(),
+            this.origin.toString(),
+            this.body.toString()
+        );
     }
 
     /**

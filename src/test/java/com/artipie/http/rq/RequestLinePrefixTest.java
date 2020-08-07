@@ -21,47 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.rq;
 
-import com.artipie.asto.Content;
-import com.artipie.http.headers.Header;
-import com.artipie.http.hm.ResponseMatcher;
-import com.artipie.http.hm.RsHasHeaders;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import com.artipie.http.Headers;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Test;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * Test for {@link RsWithBody}.
- * @since 0.9
+ * Test for {@link RequestLinePrefix}.
+ * @since 0.16
  */
-final class RsWithBodyTest {
+class RequestLinePrefixTest {
 
-    @Test
-    void createsResponseWithStatusOkAndBody() {
-        final byte[] body = "abc".getBytes();
+    @ParameterizedTest
+    @CsvSource({
+        "/one/two/three,/three,/one/two",
+        "/one/two/three,/two/three,/one",
+        "/one/two/three,'',/one/two/three",
+        "/one/two/three,/,/one/two/three",
+        "/one/two,/two/,/one",
+        "'',/test,''",
+        "'','',''"
+    })
+    void returnsPrefix(final String full, final String line, final String res) {
         MatcherAssert.assertThat(
-            new RsWithBody(ByteBuffer.wrap(body)),
-            new ResponseMatcher(body)
-        );
-    }
-
-    @Test
-    void appendsBody() {
-        final String body = "def";
-        MatcherAssert.assertThat(
-            new RsWithBody(new RsWithStatus(RsStatus.CREATED), body, StandardCharsets.UTF_8),
-            new ResponseMatcher(RsStatus.CREATED, body, StandardCharsets.UTF_8)
-        );
-    }
-
-    @Test
-    void appendsContentSizeHeader() {
-        final int size = 100;
-        MatcherAssert.assertThat(
-            new RsWithBody(StandardRs.EMPTY, new Content.From(new byte[size])),
-            new RsHasHeaders(new Header("Content-Length", String.valueOf(size)))
+            new RequestLinePrefix(line, new Headers.From("X-FullPath", full)).get(),
+            new IsEqual<>(res)
         );
     }
 }

@@ -21,47 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
+package com.artipie.http.rs.common;
 
-import com.artipie.asto.Content;
 import com.artipie.http.headers.Header;
-import com.artipie.http.hm.ResponseMatcher;
+import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
-import java.nio.ByteBuffer;
+import com.artipie.http.hm.StatefulResponse;
 import java.nio.charset.StandardCharsets;
+import javax.json.Json;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link RsWithBody}.
- * @since 0.9
+ * Test case for {@link RsJson}.
+ *
+ * @since 0.16
  */
-final class RsWithBodyTest {
+final class RsJsonTest {
 
     @Test
-    void createsResponseWithStatusOkAndBody() {
-        final byte[] body = "abc".getBytes();
+    void bodyIsCorrect() {
         MatcherAssert.assertThat(
-            new RsWithBody(ByteBuffer.wrap(body)),
-            new ResponseMatcher(body)
+            new RsJson(Json.createObjectBuilder().add("foo", true)),
+            new RsHasBody("{\"foo\":true}", StandardCharsets.UTF_8)
         );
     }
 
     @Test
-    void appendsBody() {
-        final String body = "def";
+    void headersHasContentSize() {
         MatcherAssert.assertThat(
-            new RsWithBody(new RsWithStatus(RsStatus.CREATED), body, StandardCharsets.UTF_8),
-            new ResponseMatcher(RsStatus.CREATED, body, StandardCharsets.UTF_8)
+            new StatefulResponse(new RsJson(Json.createObjectBuilder().add("bar", 0))),
+            new RsHasHeaders(
+                Matchers.anything(),
+                Matchers.equalTo(new Header("Content-Length", "9"))
+            )
         );
     }
 
     @Test
-    void appendsContentSizeHeader() {
-        final int size = 100;
+    void headersHasContentType() {
         MatcherAssert.assertThat(
-            new RsWithBody(StandardRs.EMPTY, new Content.From(new byte[size])),
-            new RsHasHeaders(new Header("Content-Length", String.valueOf(size)))
+            new StatefulResponse(
+                new RsJson(
+                    () -> Json.createObjectBuilder().add("baz", "a").build(),
+                    StandardCharsets.UTF_16BE
+                )
+            ),
+            new RsHasHeaders(
+                Matchers.equalTo(
+                    new Header("Content-Type", "application/json; charset=UTF-16BE")
+                ),
+                Matchers.anything()
+            )
         );
     }
 }

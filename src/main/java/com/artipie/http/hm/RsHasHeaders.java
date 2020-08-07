@@ -27,12 +27,11 @@ package com.artipie.http.hm;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
-import com.artipie.http.rs.Header;
+import com.artipie.http.headers.Header;
 import com.artipie.http.rs.RsStatus;
 import com.google.common.collect.ImmutableList;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,15 +71,12 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
      *
      * @param headers Expected header matchers in any order.
      */
-    public RsHasHeaders(final Collection<? extends Entry<String, String>> headers) {
+    public RsHasHeaders(final Iterable<? extends Entry<String, String>> headers) {
         this(
             Matchers.containsInAnyOrder(
-                headers.stream()
-                    .<Entry<String, String>>map(
-                        original -> new Header(original.getKey(), original.getValue())
-                    )
-                    .map(IsEqual::new)
-                    .collect(Collectors.toList())
+                StreamSupport.stream(headers.spliterator(), false).<Entry<String, String>>map(
+                    original -> new Header(original.getKey(), original.getValue())
+                ).map(IsEqual::new).collect(Collectors.toList())
             )
         );
     }

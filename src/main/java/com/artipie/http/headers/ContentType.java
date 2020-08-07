@@ -21,56 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.group;
+package com.artipie.http.headers;
 
-import com.artipie.http.Connection;
 import com.artipie.http.Headers;
-import com.artipie.http.rs.RsStatus;
-import java.nio.ByteBuffer;
-import java.util.concurrent.CompletionStage;
-import org.reactivestreams.Publisher;
+import com.artipie.http.rq.RqHeaders;
 
 /**
- * One remote target connection.
+ * Content-Type header.
  *
  * @since 0.11
  */
-final class GroupConnection implements Connection {
+public final class ContentType extends Header.Wrap {
 
     /**
-     * Origin connection.
+     * Header name.
      */
-    private final Connection origin;
+    public static final String NAME = "Content-Type";
 
     /**
-     * Target order.
+     * Ctor.
+     *
+     * @param value Header value.
      */
-    private final int pos;
-
-    /**
-     * Response results.
-     */
-    private final GroupResults results;
-
-    /**
-     * New connection for one target.
-     * @param origin Origin connection
-     * @param pos Order
-     * @param results Results
-     */
-    GroupConnection(final Connection origin, final int pos, final GroupResults results) {
-        this.origin = origin;
-        this.pos = pos;
-        this.results = results;
+    public ContentType(final String value) {
+        super(new Header(ContentType.NAME, value));
     }
 
-    @Override
-    public CompletionStage<Void> accept(final RsStatus status, final Headers headers,
-        final Publisher<ByteBuffer> body) {
-        synchronized (this.results) {
-            return this.results.complete(
-                this.pos, new GroupResult(status, headers, body), this.origin
-            );
-        }
+    /**
+     * Ctor.
+     *
+     * @param headers Headers to extract header from.
+     */
+    public ContentType(final Headers headers) {
+        this(new RqHeaders.Single(headers, ContentType.NAME).asString());
     }
 }

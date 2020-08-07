@@ -21,27 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.rs;
-
-import com.artipie.http.headers.Header;
-import com.artipie.http.hm.RsHasHeaders;
-import org.cactoos.map.MapEntry;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Test;
 
 /**
- * Test case for {@link RsWithHeaders}.
- * @since 0.9
+ * Common responses.
+ * @since 0.16
  */
-public class RsWithHeadersTest {
+package com.artipie.http.rs.common;
 
-    @Test
-    void testRsWithHeadersMapEntry() {
-        final String name = "Content-Type";
-        final String value = "text/plain; charset=us-ascii";
-        MatcherAssert.assertThat(
-            new RsWithHeaders(new RsWithStatus(RsStatus.OK), new MapEntry<>(name, value)),
-            new RsHasHeaders(new Header(name, value))
-        );
-    }
-}

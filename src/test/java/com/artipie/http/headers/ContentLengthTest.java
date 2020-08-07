@@ -21,56 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.group;
+package com.artipie.http.headers;
 
-import com.artipie.http.Connection;
 import com.artipie.http.Headers;
-import com.artipie.http.rs.RsStatus;
-import java.nio.ByteBuffer;
-import java.util.concurrent.CompletionStage;
-import org.reactivestreams.Publisher;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * One remote target connection.
+ * Test case for {@link ContentLength}.
  *
- * @since 0.11
+ * @since 0.10
  */
-final class GroupConnection implements Connection {
+public final class ContentLengthTest {
 
-    /**
-     * Origin connection.
-     */
-    private final Connection origin;
-
-    /**
-     * Target order.
-     */
-    private final int pos;
-
-    /**
-     * Response results.
-     */
-    private final GroupResults results;
-
-    /**
-     * New connection for one target.
-     * @param origin Origin connection
-     * @param pos Order
-     * @param results Results
-     */
-    GroupConnection(final Connection origin, final int pos, final GroupResults results) {
-        this.origin = origin;
-        this.pos = pos;
-        this.results = results;
+    @Test
+    void shouldHaveExpectedValue() {
+        MatcherAssert.assertThat(
+            new ContentLength("10").getKey(),
+            new IsEqual<>("Content-Length")
+        );
     }
 
-    @Override
-    public CompletionStage<Void> accept(final RsStatus status, final Headers headers,
-        final Publisher<ByteBuffer> body) {
-        synchronized (this.results) {
-            return this.results.complete(
-                this.pos, new GroupResult(status, headers, body), this.origin
-            );
-        }
+    @Test
+    void shouldExtractLongValueFromHeaders() {
+        final long length = 123;
+        final ContentLength header = new ContentLength(
+            new Headers.From(
+                new Header("Content-Type", "application/octet-stream"),
+                new Header("content-length", String.valueOf(length)),
+                new Header("X-Something", "Some Value")
+            )
+        );
+        MatcherAssert.assertThat(header.longValue(), new IsEqual<>(length));
+    }
+
+    @Test
+    void shouldFailToExtractLongValueFromEmptyHeaders() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new ContentLength(Headers.EMPTY).longValue()
+        );
     }
 }
