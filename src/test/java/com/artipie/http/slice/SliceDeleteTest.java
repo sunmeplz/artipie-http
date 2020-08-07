@@ -62,7 +62,7 @@ final class SliceDeleteTest {
             line(key)
         );
         MatcherAssert.assertThat(
-            storage.exists(new Key.From(key)),
+            storage.exists(new Key.From(key)).toCompletableFuture().get(),
             new IsEqual<>(false)
         );
     }
@@ -88,7 +88,7 @@ final class SliceDeleteTest {
             line(deleted)
         );
         MatcherAssert.assertThat(
-            storage.exists(preserved),
+            storage.exists(preserved).toCompletableFuture().get(),
             new IsEqual<>(true)
         );
     }
