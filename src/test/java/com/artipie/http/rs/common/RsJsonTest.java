@@ -53,8 +53,8 @@ final class RsJsonTest {
         MatcherAssert.assertThat(
             new StatefulResponse(new RsJson(Json.createObjectBuilder().add("bar", 0))),
             new RsHasHeaders(
-                Matchers.anything(),
-                Matchers.equalTo(new Header("Content-Length", "9"))
+                Matchers.equalTo(new Header("Content-Length", "9")),
+                Matchers.anything()
             )
         );
     }

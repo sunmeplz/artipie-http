@@ -53,8 +53,8 @@ final class RsTextTest {
         MatcherAssert.assertThat(
             new StatefulResponse(new RsText("four")),
             new RsHasHeaders(
-                Matchers.anything(),
-                Matchers.equalTo(new Header("Content-Length", "4"))
+                Matchers.equalTo(new Header("Content-Length", "4")),
+                Matchers.anything()
             )
         );
     }

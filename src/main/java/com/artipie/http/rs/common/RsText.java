@@ -23,33 +23,21 @@
  */
 package com.artipie.http.rs.common;
 
-import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
-import com.artipie.http.headers.ContentLength;
 import com.artipie.http.headers.ContentType;
 import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.nio.ByteBuffer;
+import com.artipie.http.rs.RsWithBody;
+import com.artipie.http.rs.RsWithHeaders;
+import com.artipie.http.rs.RsWithStatus;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Response with text.
  * @since 0.16
  */
-public final class RsText implements Response {
-
-    /**
-     * Text char sequence.
-     */
-    private final CharSequence text;
-
-    /**
-     * Charset encoding.
-     */
-    private final Charset encoding;
+public final class RsText extends Response.Wrap {
 
     /**
      * New text response with {@link CharSequence} and {@code UT8} encoding.
@@ -65,22 +53,38 @@ public final class RsText implements Response {
      * @param encoding Charset
      */
     public RsText(final CharSequence text, final Charset encoding) {
-        this.text = text;
-        this.encoding = encoding;
+        this(RsStatus.OK, text, encoding);
     }
 
-    @Override
-    public CompletionStage<Void> send(final Connection connection) {
-        final byte[] bytes = this.text.toString().getBytes(this.encoding);
-        return connection.accept(
-            RsStatus.OK,
-            new Headers.From(
-                new ContentType(
-                    String.format("text/plain; charset=%s", this.encoding.displayName())
+    /**
+     * New text response with {@link CharSequence} and encoding {@link Charset}.
+     * @param status Response status
+     * @param text Char sequence
+     * @param encoding Charset
+     */
+    public RsText(final RsStatus status, final CharSequence text, final Charset encoding) {
+        this(new RsWithStatus(status), text, encoding);
+    }
+
+    /**
+     * Wrap existing response with text of {@link CharSequence} and encoding {@link Charset}.
+     * @param origin Response
+     * @param text Char sequence
+     * @param encoding Charset
+     */
+    public RsText(final Response origin, final CharSequence text, final Charset encoding) {
+        super(
+            new RsWithBody(
+                new RsWithHeaders(
+                    origin,
+                    new Headers.From(
+                        new ContentType(
+                            String.format("text/plain; charset=%s", encoding.displayName())
+                        )
+                    )
                 ),
-                new ContentLength(bytes.length)
-            ),
-            Flowable.just(ByteBuffer.wrap(bytes))
+                text, encoding
+            )
         );
     }
 }
