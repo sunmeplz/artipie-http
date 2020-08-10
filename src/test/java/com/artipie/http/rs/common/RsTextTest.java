@@ -28,7 +28,6 @@ import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
 import com.artipie.http.hm.StatefulResponse;
 import java.nio.charset.StandardCharsets;
-import javax.json.Json;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -38,22 +37,23 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.16
  */
-final class RsJsonTest {
+final class RsTextTest {
 
     @Test
     void bodyIsCorrect() {
+        final String src = "hello";
         MatcherAssert.assertThat(
-            new RsJson(Json.createObjectBuilder().add("foo", true)),
-            new RsHasBody("{\"foo\":true}", StandardCharsets.UTF_8)
+            new StatefulResponse(new RsText(src, StandardCharsets.UTF_16)),
+            new RsHasBody(src, StandardCharsets.UTF_16)
         );
     }
 
     @Test
     void headersHasContentSize() {
         MatcherAssert.assertThat(
-            new StatefulResponse(new RsJson(Json.createObjectBuilder().add("bar", 0))),
+            new StatefulResponse(new RsText("four")),
             new RsHasHeaders(
-                Matchers.equalTo(new Header("Content-Length", "9")),
+                Matchers.equalTo(new Header("Content-Length", "4")),
                 Matchers.anything()
             )
         );
@@ -62,15 +62,10 @@ final class RsJsonTest {
     @Test
     void headersHasContentType() {
         MatcherAssert.assertThat(
-            new StatefulResponse(
-                new RsJson(
-                    () -> Json.createObjectBuilder().add("baz", "a").build(),
-                    StandardCharsets.UTF_16BE
-                )
-            ),
+            new StatefulResponse(new RsText("test", StandardCharsets.UTF_16LE)),
             new RsHasHeaders(
                 Matchers.equalTo(
-                    new Header("Content-Type", "application/json; charset=UTF-16BE")
+                    new Header("Content-Type", "text/plain; charset=UTF-16LE")
                 ),
                 Matchers.anything()
             )

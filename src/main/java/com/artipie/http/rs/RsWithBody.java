@@ -58,8 +58,8 @@ public final class RsWithBody implements Response {
      * @param body Text body
      * @param charset Encoding
      */
-    public RsWithBody(final Response origin, final String body, final Charset charset) {
-        this(origin, ByteBuffer.wrap(body.getBytes(charset)));
+    public RsWithBody(final Response origin, final CharSequence body, final Charset charset) {
+        this(origin, ByteBuffer.wrap(body.toString().getBytes(charset)));
     }
 
     /**
@@ -67,8 +67,8 @@ public final class RsWithBody implements Response {
      * @param body Text body
      * @param charset Encoding
      */
-    public RsWithBody(final String body, final Charset charset) {
-        this(ByteBuffer.wrap(body.getBytes(charset)));
+    public RsWithBody(final CharSequence body, final Charset charset) {
+        this(ByteBuffer.wrap(body.toString().getBytes(charset)));
     }
 
     /**
@@ -77,6 +77,15 @@ public final class RsWithBody implements Response {
      */
     public RsWithBody(final ByteBuffer buf) {
         this(StandardRs.EMPTY, buf);
+    }
+
+    /**
+     * Decorates origin response body with byte buffer.
+     * @param origin Response
+     * @param bytes Byte array
+     */
+    public RsWithBody(final Response origin, final byte[] bytes) {
+        this(origin, ByteBuffer.wrap(bytes));
     }
 
     /**
