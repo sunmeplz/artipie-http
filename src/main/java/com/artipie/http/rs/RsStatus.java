@@ -153,6 +153,33 @@ public enum RsStatus {
     }
 
     /**
+     * Checks whether the RsStatus is a client error.
+     * @return True if the RsStatus is a client error, otherwise - false.
+     * @since 0.16
+     */
+    public boolean isClientError() {
+        return this.string.charAt(0) == '4';
+    }
+
+    /**
+     * Checks whether the RsStatus is a server error.
+     * @return True if the RsStatus is a server error, otherwise - false.
+     * @since 0.16
+     */
+    public boolean isServerError() {
+        return this.string.charAt(0) == '5';
+    }
+
+    /**
+     * Checks whether the RsStatus is an error.
+     * @return True if the RsStatus is an error, otherwise - false.
+     * @since 0.16
+     */
+    public boolean isError() {
+        return this.isClientError() || this.isServerError();
+    }
+
+    /**
      * Searches {@link RsStatus} instance by response code.
      * @since 0.11
      */
