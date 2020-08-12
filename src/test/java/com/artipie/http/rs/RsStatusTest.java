@@ -23,8 +23,11 @@
  */
 package com.artipie.http.rs;
 
-import org.junit.jupiter.api.Assertions;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /**
  * Test for {@link RsStatus}.
@@ -33,29 +36,65 @@ import org.junit.jupiter.api.Test;
  */
 final class RsStatusTest {
     @Test
-    void createsClientError() {
+    void information() {
+        final RsStatus status = RsStatus.CONTINUE;
+        MatcherAssert.assertThat(
+            status.information(),
+            new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void success() {
+        final RsStatus status = RsStatus.ACCEPTED;
+        MatcherAssert.assertThat(
+            status.success(),
+            new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void redirection() {
+        final RsStatus status = RsStatus.FOUND;
+        MatcherAssert.assertThat(
+            status.redirection(),
+            new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void clientError() {
         final RsStatus status = RsStatus.BAD_REQUEST;
-        Assertions.assertTrue(status.isClientError());
-        Assertions.assertTrue(status.isError());
-        Assertions.assertFalse(status.isServerError());
+        MatcherAssert.assertThat(
+            status.clientError(),
+            new IsEqual<>(true)
+        );
     }
 
     @Test
-    void createsServerError() {
+    void serverError() {
         final RsStatus status = RsStatus.INTERNAL_ERROR;
-        Assertions.assertFalse(status.isClientError());
-        Assertions.assertTrue(status.isError());
-        Assertions.assertTrue(status.isServerError());
+        MatcherAssert.assertThat(
+            status.serverError(),
+            new IsEqual<>(true)
+        );
     }
 
-    @Test
-    void createsNotError() {
-        final RsStatus success = RsStatus.OK;
-        final RsStatus rscontinue = RsStatus.CONTINUE;
-        final RsStatus found = RsStatus.FOUND;
-        Assertions.assertFalse(success.isError());
-        Assertions.assertFalse(rscontinue.isError());
-        Assertions.assertFalse(found.isError());
+    @ParameterizedTest
+    @EnumSource(value = RsStatus.class, names = {"FORBIDDEN", "INTERNAL_ERROR"})
+    void error(final RsStatus status) {
+        MatcherAssert.assertThat(
+            status.error(),
+            new IsEqual<>(true)
+        );
     }
 
+    @ParameterizedTest
+    @EnumSource(value = RsStatus.class, names = {"CONTINUE", "OK", "FOUND"})
+    void notError(final RsStatus status) {
+        MatcherAssert.assertThat(
+            status.error(),
+            new IsEqual<>(false)
+        );
+    }
 }
