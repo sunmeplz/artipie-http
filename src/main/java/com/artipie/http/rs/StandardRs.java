@@ -44,6 +44,10 @@ public enum StandardRs implements Response {
      */
     OK(EMPTY),
     /**
+     * Success response without content.
+     */
+    NO_CONTENT(new RsWithStatus(RsStatus.NO_CONTENT)),
+    /**
      * Not found response.
      */
     NOT_FOUND(new RsWithStatus(RsStatus.NOT_FOUND)),

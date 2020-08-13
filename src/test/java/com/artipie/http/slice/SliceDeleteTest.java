@@ -23,107 +23,60 @@
  */
 package com.artipie.http.slice;
 
-import com.artipie.asto.Content;
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
+import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
-import com.artipie.http.Slice;
 import com.artipie.http.hm.RsHasStatus;
+import com.artipie.http.hm.SliceHasResponse;
 import com.artipie.http.rq.RequestLine;
+import com.artipie.http.rq.RqMethod;
 import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link SliceDelete}.
  *
  * @since 0.10
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 final class SliceDeleteTest {
 
+    /**
+     * Storage.
+     */
+    private final Storage storage = new InMemoryStorage();
+
     @Test
-    @Disabled
     void deleteCorrectEntry() throws Exception {
-        final Storage storage = new InMemoryStorage();
-        final String key = "deletedKey";
-        storage.save(
-            new Key.From(key),
-            new Content.From("deleted content".getBytes())
-        ).join();
-        verify(
-            new SliceDelete(
-                storage
-            ),
-            line(key)
+        final Key.From key = new Key.From("foo");
+        new BlockingStorage(this.storage).save(key, "anything".getBytes());
+        MatcherAssert.assertThat(
+            "Didn't respond with NO_CONTENT status",
+            new SliceDelete(this.storage),
+            new SliceHasResponse(
+                new RsHasStatus(RsStatus.NO_CONTENT),
+                new RequestLine(RqMethod.DELETE, "/foo")
+            )
         );
         MatcherAssert.assertThat(
-            storage.exists(new Key.From(key)).toCompletableFuture().get(),
+            "Didn't delete from storage",
+            new BlockingStorage(this.storage).exists(key),
             new IsEqual<>(false)
         );
     }
 
     @Test
-    @Disabled
-    void doNotDeleteOtherEntry() throws Exception {
-        final Storage storage = new InMemoryStorage();
-        final Key preserved = new Key.From("preservedKey");
-        final String deleted = "deleted";
-        storage.save(
-            new Key.From(deleted),
-            new Content.From("any content".getBytes())
-        ).join();
-        storage.save(
-            preserved,
-            new Content.From("preserved content".getBytes())
-        ).join();
-        verify(
-            new SliceDelete(
-                storage
-            ),
-            line(deleted)
-        );
-        MatcherAssert.assertThat(
-            storage.exists(preserved).toCompletableFuture().get(),
-            new IsEqual<>(true)
-        );
-    }
-
-    @Test
-    @Disabled
     void returnsNotFound() {
-        final Storage storage = new InMemoryStorage();
         MatcherAssert.assertThat(
-            new SliceDelete(
-                storage
-            ).response(
-                line("notfound").toString(),
-                Collections.emptyList(),
-                Flowable.empty()
-            ),
-            new RsHasStatus(
-                RsStatus.NOT_FOUND
+            new SliceDelete(this.storage),
+            new SliceHasResponse(
+                new RsHasStatus(RsStatus.NOT_FOUND),
+                new RequestLine(RqMethod.DELETE, "/bar")
             )
         );
-    }
-
-    private static RequestLine line(final String path) {
-        return new RequestLine(
-            "DELETE",
-            path,
-            "HTTP/1.1"
-        );
-    }
-
-    private static void verify(final Slice slice, final RequestLine line) throws Exception {
-        slice.response(line.toString(), Collections.emptyList(), Flowable.empty())
-            .send((status, headers, body) -> CompletableFuture.completedFuture(null))
-            .toCompletableFuture()
-            .get();
     }
 }
 
