@@ -23,37 +23,24 @@
  */
 package com.artipie.http.rs.common;
 
-import com.artipie.http.Connection;
-import com.artipie.http.Headers;
 import com.artipie.http.Response;
-import com.artipie.http.headers.ContentLength;
 import com.artipie.http.headers.ContentType;
 import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
-import java.nio.ByteBuffer;
+import com.artipie.http.rs.RsWithBody;
+import com.artipie.http.rs.RsWithHeaders;
+import com.artipie.http.rs.RsWithStatus;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonStructure;
 
 /**
- * Response with Yaml document.
+ * Response with JSON document.
  * @since 0.16
  */
-public final class RsJson implements Response {
-
-    /**
-     * Json supplier.
-     */
-    private final Supplier<? extends JsonStructure> json;
-
-    /**
-     * Charset encoding.
-     */
-    private final Charset encoding;
+public final class RsJson extends Response.Wrap {
 
     /**
      * Response from Json structure.
@@ -88,27 +75,43 @@ public final class RsJson implements Response {
     }
 
     /**
-     * Response from Json supplier with charset encoding.
+     * JSON response with charset encoding and {@code 200} status.
      * @param json Json supplier
      * @param encoding Charset encoding
      */
     public RsJson(final Supplier<? extends JsonStructure> json, final Charset encoding) {
-        this.json = json;
-        this.encoding = encoding;
+        this(RsStatus.OK, json, encoding);
     }
 
-    @Override
-    public CompletionStage<Void> send(final Connection connection) {
-        final byte[] bytes = this.json.get().toString().getBytes(this.encoding);
-        return connection.accept(
-            RsStatus.OK,
-            new Headers.From(
-                new ContentType(
-                    String.format("application/json; charset=%s", this.encoding.displayName())
+    /**
+     * JSON response with charset encoding and status code.
+     * @param status Response status code
+     * @param json Json supplier
+     * @param encoding Charset encoding
+     */
+    public RsJson(final RsStatus status, final Supplier<? extends JsonStructure> json,
+        final Charset encoding) {
+        this(new RsWithStatus(status), json, encoding);
+    }
+
+    /**
+     * Wrap response with JSON supplier with charset encoding.
+     * @param origin Response
+     * @param json Json supplier
+     * @param encoding Charset encoding
+     */
+    public RsJson(final Response origin, final Supplier<? extends JsonStructure> json,
+        final Charset encoding) {
+        super(
+            new RsWithBody(
+                new RsWithHeaders(
+                    origin,
+                    new ContentType(
+                        String.format("application/json; charset=%s", encoding.displayName())
+                    )
                 ),
-                new ContentLength(bytes.length)
-            ),
-            Flowable.just(ByteBuffer.wrap(bytes))
+                json.get().toString().getBytes(encoding)
+            )
         );
     }
 }
