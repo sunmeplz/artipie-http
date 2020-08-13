@@ -153,6 +153,70 @@ public enum RsStatus {
     }
 
     /**
+     * Checks whether the RsStatus is an informational group (1xx).
+     * @return True if the RsStatus is 1xx, otherwise - false.
+     * @since 0.16
+     */
+    public boolean information() {
+        return this.firstSymbol('1');
+    }
+
+    /**
+     * Checks whether the RsStatus is a successful group (2xx).
+     * @return True if the RsStatus is 2xx, otherwise - false.
+     * @since 0.16
+     */
+    public boolean success() {
+        return this.firstSymbol('2');
+    }
+
+    /**
+     * Checks whether the RsStatus is a redirection.
+     * @return True if the RsStatus is 3xx, otherwise - false.
+     * @since 0.16
+     */
+    public boolean redirection() {
+        return this.firstSymbol('3');
+    }
+
+    /**
+     * Checks whether the RsStatus is a client error.
+     * @return True if the RsStatus is 4xx, otherwise - false.
+     * @since 0.16
+     */
+    public boolean clientError() {
+        return this.firstSymbol('4');
+    }
+
+    /**
+     * Checks whether the RsStatus is a server error.
+     * @return True if the RsStatus is 5xx, otherwise - false.
+     * @since 0.16
+     */
+    public boolean serverError() {
+        return this.firstSymbol('5');
+    }
+
+    /**
+     * Checks whether the RsStatus is an error.
+     * @return True if the RsStatus is an error, otherwise - false.
+     * @since 0.16
+     */
+    public boolean error() {
+        return this.clientError() || this.serverError();
+    }
+
+    /**
+     * Checks whether the first character matches the symbol.
+     * @param symbol Symbol to check
+     * @return True if the first character matches the symbol, otherwise - false.
+     * @since 0.16
+     */
+    private boolean firstSymbol(final char symbol) {
+        return this.string.charAt(0) == symbol;
+    }
+
+    /**
      * Searches {@link RsStatus} instance by response code.
      * @since 0.11
      */
