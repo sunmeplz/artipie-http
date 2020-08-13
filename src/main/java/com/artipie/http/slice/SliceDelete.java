@@ -21,55 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.headers;
 
-import com.artipie.http.Headers;
-import com.artipie.http.rq.RqHeaders;
+package com.artipie.http.slice;
+
+import com.artipie.asto.Storage;
+import com.artipie.http.Response;
+import com.artipie.http.Slice;
+import java.nio.ByteBuffer;
+import java.util.Map;
+import org.reactivestreams.Publisher;
 
 /**
- * Content-Length header.
+ * Delete decorator for Slice.
  *
  * @since 0.10
+ * @todo #138:30min Implement SliceDelete
+ *  Implement SliceDelete, which removes a key from storage. After that, enable
+ *  the tests in SliceDeleteTest and put back the coverage missedclass metric to
+ *  15 in pom.xml.
  */
-public final class ContentLength extends Header.Wrap {
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
+public final class SliceDelete implements Slice {
 
     /**
-     * Header name.
+     * Storage.
      */
-    public static final String NAME = "Content-Length";
+    private final Storage storage;
 
     /**
-     * Ctor.
-     * @param length Length number
+     * Constructor.
+     * @param storage Storage.
      */
-    public ContentLength(final Number length) {
-        this(length.toString());
+    public SliceDelete(final Storage storage) {
+        this.storage = storage;
     }
 
-    /**
-     * Ctor.
-     *
-     * @param value Header value.
-     */
-    public ContentLength(final String value) {
-        super(new Header(ContentLength.NAME, value));
-    }
-
-    /**
-     * Ctor.
-     *
-     * @param headers Headers to extract header from.
-     */
-    public ContentLength(final Headers headers) {
-        this(new RqHeaders.Single(headers, ContentLength.NAME).asString());
-    }
-
-    /**
-     * Read header as long value.
-     *
-     * @return Header value.
-     */
-    public long longValue() {
-        return Long.parseLong(this.getValue());
+    @Override
+    public Response response(
+        final String line,
+        final Iterable<Map.Entry<String, String>> headers,
+        final Publisher<ByteBuffer> body) {
+        throw new UnsupportedOperationException();
     }
 }

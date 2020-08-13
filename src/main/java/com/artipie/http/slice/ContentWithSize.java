@@ -52,7 +52,7 @@ public final class ContentWithSize implements Content {
      * @param body Body
      * @param headers Headers
      */
-    ContentWithSize(final Publisher<ByteBuffer> body,
+    public ContentWithSize(final Publisher<ByteBuffer> body,
         final Iterable<Map.Entry<String, String>> headers) {
         this.body = body;
         this.headers = headers;
