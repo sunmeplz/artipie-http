@@ -26,7 +26,6 @@ package com.artipie.http.rt;
 import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rq.RqMethod;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import org.cactoos.list.ListOf;
 
@@ -78,7 +77,6 @@ public interface RtRule {
         public Multiple(final Iterable<RtRule> rules) {
             super(rules);
         }
-
     }
 
     /**
@@ -166,26 +164,17 @@ public interface RtRule {
     /**
      * Route by method.
      * @since 0.5
+     * @deprecated Use {@link ByMethodsRule} instead.
      */
-    final class ByMethod implements RtRule {
-
-        /**
-         * Method name.
-         */
-        private final RqMethod method;
+    @Deprecated
+    final class ByMethod extends RtRule.Wrap {
 
         /**
          * Route by method.
          * @param method Method name
          */
         public ByMethod(final RqMethod method) {
-            this.method = method;
-        }
-
-        @Override
-        public boolean apply(final String line,
-            final Iterable<Map.Entry<String, String>> headers) {
-            return Objects.equals(new RequestLineFrom(line).method(), this.method);
+            super(new ByMethodsRule(method));
         }
     }
 
@@ -222,6 +211,32 @@ public interface RtRule {
             return this.ptn.matcher(
                 new RequestLineFrom(line).uri().getPath()
             ).matches();
+        }
+    }
+
+    /**
+     * Abstract decorator.
+     * @since 0.16
+     */
+    abstract class Wrap implements RtRule {
+
+        /**
+         * Origin rule.
+         */
+        private final RtRule origin;
+
+        /**
+         * Ctor.
+         * @param origin Rule
+         */
+        protected Wrap(final RtRule origin) {
+            this.origin = origin;
+        }
+
+        @Override
+        public final boolean apply(final String line,
+            final Iterable<Map.Entry<String, String>> headers) {
+            return this.origin.apply(line, headers);
         }
     }
 }
