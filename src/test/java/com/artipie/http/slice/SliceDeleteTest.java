@@ -51,8 +51,10 @@ final class SliceDeleteTest {
 
     @Test
     void deleteCorrectEntry() throws Exception {
-        final Key.From key = new Key.From("foo");
+        final Key key = new Key.From("foo");
+        final Key another = new Key.From("bar");
         new BlockingStorage(this.storage).save(key, "anything".getBytes());
+        new BlockingStorage(this.storage).save(another, "another".getBytes());
         MatcherAssert.assertThat(
             "Didn't respond with NO_CONTENT status",
             new SliceDelete(this.storage),
@@ -65,6 +67,11 @@ final class SliceDeleteTest {
             "Didn't delete from storage",
             new BlockingStorage(this.storage).exists(key),
             new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "Deleted another key",
+            new BlockingStorage(this.storage).exists(another),
+            new IsEqual<>(true)
         );
     }
 
