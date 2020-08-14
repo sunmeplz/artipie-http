@@ -27,6 +27,9 @@ package com.artipie.http.slice;
 import com.artipie.asto.Storage;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import com.artipie.http.async.AsyncResponse;
+import com.artipie.http.rq.RequestLineFrom;
+import com.artipie.http.rs.StandardRs;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import org.reactivestreams.Publisher;
@@ -34,13 +37,8 @@ import org.reactivestreams.Publisher;
 /**
  * Delete decorator for Slice.
  *
- * @since 0.10
- * @todo #138:30min Implement SliceDelete
- *  Implement SliceDelete, which removes a key from storage. After that, enable
- *  the tests in SliceDeleteTest and put back the coverage missedclass metric to
- *  15 in pom.xml.
+ * @since 0.16
  */
-@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
 public final class SliceDelete implements Slice {
 
     /**
@@ -61,6 +59,21 @@ public final class SliceDelete implements Slice {
         final String line,
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        throw new UnsupportedOperationException();
+        final KeyFromPath key = new KeyFromPath(new RequestLineFrom(line).uri().getPath());
+        return new AsyncResponse(
+            this.storage.exists(key).thenApply(
+                exists -> {
+                    final Response rsp;
+                    if (exists) {
+                        rsp = new AsyncResponse(
+                            this.storage.delete(key).thenApply(none -> StandardRs.NO_CONTENT)
+                        );
+                    } else {
+                        rsp = StandardRs.NOT_FOUND;
+                    }
+                    return rsp;
+                }
+            )
+        );
     }
 }
