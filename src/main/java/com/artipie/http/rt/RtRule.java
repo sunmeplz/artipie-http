@@ -164,7 +164,7 @@ public interface RtRule {
     /**
      * Route by method.
      * @since 0.5
-     * @deprecated Use {@link RlByMethods} instead.
+     * @deprecated Use {@link ByMethodsRule} instead.
      */
     @Deprecated
     final class ByMethod extends RtRule.Wrap {
@@ -174,7 +174,7 @@ public interface RtRule {
          * @param method Method name
          */
         public ByMethod(final RqMethod method) {
-            super(new RlByMethods(method));
+            super(new ByMethodsRule(method));
         }
     }
 

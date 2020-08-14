@@ -35,7 +35,7 @@ import java.util.Set;
  * Route by HTTP methods rule.
  * @since 0.16
  */
-public final class RlByMethods implements RtRule {
+public final class ByMethodsRule implements RtRule {
 
     /**
      * Standard method rules.
@@ -45,27 +45,27 @@ public final class RlByMethods implements RtRule {
         /**
          * Rule for {@code GET} method.
          */
-        GET(new RlByMethods(RqMethod.GET)),
+        GET(new ByMethodsRule(RqMethod.GET)),
         /**
          * Rule for {@code POST} method.
          */
-        POST(new RlByMethods(RqMethod.POST)),
+        POST(new ByMethodsRule(RqMethod.POST)),
         /**
          * Rule for {@code PUT} method.
          */
-        PUT(new RlByMethods(RqMethod.PUT)),
+        PUT(new ByMethodsRule(RqMethod.PUT)),
         /**
          * Rule for {@code DELETE} method.
          */
-        DELETE(new RlByMethods(RqMethod.DELETE)),
+        DELETE(new ByMethodsRule(RqMethod.DELETE)),
         /**
          * All common read methods.
          */
-        ALL_READ(new RlByMethods(RqMethod.GET, RqMethod.HEAD, RqMethod.OPTIONS)),
+        ALL_READ(new ByMethodsRule(RqMethod.GET, RqMethod.HEAD, RqMethod.OPTIONS)),
         /**
          * All common write methods.
          */
-        ALL_WRITE(new RlByMethods(RqMethod.PUT, RqMethod.POST, RqMethod.DELETE, RqMethod.PATCH));
+        ALL_WRITE(new ByMethodsRule(RqMethod.PUT, RqMethod.POST, RqMethod.DELETE, RqMethod.PATCH));
 
         /**
          * Origin rule.
@@ -96,7 +96,7 @@ public final class RlByMethods implements RtRule {
      * Route by methods.
      * @param methods Method names
      */
-    public RlByMethods(final RqMethod... methods) {
+    public ByMethodsRule(final RqMethod... methods) {
         this(new HashSet<>(Arrays.asList(methods)));
     }
 
@@ -104,7 +104,7 @@ public final class RlByMethods implements RtRule {
      * Route by methods.
      * @param methods Method names
      */
-    public RlByMethods(final Set<RqMethod> methods) {
+    public ByMethodsRule(final Set<RqMethod> methods) {
         this.methods = Collections.unmodifiableSet(methods);
     }
 
