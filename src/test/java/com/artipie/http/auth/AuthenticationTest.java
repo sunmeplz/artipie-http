@@ -82,6 +82,26 @@ public final class AuthenticationTest {
         );
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "Alice,LetMeIn,Alice",
+        "Bob,iamgod,Bob",
+        "Carol,12345,"
+    })
+    void joinedAuthenticatesAsExpected(
+        final String username,
+        final String password,
+        final String expected
+    ) {
+        MatcherAssert.assertThat(
+            new Authentication.Joined(
+                new Authentication.Single("Alice", "LetMeIn"),
+                new Authentication.Single("Bob", "iamgod")
+            ).user(username, password),
+            new IsEqual<>(Optional.ofNullable(expected))
+        );
+    }
+
     /**
      * Authentication for testing Authentication.Wrap.
      *

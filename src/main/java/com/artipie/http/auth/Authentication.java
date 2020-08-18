@@ -23,7 +23,10 @@
  */
 package com.artipie.http.auth;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Authentication mechanism to verify user.
@@ -99,6 +102,46 @@ public interface Authentication {
             return Optional.of(user)
                 .filter(this.username::equals)
                 .filter(ignored -> this.password.equals(pass));
+        }
+    }
+
+    /**
+     * Joined authentication composes multiple authentication instances into single one.
+     * User authenticated if any of authentication instances authenticates the user.
+     *
+     * @since 0.16
+     */
+    final class Joined implements Authentication {
+
+        /**
+         * Origin authentications.
+         */
+        private final Collection<Authentication> origins;
+
+        /**
+         * Ctor.
+         *
+         * @param origins Origin authentications.
+         */
+        public Joined(final Authentication... origins) {
+            this(Arrays.asList(origins));
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param origins Origin authentications.
+         */
+        public Joined(final Collection<Authentication> origins) {
+            this.origins = origins;
+        }
+
+        @Override
+        public Optional<String> user(final String user, final String pass) {
+            return this.origins.stream()
+                .map(auth -> auth.user(user, pass))
+                .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty))
+                .findFirst();
         }
     }
 }
