@@ -24,8 +24,9 @@
 package com.artipie.http.auth;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -116,7 +117,7 @@ public interface Authentication {
         /**
          * Origin authentications.
          */
-        private final Collection<Authentication> origins;
+        private final List<Authentication> origins;
 
         /**
          * Ctor.
@@ -132,7 +133,7 @@ public interface Authentication {
          *
          * @param origins Origin authentications.
          */
-        public Joined(final Collection<Authentication> origins) {
+        public Joined(final List<Authentication> origins) {
             this.origins = origins;
         }
 
@@ -142,6 +143,15 @@ public interface Authentication {
                 .map(auth -> auth.user(user, pass))
                 .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty))
                 .findFirst();
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                "%s([%s])",
+                this.getClass().getSimpleName(),
+                this.origins.stream().map(Object::toString).collect(Collectors.joining(","))
+            );
         }
     }
 }
