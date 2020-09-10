@@ -35,7 +35,8 @@ import java.net.URI;
  * and ending with {@code CRLF}.
  * The elements are separated by SP characters.
  * No {@code CR} or {@code LF} is allowed except in the final {@code CRLF} sequence.
- * <br/>
+ * </p>
+ * <p>
  * {@code Request-Line = Method SP Request-URI SP HTTP-Version CRLF}.
  * </p>
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html">RFC2616</a>

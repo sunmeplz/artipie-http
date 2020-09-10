@@ -48,7 +48,9 @@ import org.reactivestreams.Publisher;
  * Slice that removes the first part from the request URI.
  * <p>
  * For example {@code GET http://www.w3.org/pub/WWW/TheProject.html HTTP/1.1}
- * would be {@code GET http://www.w3.org/WWW/TheProject.html HTTP/1.1}.<br/>
+ * would be {@code GET http://www.w3.org/WWW/TheProject.html HTTP/1.1}.
+ * </p>
+ * <p>
  * The full path will be available as the value of {@code X-FullPath} header.
  * </p>
  *

@@ -46,9 +46,11 @@ import org.cactoos.list.Mapped;
  * </code></pre>
  * Header names are case-insensitive, according to
  * <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">RFC2616 SPEC</a>:
- * <br>
+ * </p>
+ * <p>
  * &gt; Each header field consists of a name followed by a colon (":") and the field value.
- * <br>
+ * </p>
+ * <p>
  * &gt; Field names are case-insensitive
  * </p>
  * @since 0.4

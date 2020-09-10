@@ -23,7 +23,7 @@
  */
 
 /**
- * Async implementations of {@link Slice}, {@link Response}, etc.
+ * Async implementations of {@link com.artipie.http.Slice}, {@link com.artipie.http.Response}, etc.
  * @since 0.4
  */
 package com.artipie.http.async;
