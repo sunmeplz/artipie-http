@@ -39,6 +39,7 @@ import org.reactivestreams.Publisher;
  * <p>
  * Example: the class which allows upload only for users with 'upload' permissions
  * and resolves user identity by "http-basic" mechanism:
+ * </p>
  * <pre><code>
  * new SliceAuth(
  *   new SliceUpload(storage),
@@ -46,7 +47,6 @@ import org.reactivestreams.Publisher;
  *   new AuthBasic(passwords)
  * );
  * </code></pre>
- * </p>
  * @since 0.8
  */
 public final class SliceAuth implements Slice {

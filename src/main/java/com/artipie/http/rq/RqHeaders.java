@@ -37,6 +37,7 @@ import org.cactoos.list.Mapped;
  * <p>
  * Request header values by name from headers.
  * Usage (assume {@link com.artipie.http.Slice} implementation):
+ * </p>
  * <pre><code>
  *  Response response(String line, Iterable&lt;Map.Entry&lt;String, String&gt;&gt; headers,
  *      Flow.Publisher&lt;ByteBuffer&gt; body) {
@@ -44,6 +45,7 @@ import org.cactoos.list.Mapped;
  *          // use these headers
  *  }
  * </code></pre>
+ * <p>
  * Header names are case-insensitive, according to
  * <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">RFC2616 SPEC</a>:
  * </p>
@@ -81,9 +83,11 @@ public final class RqHeaders extends ListEnvelope<String> implements List<String
      * Single header by name.
      * <p>
      * Use this class to find single header value by name:
+     * </p>
      * <pre><code>
      * Text header = new RqHeaders.Single(headers, "content-type");
      * </code></pre>
+     * <p>
      * If no headers were found or headers contains more than one value
      * for name {@link IllegalStateException} will be thrown.
      * </p>

@@ -29,7 +29,9 @@ import java.net.URI;
 /**
  * Request line helper object.
  * <p>
- * See 5.1 section of RFC2616:<br/>
+ * See 5.1 section of RFC2616:
+ * </p>
+ * <p>
  * The Request-Line begins with a method token,
  * followed by the Request-URI and the protocol version,
  * and ending with {@code CRLF}.

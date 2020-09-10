@@ -40,8 +40,11 @@ import org.reactivestreams.Publisher;
  * Routing slice.
  * <p>
  * {@link Slice} implementation which redirect requests to {@link Slice}
- * in {@link Path} if {@link RtRule} matched.<br/>
+ * in {@link Path} if {@link RtRule} matched.
+ * </p>
+ * <p>
  * Usage:
+ * </p>
  * <pre><code>
  * new SliceRoute(
  *   new SliceRoute.Path(
@@ -52,7 +55,6 @@ import org.reactivestreams.Publisher;
  *   )
  * );
  * </code></pre>
- * </p>
  * @since 0.5
  */
 public final class SliceRoute implements Slice {
