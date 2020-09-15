@@ -34,8 +34,8 @@ import java.util.stream.Stream;
 public interface Action {
 
     /**
-     * Action synonyms collection.
-     * @return Collection of synonyms
+     * Action names collection.
+     * @return Names of the action
      */
     Collection<String> names();
 
