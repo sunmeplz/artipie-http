@@ -51,7 +51,7 @@ class ActionTest {
         "d,DELETE",
         "delete,DELETE"
     })
-    void parses(final String name, final Action.Actions action) {
+    void parses(final String name, final Action.Standard action) {
         MatcherAssert.assertThat(
             new Action.ByString(name).get(),
             new IsEqual<>(action)

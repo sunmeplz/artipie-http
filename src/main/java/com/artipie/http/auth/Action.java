@@ -37,20 +37,20 @@ public interface Action {
      * Action synonyms collection.
      * @return Collection of synonyms
      */
-    Collection<String> synonyms();
+    Collection<String> names();
 
     /**
      * Action enumeration.
      * @since 0.16
      */
-    enum Actions implements Action {
+    enum Standard implements Action {
 
         /**
          * Read artifact.
          */
         READ {
             @Override
-            public Collection<String> synonyms() {
+            public Collection<String> names() {
                 return Arrays.asList("r", "read", "download", "install");
             }
         },
@@ -60,7 +60,7 @@ public interface Action {
          */
         WRITE {
             @Override
-            public Collection<String> synonyms() {
+            public Collection<String> names() {
                 return Arrays.asList("w", "write", "publish", "push", "deploy", "upload");
             }
         },
@@ -70,7 +70,7 @@ public interface Action {
          */
         DELETE {
             @Override
-            public Collection<String> synonyms() {
+            public Collection<String> names() {
                 return Arrays.asList("d", "delete");
             }
         };
@@ -78,7 +78,7 @@ public interface Action {
     }
 
     /**
-     * Instance of {@link Actions} by string.
+     * Instance of {@link Standard} by string.
      * @since 0.16
      */
     final class ByString {
@@ -97,12 +97,12 @@ public interface Action {
         }
 
         /**
-         * Returns instance of {@link Actions} by string synonym.
-         * @return Instance of {@link Actions}
+         * Returns instance of {@link Standard} by string synonym.
+         * @return Instance of {@link Standard}
          */
         public Action get() {
-            return Stream.of(Actions.values()).filter(
-                item -> item.synonyms().stream().anyMatch(act -> act.equals(this.action))
+            return Stream.of(Standard.values()).filter(
+                item -> item.names().stream().anyMatch(act -> act.equals(this.action))
             ).findFirst().orElseThrow(
                 () -> new IllegalArgumentException(
                     String.format("Unrecognized action %s", this.action)
