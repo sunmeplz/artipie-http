@@ -64,6 +64,9 @@ public final class BasicIdentities implements Identities {
             .filter(hdr -> hdr.startsWith(BasicIdentities.PREFIX))
             .map(hdr -> new Base64Decoded(hdr.substring(BasicIdentities.PREFIX.length())))
             .map(dec -> dec.toString().split(":"))
-            .flatMap(cred -> this.auth.user(cred[0].trim(), cred[1].trim()));
+            .flatMap(
+                cred -> this.auth.user(cred[0].trim(), cred[1].trim())
+                    .map(Authentication.User::name)
+            );
     }
 }
