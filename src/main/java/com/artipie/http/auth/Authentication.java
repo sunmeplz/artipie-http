@@ -24,7 +24,10 @@
 package com.artipie.http.auth;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +44,78 @@ public interface Authentication {
      * @param password Password
      * @return User login if found
      */
-    Optional<String> user(String username, String password);
+    Optional<User> user(String username, String password);
+
+    /**
+     * User.
+     * @since 0.16
+     */
+    final class User {
+
+        /**
+         * User name.
+         */
+        private final String uname;
+
+        /**
+         * User groups.
+         */
+        private final Collection<String> ugroups;
+
+        /**
+         * Ctro.
+         * @param name Name of the user
+         * @param groups User groups
+         */
+        public User(final String name, final Collection<String> groups) {
+            this.uname = name;
+            this.ugroups = groups;
+        }
+
+        /**
+         * Ctor.
+         * @param name User anme
+         */
+        public User(final String name) {
+            this(name, Collections.emptyList());
+        }
+
+        /**
+         * Ger user name.
+         * @return Name
+         */
+        public String name() {
+            return this.uname;
+        }
+
+        /**
+         * Get user groups.
+         * @return User groups
+         */
+        public Collection<String> groups() {
+            return this.ugroups;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            final boolean res;
+            if (this == other) {
+                res = true;
+            } else if (other == null || this.getClass() != other.getClass()) {
+                res = false;
+            } else {
+                final User user = (User) other;
+                res = Objects.equals(this.uname, user.uname)
+                    && Objects.equals(this.ugroups, user.ugroups);
+            }
+            return res;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.uname, this.ugroups);
+        }
+    }
 
     /**
      * Abstract decorator for Authentication.
@@ -65,7 +139,7 @@ public interface Authentication {
         }
 
         @Override
-        public final Optional<String> user(final String username, final String password) {
+        public final Optional<User> user(final String username, final String password) {
             return this.auth.user(username, password);
         }
     }
@@ -78,9 +152,9 @@ public interface Authentication {
     final class Single implements Authentication {
 
         /**
-         * Username.
+         * User.
          */
-        private final String username;
+        private final User user;
 
         /**
          * Password.
@@ -90,19 +164,30 @@ public interface Authentication {
         /**
          * Ctor.
          *
-         * @param username Username.
+         * @param user Username.
          * @param password Password.
          */
-        public Single(final String username, final String password) {
-            this.username = username;
+        public Single(final String user, final String password) {
+            this(new User(user), password);
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param user User
+         * @param password Password
+         */
+        public Single(final User user, final String password) {
+            this.user = user;
             this.password = password;
         }
 
         @Override
-        public Optional<String> user(final String user, final String pass) {
-            return Optional.of(user)
-                .filter(this.username::equals)
-                .filter(ignored -> this.password.equals(pass));
+        public Optional<User> user(final String name, final String pass) {
+            return Optional.of(name)
+                .filter(item -> item.equals(this.user.uname))
+                .filter(ignored -> this.password.equals(pass))
+                .map(ignored -> this.user);
         }
     }
 
@@ -138,7 +223,7 @@ public interface Authentication {
         }
 
         @Override
-        public Optional<String> user(final String user, final String pass) {
+        public Optional<User> user(final String user, final String pass) {
             return this.origins.stream()
                 .map(auth -> auth.user(user, pass))
                 .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty))

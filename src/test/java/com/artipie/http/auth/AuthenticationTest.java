@@ -41,7 +41,7 @@ public final class AuthenticationTest {
     void wrapDelegatesToOrigin() {
         final String user = "user";
         final String pass = "pass";
-        final Optional<String> result = Optional.of("result");
+        final Optional<Authentication.User> result = Optional.of(new Authentication.User("result"));
         MatcherAssert.assertThat(
             "Result is forwarded from delegate without modification",
             new TestAuthentication(
@@ -85,8 +85,7 @@ public final class AuthenticationTest {
     @ParameterizedTest
     @CsvSource({
         "Alice,LetMeIn,Alice",
-        "Bob,iamgod,Bob",
-        "Carol,12345,"
+        "Bob,iamgod,Bob"
     })
     void joinedAuthenticatesAsExpected(
         final String username,
@@ -98,7 +97,18 @@ public final class AuthenticationTest {
                 new Authentication.Single("Alice", "LetMeIn"),
                 new Authentication.Single("Bob", "iamgod")
             ).user(username, password),
-            new IsEqual<>(Optional.ofNullable(expected))
+            new IsEqual<>(Optional.of(new Authentication.User(expected)))
+        );
+    }
+
+    @Test
+    void emptyOptionalIfNotPresent() {
+        MatcherAssert.assertThat(
+            new Authentication.Joined(
+                new Authentication.Single("Alan", "123"),
+                new Authentication.Single("Mark", "0000")
+            ).user("Smith", "abc"),
+            new IsEqual<>(Optional.empty())
         );
     }
 
