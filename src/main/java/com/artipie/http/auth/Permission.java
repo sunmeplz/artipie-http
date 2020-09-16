@@ -50,7 +50,17 @@ public interface Permission {
         /**
          * Action to perform.
          */
-        private final String action;
+        private final Action action;
+
+        /**
+         * Ctor.
+         * @param perm Permissions
+         * @param action Action
+         */
+        public ByName(final Permissions perm, final Action action) {
+            this.perm = perm;
+            this.action = action;
+        }
 
         /**
          * Ctor.
@@ -58,13 +68,19 @@ public interface Permission {
          * @param perm Permissions
          */
         public ByName(final String action, final Permissions perm) {
-            this.perm = perm;
-            this.action = action;
+            this(perm, new Action.ByString(action).get());
         }
 
         @Override
         public boolean allowed(final String user) {
-            return this.perm.allowed(user, this.action);
+            boolean res = false;
+            for (final String synonym : this.action.names()) {
+                if (this.perm.allowed(user, synonym)) {
+                    res = true;
+                    break;
+                }
+            }
+            return res;
         }
     }
 }

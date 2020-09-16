@@ -50,7 +50,7 @@ public final class SliceAuthTest {
         MatcherAssert.assertThat(
             new SliceAuth(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
-                new Permission.ByName("any", Permissions.FREE),
+                user -> true,
                 Identities.ANONYMOUS
             ).response(
                 new RequestLine("GET", "/foo", "HTTP/1.1").toString(),
@@ -66,7 +66,7 @@ public final class SliceAuthTest {
         MatcherAssert.assertThat(
             new SliceAuth(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
-                new Permission.ByName("none", (name, action) -> false),
+                user -> false,
                 (line, headers) -> Optional.empty()
             ).response(
                 new RequestLine("POST", "/bar", "HTTP/1.2").toString(),
@@ -85,7 +85,7 @@ public final class SliceAuthTest {
         MatcherAssert.assertThat(
             new SliceAuth(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
-                new Permission.ByName("action", (name, action) -> false),
+                new Permission.ByName("read", (name, action) -> false),
                 Identities.ANONYMOUS
             ).response(
                 new RequestLine("DELETE", "/baz", "HTTP/1.3").toString(),
