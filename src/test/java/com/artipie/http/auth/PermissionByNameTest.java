@@ -50,12 +50,12 @@ class PermissionByNameTest {
         "DELETE,delete,mark",
         "DELETE,d,mark"
     })
-    void checksAllActions(final Action.Standard action, final String perm, final String user) {
+    void checksAllActions(final Action.Standard action, final String perm, final String name) {
         MatcherAssert.assertThat(
             new Permission.ByName(
-                (name, act) -> user.equals(name) && act.equals(perm),
+                (identity, act) -> name.equals(identity.name()) && act.equals(perm),
                 action
-            ).allowed(user),
+            ).allowed(new Authentication.User(name)),
             new IsEqual<>(true)
         );
     }
@@ -65,9 +65,9 @@ class PermissionByNameTest {
         final String user = "jane";
         MatcherAssert.assertThat(
             new Permission.ByName(
-                (name, act) -> user.equals(name) && act.equals("a"),
+                (identity, act) -> user.equals(identity.name()) && act.equals("a"),
                 () -> Arrays.asList("b", "c")
-            ).allowed(user),
+            ).allowed(new Authentication.User(user)),
             new IsEqual<>(false)
         );
     }

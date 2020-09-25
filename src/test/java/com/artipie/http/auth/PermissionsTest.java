@@ -38,17 +38,17 @@ public final class PermissionsTest {
 
     @Test
     void wrapDelegatesToOrigin() {
-        final String user = "user";
+        final String name = "user";
         final String act = "act";
         final boolean result = true;
         MatcherAssert.assertThat(
             "Result is forwarded from delegate without modification",
             new TestPermissions(
-                (username, action) -> {
+                (identity, action) -> {
                     MatcherAssert.assertThat(
                         "Username is forwarded to delegate without modification",
-                        username,
-                        new IsEqual<>(user)
+                        identity,
+                        new IsEqual<>(new Authentication.User(name))
                     );
                     MatcherAssert.assertThat(
                         "Action is forwarded to delegate without modification",
@@ -57,7 +57,7 @@ public final class PermissionsTest {
                     );
                     return result;
                 }
-            ).allowed(user, act),
+            ).allowed(new Authentication.User(name), act),
             new IsEqual<>(result)
         );
     }
@@ -74,7 +74,8 @@ public final class PermissionsTest {
         final boolean allow
     ) {
         MatcherAssert.assertThat(
-            new Permissions.Single("Aladdin", "read").allowed(username, action),
+            new Permissions.Single("Aladdin", "read")
+                .allowed(new Authentication.User(username), action),
             new IsEqual<>(allow)
         );
     }
