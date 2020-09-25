@@ -31,13 +31,18 @@ package com.artipie.http.auth;
 public interface Permissions {
 
     /**
+     * Any user instance.
+     */
+    Authentication.User ANY_USER = new Authentication.User("*");
+
+    /**
      * Allow to perform all actions by all users.
      */
     Permissions FREE = (name, action) -> true;
 
     /**
-     * Check if user allowed to perform action.
-     * @param user User name
+     * Check if user is allowed to perform an action.
+     * @param user User
      * @param action Action to perform
      * @return True if allowed
      */

@@ -39,11 +39,6 @@ import java.util.stream.Stream;
 public interface Authentication {
 
     /**
-     * Super user instance.
-     */
-    User SUPER_USER = new User("*");
-
-    /**
      * Find user by credentials.
      * @param username Username
      * @param password Password
