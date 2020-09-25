@@ -68,7 +68,7 @@ public final class BasicIdentitiesTest {
         );
         MatcherAssert.assertThat(
             new BasicIdentities(this.auth).user("", headers),
-            new IsEqual<>(Optional.of("Aladdin"))
+            new IsEqual<>(Optional.of(new Authentication.User("Aladdin")))
         );
     }
 }

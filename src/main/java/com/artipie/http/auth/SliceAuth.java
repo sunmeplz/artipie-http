@@ -96,7 +96,7 @@ public final class SliceAuth implements Slice {
             ).orElseGet(
                 () -> {
                     final Response rsp;
-                    if (this.perm.allowed("*")) {
+                    if (this.perm.allowed(Authentication.SUPER_USER)) {
                         rsp = this.origin.response(line, headers, body);
                     } else {
                         rsp = new RsWithHeaders(

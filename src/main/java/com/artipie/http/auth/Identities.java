@@ -38,7 +38,7 @@ public interface Identities {
     /**
      * Resolve any request as anonymous user.
      */
-    Identities ANONYMOUS = (line, headers) -> Optional.of("anonymous");
+    Identities ANONYMOUS = (line, headers) -> Optional.of(new Authentication.User("anonymous"));
 
     /**
      * Try to find a user by request head.
@@ -46,5 +46,5 @@ public interface Identities {
      * @param headers Request headers
      * @return User name if found
      */
-    Optional<String> user(String line, Iterable<Map.Entry<String, String>> headers);
+    Optional<Authentication.User> user(String line, Iterable<Map.Entry<String, String>> headers);
 }

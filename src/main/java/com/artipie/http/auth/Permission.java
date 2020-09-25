@@ -34,7 +34,7 @@ public interface Permission {
      * @param user User name
      * @return True if authorized
      */
-    boolean allowed(String user);
+    boolean allowed(Authentication.User user);
 
     /**
      * Permission by name.
@@ -72,7 +72,7 @@ public interface Permission {
         }
 
         @Override
-        public boolean allowed(final String user) {
+        public boolean allowed(final Authentication.User user) {
             boolean res = false;
             for (final String synonym : this.action.names()) {
                 if (this.perm.allowed(user, synonym)) {

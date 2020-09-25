@@ -57,7 +57,7 @@ public final class BasicIdentities implements Identities {
 
     @Override
     @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
-    public Optional<String> user(final String line,
+    public Optional<Authentication.User> user(final String line,
         final Iterable<Map.Entry<String, String>> headers) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
@@ -66,7 +66,6 @@ public final class BasicIdentities implements Identities {
             .map(dec -> dec.toString().split(":"))
             .flatMap(
                 cred -> this.auth.user(cred[0].trim(), cred[1].trim())
-                    .map(Authentication.User::name)
             );
     }
 }

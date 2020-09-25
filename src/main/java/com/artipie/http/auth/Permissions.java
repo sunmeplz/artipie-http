@@ -37,11 +37,11 @@ public interface Permissions {
 
     /**
      * Check if user allowed to perform action.
-     * @param name User name
+     * @param user User name
      * @param action Action to perform
      * @return True if allowed
      */
-    boolean allowed(String name, String action);
+    boolean allowed(Authentication.User user, String action);
 
     /**
      * Abstract decorator for Permissions.
@@ -65,8 +65,8 @@ public interface Permissions {
         }
 
         @Override
-        public final boolean allowed(final String name, final String action) {
-            return this.origin.allowed(name, action);
+        public final boolean allowed(final Authentication.User user, final String action) {
+            return this.origin.allowed(user, action);
         }
     }
 
@@ -99,8 +99,8 @@ public interface Permissions {
         }
 
         @Override
-        public boolean allowed(final String name, final String act) {
-            return this.username.equals(name) && this.action.equals(act);
+        public boolean allowed(final Authentication.User user, final String act) {
+            return this.username.equals(user.name()) && this.action.equals(act);
         }
     }
 }
