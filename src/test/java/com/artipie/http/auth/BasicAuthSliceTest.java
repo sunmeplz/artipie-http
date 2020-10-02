@@ -52,7 +52,7 @@ final class BasicAuthSliceTest {
         MatcherAssert.assertThat(
             new BasicAuthSlice(
                 new SliceSimple(StandardRs.OK),
-                (user, pswd) -> Optional.of(new Authentication.User("someone")),
+                (user, pswd) -> Optional.empty(),
                 user -> true
             ),
             new SliceHasResponse(
@@ -87,12 +87,31 @@ final class BasicAuthSliceTest {
             new BasicAuthSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
                 (user, pswd) -> Optional.of(new Authentication.User(name)),
-                new Permission.ByName("read", (user, action) -> false)
+                user -> false
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.FORBIDDEN),
                 new RequestLine("DELETE", "/baz", "HTTP/1.3"),
                 new Headers.From(new Authorization.Basic(name, "123")),
+                Content.EMPTY
+            )
+        );
+    }
+
+    @Test
+    void parsesHeaders() {
+        final String aladdin = "Aladdin";
+        final String pswd = "open sesame";
+        MatcherAssert.assertThat(
+            new BasicAuthSlice(
+                new SliceSimple(StandardRs.OK),
+                new Authentication.Single(aladdin, pswd),
+                user -> true
+            ),
+            new SliceHasResponse(
+                new RsHasStatus(RsStatus.OK),
+                new RequestLine("PUT", "/my-endpoint"),
+                new Headers.From(new Authorization.Basic(aladdin, pswd)),
                 Content.EMPTY
             )
         );

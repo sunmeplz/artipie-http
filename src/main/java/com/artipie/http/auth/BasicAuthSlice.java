@@ -47,7 +47,7 @@ public final class BasicAuthSlice implements Slice {
     /**
      * Basic authentication prefix.
      */
-    private static final String PREFIX = "Basic ";
+    public static final String PREFIX = "Basic";
 
     /**
      * Origin.
@@ -98,7 +98,7 @@ public final class BasicAuthSlice implements Slice {
                     } else {
                         rsp = new RsWithHeaders(
                             new RsWithStatus(RsStatus.UNAUTHORIZED),
-                            new Headers.From(new WwwAuthenticate("Basic"))
+                            new Headers.From(new WwwAuthenticate(BasicAuthSlice.PREFIX))
                         );
                     }
                     return rsp;
@@ -115,7 +115,7 @@ public final class BasicAuthSlice implements Slice {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
             .filter(hdr -> hdr.startsWith(BasicAuthSlice.PREFIX))
-            .map(hdr -> new Base64Decoded(hdr.substring(BasicAuthSlice.PREFIX.length())))
+            .map(hdr -> new Base64Decoded(hdr.substring(BasicAuthSlice.PREFIX.length() + 1)))
             .map(dec -> dec.toString().split(":"))
             .flatMap(cred -> this.auth.user(cred[0].trim(), cred[1].trim()));
     }
