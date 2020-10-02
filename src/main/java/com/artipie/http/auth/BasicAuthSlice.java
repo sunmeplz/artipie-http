@@ -26,65 +26,60 @@ package com.artipie.http.auth;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import com.artipie.http.headers.Authorization;
 import com.artipie.http.headers.WwwAuthenticate;
+import com.artipie.http.rq.RqHeaders;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithHeaders;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Optional;
+import org.cactoos.text.Base64Decoded;
 import org.reactivestreams.Publisher;
 
 /**
- * Slice wrapper with authorization and authentication.
- * <p>
- * Example: the class which allows upload only for users with 'upload' permissions
- * and resolves user identity by "http-basic" mechanism:
- * </p>
- * <pre><code>
- * new SliceAuth(
- *   new SliceUpload(storage),
- *   new Permission.ByName("upload", permissions),
- *   new AuthBasic(passwords)
- * );
- * </code></pre>
- * @since 0.8
- * @deprecated Use {@link BasicAuthSlice} instead
+ * Slice with basic authentication.
+ * @since 0.17
  */
-@Deprecated
-public final class SliceAuth implements Slice {
+public final class BasicAuthSlice implements Slice {
 
     /**
-     * Origin slice.
+     * Basic authentication prefix.
+     */
+    private static final String PREFIX = "Basic ";
+
+    /**
+     * Origin.
      */
     private final Slice origin;
 
     /**
      * Authorization.
      */
-    private final Permission perm;
+    private final Authentication auth;
 
     /**
-     * Authentication.
+     * Permissions.
      */
-    private final Identities ids;
+    private final Permission perm;
 
     /**
      * Ctor.
      * @param origin Origin slice
-     * @param perm Authorization mechanism
-     * @param ids Authentication mechanism
+     * @param auth Authorization
+     * @param perm Permissions
      */
-    public SliceAuth(final Slice origin, final Permission perm, final Identities ids) {
+    public BasicAuthSlice(final Slice origin, final Authentication auth, final Permission perm) {
         this.origin = origin;
-        this.ids = ids;
+        this.auth = auth;
         this.perm = perm;
     }
 
     @Override
-    public Response response(final String line,
-        final Iterable<Map.Entry<String, String>> headers,
+    public Response response(final String line, final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        return this.ids.user(line, headers)
+        return this.user(headers)
             .map(this.perm::allowed).map(
                 allowed -> {
                     final Response rsp;
@@ -109,5 +104,19 @@ public final class SliceAuth implements Slice {
                     return rsp;
                 }
             );
+    }
+
+    /**
+     * Obtains user from authentication header.
+     * @param headers Headers
+     * @return User if authorised
+     */
+    private Optional<Authentication.User> user(final Iterable<Map.Entry<String, String>> headers) {
+        return new RqHeaders(headers, Authorization.NAME).stream()
+            .findFirst()
+            .filter(hdr -> hdr.startsWith(BasicAuthSlice.PREFIX))
+            .map(hdr -> new Base64Decoded(hdr.substring(BasicAuthSlice.PREFIX.length())))
+            .map(dec -> dec.toString().split(":"))
+            .flatMap(cred -> this.auth.user(cred[0].trim(), cred[1].trim()));
     }
 }

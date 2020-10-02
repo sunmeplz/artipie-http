@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.8
  */
+@SuppressWarnings("deprecation")
 public final class BasicIdentitiesTest {
 
     /**
