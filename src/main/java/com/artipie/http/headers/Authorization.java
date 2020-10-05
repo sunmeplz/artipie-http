@@ -79,7 +79,7 @@ public final class Authorization extends Header.Wrap {
             super(
                 new Authorization(
                     String.format(
-                        "%s %s", BasicAuthSlice.PREFIX,
+                        "%s %s", BasicAuthSlice.SCHEME,
                         new Base64Encoded(String.format("%s:%s", username, password))
                     )
                 )
