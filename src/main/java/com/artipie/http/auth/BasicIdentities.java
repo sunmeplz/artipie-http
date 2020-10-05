@@ -34,7 +34,9 @@ import org.cactoos.text.Base64Decoded;
  *
  * @since 0.8
  * @checkstyle NestedIfDepthCheck (500 lines)
+ * @deprecated Use {@link BasicAuthSlice} instead
  */
+@Deprecated
 public final class BasicIdentities implements Identities {
 
     /**

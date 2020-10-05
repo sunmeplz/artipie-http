@@ -24,6 +24,7 @@
 package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
+import com.artipie.http.auth.BasicAuthSlice;
 import com.artipie.http.rq.RqHeaders;
 import org.cactoos.text.Base64Encoded;
 
@@ -78,7 +79,7 @@ public final class Authorization extends Header.Wrap {
             super(
                 new Authorization(
                     String.format(
-                        "Basic %s",
+                        "%s %s", BasicAuthSlice.SCHEME,
                         new Base64Encoded(String.format("%s:%s", username, password))
                     )
                 )

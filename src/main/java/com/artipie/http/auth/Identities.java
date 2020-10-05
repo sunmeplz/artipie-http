@@ -32,7 +32,9 @@ import java.util.Optional;
  * Possible implementations are Basic, etc.
  * </p>
  * @since 0.8
+ * @deprecated We do not use this interface anymore, use {@link Authentication} instead
  */
+@Deprecated
 public interface Identities {
 
     /**
