@@ -28,6 +28,7 @@ import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.rq.RequestLine;
+import com.artipie.http.rs.CachedResponse;
 import io.reactivex.Flowable;
 import org.cactoos.func.StickyFunc;
 import org.cactoos.func.UncheckedFunc;
@@ -73,7 +74,7 @@ public final class SliceHasResponse extends TypeSafeMatcher<Slice> {
         this.rsp = rsp;
         this.target = new UncheckedFunc<>(
             new StickyFunc<>(
-                slice -> new StatefulResponse(
+                slice -> new CachedResponse(
                     slice.response(line.toString(), headers, body)
                 )
             )

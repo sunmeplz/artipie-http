@@ -21,15 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.artipie.http.hm;
+package com.artipie.http.rs;
 
-import com.artipie.asto.Concatenation;
-import com.artipie.asto.Remaining;
+import com.artipie.asto.Content;
+import com.artipie.asto.ext.PublisherAs;
 import com.artipie.http.Connection;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
-import com.artipie.http.rs.RsStatus;
-import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -39,12 +37,12 @@ import java.util.stream.StreamSupport;
 import org.reactivestreams.Publisher;
 
 /**
- * Response that keeps self state and can fetch it only once and reply many times.
+ * Response that caches origin response once it first sent and can replay it many times.
  * <p>It can be useful when testing one response against multiple matchers, and response
  * from slice should be called only once.</p>
- * @since 0.16
+ * @since 0.17
  */
-public final class StatefulResponse implements Response {
+public final class CachedResponse implements Response {
 
     /**
      * Origin response.
@@ -60,7 +58,7 @@ public final class StatefulResponse implements Response {
      * Wraps response with stateful connection.
      * @param origin Origin response
      */
-    public StatefulResponse(final Response origin) {
+    public CachedResponse(final Response origin) {
         this.origin = origin;
         this.con = new StatefulConnection();
     }
@@ -98,15 +96,16 @@ public final class StatefulResponse implements Response {
         /**
          * Response body.
          */
-        private volatile Publisher<ByteBuffer> body;
+        private volatile byte[] body;
 
         @Override
         public CompletionStage<Void> accept(final RsStatus stts, final Headers hdrs,
             final Publisher<ByteBuffer> bdy) {
             this.status = stts;
             this.headers = hdrs;
-            this.body = Flowable.fromPublisher(bdy).cache();
-            return CompletableFuture.completedFuture(null);
+            return new PublisherAs(bdy).bytes().thenAccept(
+                bytes -> this.body = bytes
+            );
         }
 
         @Override
@@ -123,12 +122,7 @@ public final class StatefulResponse implements Response {
                             header.getValue()
                         )
                     ).collect(Collectors.joining(", ")),
-                Arrays.toString(
-                    new Concatenation(this.body)
-                        .single()
-                        .map(buf -> new Remaining(buf).bytes())
-                        .blockingGet()
-                )
+                Arrays.toString(this.body)
             );
         }
 
@@ -153,7 +147,7 @@ public final class StatefulResponse implements Response {
          * @return Future
          */
         CompletionStage<Void> replay(final Connection connection) {
-            return connection.accept(this.status, this.headers, this.body);
+            return connection.accept(this.status, this.headers, new Content.From(this.body));
         }
     }
 }
