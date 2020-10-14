@@ -39,6 +39,11 @@ import java.util.stream.Stream;
 public interface Authentication {
 
     /**
+     * Resolve anyone as an anonymous user.
+     */
+    Authentication ANONYMOUS = (name, pswd) -> Optional.of(new Authentication.User("anonymous"));
+
+    /**
      * Find user by credentials.
      * @param username Username
      * @param password Password
