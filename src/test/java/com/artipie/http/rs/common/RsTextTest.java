@@ -26,7 +26,7 @@ package com.artipie.http.rs.common;
 import com.artipie.http.headers.Header;
 import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
-import com.artipie.http.hm.StatefulResponse;
+import com.artipie.http.rs.CachedResponse;
 import java.nio.charset.StandardCharsets;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -43,7 +43,7 @@ final class RsTextTest {
     void bodyIsCorrect() {
         final String src = "hello";
         MatcherAssert.assertThat(
-            new StatefulResponse(new RsText(src, StandardCharsets.UTF_16)),
+            new CachedResponse(new RsText(src, StandardCharsets.UTF_16)),
             new RsHasBody(src, StandardCharsets.UTF_16)
         );
     }
@@ -51,7 +51,7 @@ final class RsTextTest {
     @Test
     void headersHasContentSize() {
         MatcherAssert.assertThat(
-            new StatefulResponse(new RsText("four")),
+            new CachedResponse(new RsText("four")),
             new RsHasHeaders(
                 Matchers.equalTo(new Header("Content-Length", "4")),
                 Matchers.anything()
@@ -62,7 +62,7 @@ final class RsTextTest {
     @Test
     void headersHasContentType() {
         MatcherAssert.assertThat(
-            new StatefulResponse(new RsText("test", StandardCharsets.UTF_16LE)),
+            new CachedResponse(new RsText("test", StandardCharsets.UTF_16LE)),
             new RsHasHeaders(
                 Matchers.equalTo(
                     new Header("Content-Type", "text/plain; charset=UTF-16LE")
