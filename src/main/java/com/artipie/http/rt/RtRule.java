@@ -24,6 +24,7 @@
 package com.artipie.http.rt;
 
 import com.artipie.http.rq.RequestLineFrom;
+import com.artipie.http.rq.RqHeaders;
 import com.artipie.http.rq.RqMethod;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -237,6 +238,31 @@ public interface RtRule {
         public final boolean apply(final String line,
             final Iterable<Map.Entry<String, String>> headers) {
             return this.origin.apply(line, headers);
+        }
+    }
+
+    /**
+     * Rule by header.
+     * @since 0.17
+     */
+    final class ByHeader implements RtRule {
+
+        /**
+         * Header name.
+         */
+        private final String name;
+
+        /**
+         * Ctor.
+         * @param name Header name
+         */
+        public ByHeader(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean apply(final String line, final Iterable<Map.Entry<String, String>> headers) {
+            return !new RqHeaders(headers, this.name).isEmpty();
         }
     }
 }
