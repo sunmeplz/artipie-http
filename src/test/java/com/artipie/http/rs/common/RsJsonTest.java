@@ -26,7 +26,7 @@ package com.artipie.http.rs.common;
 import com.artipie.http.headers.Header;
 import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
-import com.artipie.http.hm.StatefulResponse;
+import com.artipie.http.rs.CachedResponse;
 import java.nio.charset.StandardCharsets;
 import javax.json.Json;
 import org.hamcrest.MatcherAssert;
@@ -51,7 +51,7 @@ final class RsJsonTest {
     @Test
     void headersHasContentSize() {
         MatcherAssert.assertThat(
-            new StatefulResponse(new RsJson(Json.createObjectBuilder().add("bar", 0))),
+            new CachedResponse(new RsJson(Json.createObjectBuilder().add("bar", 0))),
             new RsHasHeaders(
                 Matchers.equalTo(new Header("Content-Length", "9")),
                 Matchers.anything()
@@ -62,7 +62,7 @@ final class RsJsonTest {
     @Test
     void headersHasContentType() {
         MatcherAssert.assertThat(
-            new StatefulResponse(
+            new CachedResponse(
                 new RsJson(
                     () -> Json.createObjectBuilder().add("baz", "a").build(),
                     StandardCharsets.UTF_16BE
