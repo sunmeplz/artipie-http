@@ -253,16 +253,32 @@ public interface RtRule {
         private final String name;
 
         /**
+         * Header value pattern.
+         */
+        private final Pattern ptn;
+
+        /**
+         * Ctor.
+         * @param name Header name
+         * @param ptn Header value pattern
+         */
+        public ByHeader(final String name, final Pattern ptn) {
+            this.name = name;
+            this.ptn = ptn;
+        }
+
+        /**
          * Ctor.
          * @param name Header name
          */
         public ByHeader(final String name) {
-            this.name = name;
+            this(name, Pattern.compile(".*"));
         }
 
         @Override
         public boolean apply(final String line, final Iterable<Map.Entry<String, String>> headers) {
-            return !new RqHeaders(headers, this.name).isEmpty();
+            return new RqHeaders(headers, this.name).stream()
+                .anyMatch(val -> this.ptn.matcher(val).matches());
         }
     }
 }
