@@ -25,6 +25,8 @@ package com.artipie.http.group;
 
 import com.artipie.http.Connection;
 import com.artipie.http.Response;
+import com.artipie.http.rs.RsStatus;
+import com.artipie.http.rs.RsWithStatus;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -57,7 +59,13 @@ final class GroupResponse implements Response {
         final CompletableFuture<Void> future = new CompletableFuture<>();
         final GroupResults results = new GroupResults(this.responses.size(), future);
         for (int pos = 0; pos < this.responses.size(); ++pos) {
-            this.responses.get(pos).send(new GroupConnection(con, pos, results));
+            final GroupConnection connection = new GroupConnection(con, pos, results);
+            this.responses.get(pos)
+                .send(connection)
+                .<CompletionStage<Void>>thenApply(CompletableFuture::completedFuture)
+                .exceptionally(
+                    throwable -> new RsWithStatus(RsStatus.INTERNAL_ERROR).send(connection)
+                );
         }
         return future;
     }
