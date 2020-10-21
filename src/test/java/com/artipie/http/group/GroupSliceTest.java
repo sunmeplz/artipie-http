@@ -93,6 +93,24 @@ final class GroupSliceTest {
         );
     }
 
+    @Test
+    @Timeout(1)
+    void returnsNotFoundIfSomeFailsWithException() {
+        MatcherAssert.assertThat(
+            new GroupSlice(
+                (line, headers, body) -> connection -> {
+                    final CompletableFuture<Void> future = new CompletableFuture<>();
+                    future.completeExceptionally(new IllegalStateException());
+                    return future;
+                }
+            ),
+            new SliceHasResponse(
+                new RsHasStatus(RsStatus.NOT_FOUND),
+                new RequestLine(RqMethod.GET, "/faulty/path")
+            )
+        );
+    }
+
     private static Slice slice(final RsStatus status, final String body, final Duration delay) {
         return new SliceWithDelay(
             new SliceSimple(
