@@ -23,6 +23,9 @@
  */
 package com.artipie.http.auth;
 
+import java.util.Arrays;
+import java.util.stream.StreamSupport;
+
 /**
  * Authorization mechanism with single permission check for slice.
  * @since 0.8
@@ -81,6 +84,45 @@ public interface Permission {
                 }
             }
             return res;
+        }
+    }
+
+    /**
+     * Permission composed from multiple origin permissions.
+     * Permission allows action when all origin permissions allow the action for specified user.
+     *
+     * @since 0.17
+     */
+    final class All implements Permission {
+
+        /**
+         * Origin permissions.
+         */
+        private final Iterable<Permission> origin;
+
+        /**
+         * Ctor.
+         *
+         * @param origin Origin permissions.
+         */
+        public All(final Permission... origin) {
+            this(Arrays.asList(origin));
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param origin Origin permissions.
+         */
+        public All(final Iterable<Permission> origin) {
+            this.origin = origin;
+        }
+
+        @Override
+        public boolean allowed(final Authentication.User user) {
+            return StreamSupport.stream(this.origin.spliterator(), false).allMatch(
+                perm -> perm.allowed(user)
+            );
         }
     }
 }
