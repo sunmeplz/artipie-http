@@ -31,6 +31,7 @@ import com.artipie.http.hm.RsHasHeaders;
 import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.hm.SliceHasResponse;
 import com.artipie.http.rq.RequestLine;
+import com.artipie.http.rq.RqMethod;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithStatus;
 import com.artipie.http.rs.StandardRs;
@@ -117,4 +118,22 @@ final class BasicAuthSliceTest {
         );
     }
 
+    @Test
+    void doesNotAuthenticateIfNotNeeded() {
+        MatcherAssert.assertThat(
+            new BasicAuthSlice(
+                new SliceSimple(StandardRs.OK),
+                (user, pswd) -> {
+                    throw new IllegalStateException("Should not be invoked");
+                },
+                user -> user.equals(Permissions.ANY_USER)
+            ),
+            new SliceHasResponse(
+                new RsHasStatus(RsStatus.OK),
+                new RequestLine(RqMethod.GET, "/resource"),
+                new Headers.From(new Authorization.Basic("alice", "12345")),
+                Content.EMPTY
+            )
+        );
+    }
 }

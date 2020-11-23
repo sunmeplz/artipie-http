@@ -79,8 +79,11 @@ public final class BasicAuthSlice implements Slice {
     @Override
     public Response response(final String line, final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
-        return this.user(headers)
-            .map(this.perm::allowed).map(
+        final Response result;
+        if (this.perm.allowed(Permissions.ANY_USER)) {
+            result = this.origin.response(line, headers, body);
+        } else {
+            result = this.user(headers).map(this.perm::allowed).map(
                 allowed -> {
                     final Response rsp;
                     if (allowed) {
@@ -91,19 +94,13 @@ public final class BasicAuthSlice implements Slice {
                     return rsp;
                 }
             ).orElseGet(
-                () -> {
-                    final Response rsp;
-                    if (this.perm.allowed(Permissions.ANY_USER)) {
-                        rsp = this.origin.response(line, headers, body);
-                    } else {
-                        rsp = new RsWithHeaders(
-                            new RsWithStatus(RsStatus.UNAUTHORIZED),
-                            new Headers.From(new WwwAuthenticate(BasicAuthSlice.SCHEME))
-                        );
-                    }
-                    return rsp;
-                }
+                () -> new RsWithHeaders(
+                    new RsWithStatus(RsStatus.UNAUTHORIZED),
+                    new Headers.From(new WwwAuthenticate(BasicAuthSlice.SCHEME))
+                )
             );
+        }
+        return result;
     }
 
     /**
