@@ -23,21 +23,43 @@
  */
 package com.artipie.http.auth;
 
-import com.artipie.http.Slice;
+import java.util.Map;
+import java.util.Optional;
 
 /**
- * Slice with basic authentication.
+ * Authentication scheme such as Basic, Bearer etc.
+ *
  * @since 0.17
  */
-public final class BasicAuthSlice extends Slice.Wrap {
+public interface AuthScheme {
 
     /**
-     * Ctor.
-     * @param origin Origin slice
-     * @param auth Authorization
-     * @param perm Permissions
+     * Authenticate HTTP request by it's headers.
+     *
+     * @param headers Request headers.
+     * @return Authentication result.
      */
-    public BasicAuthSlice(final Slice origin, final Authentication auth, final Permission perm) {
-        super(new AuthSlice(origin, new BasicAuthScheme(auth), perm));
+    Result authenticate(Iterable<Map.Entry<String, String>> headers);
+
+    /**
+     * HTTP request authentication result.
+     *
+     * @since 0.17
+     */
+    interface Result {
+
+        /**
+         * Authenticated user.
+         *
+         * @return Authenticated user, empty if not authenticated.
+         */
+        Optional<Authentication.User> user();
+
+        /**
+         * Get authentication challenge that is provided in response WWW-Authenticate header value.
+         *
+         * @return Authentication challenge for client.
+         */
+        String challenge();
     }
 }
