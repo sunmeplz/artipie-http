@@ -46,12 +46,19 @@ public final class BearerAuthScheme implements AuthScheme {
     private final TokenAuthentication auth;
 
     /**
+     * Challenge parameters.
+     */
+    private final String params;
+
+    /**
      * Ctor.
      *
      * @param auth Authentication.
+     * @param params Challenge parameters.
      */
-    public BearerAuthScheme(final TokenAuthentication auth) {
+    public BearerAuthScheme(final TokenAuthentication auth, final String params) {
         this.auth = auth;
+        this.params = params;
     }
 
     @Override
@@ -74,11 +81,20 @@ public final class BearerAuthScheme implements AuthScheme {
     }
 
     /**
+     * Challenge for client to be provided as WWW-Authenticate header value.
+     *
+     * @return Challenge string.
+     */
+    private String challenge() {
+        return String.format("%s %s", BearerAuthScheme.NAME, this.params);
+    }
+
+    /**
      * Successful result with authenticated user.
      *
      * @since 0.17
      */
-    private static class Success implements Result {
+    private class Success implements Result {
 
         /**
          * Authenticated user.
@@ -101,7 +117,7 @@ public final class BearerAuthScheme implements AuthScheme {
 
         @Override
         public String challenge() {
-            return BearerAuthScheme.NAME;
+            return BearerAuthScheme.this.challenge();
         }
     }
 
@@ -110,7 +126,7 @@ public final class BearerAuthScheme implements AuthScheme {
      *
      * @since 0.17
      */
-    private static class Failure implements Result {
+    private class Failure implements Result {
 
         @Override
         public Optional<Authentication.User> user() {
@@ -119,7 +135,7 @@ public final class BearerAuthScheme implements AuthScheme {
 
         @Override
         public String challenge() {
-            return BearerAuthScheme.NAME;
+            return BearerAuthScheme.this.challenge();
         }
     }
 }
