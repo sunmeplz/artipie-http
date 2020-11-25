@@ -25,6 +25,7 @@ package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
 import com.artipie.http.auth.BasicAuthScheme;
+import com.artipie.http.auth.BearerAuthScheme;
 import com.artipie.http.rq.RqHeaders;
 import org.cactoos.text.Base64Encoded;
 
@@ -43,6 +44,16 @@ public final class Authorization extends Header.Wrap {
      * Header name.
      */
     public static final String NAME = "Authorization";
+
+    /**
+     * Ctor.
+     *
+     * @param scheme Authentication scheme.
+     * @param credentials Credentials.
+     */
+    public Authorization(final String scheme, final String credentials) {
+        super(new Header(Authorization.NAME, String.format("%s %s", scheme, credentials)));
+    }
 
     /**
      * Ctor.
@@ -78,10 +89,8 @@ public final class Authorization extends Header.Wrap {
         public Basic(final String username, final String password) {
             super(
                 new Authorization(
-                    String.format(
-                        "%s %s", BasicAuthScheme.NAME,
-                        new Base64Encoded(String.format("%s:%s", username, password))
-                    )
+                    BasicAuthScheme.NAME,
+                    new Base64Encoded(String.format("%s:%s", username, password)).toString()
                 )
             );
         }
@@ -100,7 +109,7 @@ public final class Authorization extends Header.Wrap {
          * @param token Token.
          */
         public Bearer(final String token) {
-            super(new Authorization(String.format("Bearer %s", token)));
+            super(new Authorization(BearerAuthScheme.NAME, token));
         }
     }
 }
