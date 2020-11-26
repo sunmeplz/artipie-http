@@ -53,7 +53,8 @@ final class BearerAuthSchemeTest {
             tkn -> {
                 capture.set(tkn);
                 return Optional.of(new Authentication.User("alice"));
-            }
+            },
+            "realm=\"artipie.com\""
         ).authenticate(new Headers.From(new Authorization.Bearer(token)));
         MatcherAssert.assertThat(
             capture.get(),
@@ -67,20 +68,30 @@ final class BearerAuthSchemeTest {
     void shouldReturnUserInResult(final String name) {
         final Optional<Authentication.User> user = Optional.ofNullable(name)
             .map(Authentication.User::new);
-        final Optional<Authentication.User> result = new BearerAuthScheme(tkn -> user)
-            .authenticate(new Headers.From(new Authorization.Bearer("abc")))
-            .user();
+        final Optional<Authentication.User> result = new BearerAuthScheme(
+            tkn -> user,
+            "whatever"
+        ).authenticate(new Headers.From(new Authorization.Bearer("abc"))).user();
         MatcherAssert.assertThat(result, new IsEqual<>(user));
     }
 
     @ParameterizedTest
     @MethodSource("badHeaders")
     void shouldNotAuthWhenNoAuthHeader(final Headers headers) {
-        final AuthScheme.Result result = new BearerAuthScheme(tkn -> Optional.empty())
-            .authenticate(headers);
+        final String params = "realm=\"artipie.com/auth\",param1=\"123\"";
+        final AuthScheme.Result result = new BearerAuthScheme(
+            tkn -> Optional.empty(),
+            params
+        ).authenticate(headers);
         MatcherAssert.assertThat(
+            "Not authenticated",
             result.user().isPresent(),
             new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "Has expected challenge",
+            result.challenge(),
+            new IsEqual<>(String.format("Bearer %s", params))
         );
     }
 
