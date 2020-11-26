@@ -25,6 +25,7 @@ package com.artipie.http.auth;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Authentication scheme such as Basic, Bearer etc.
@@ -39,7 +40,7 @@ public interface AuthScheme {
      * @param headers Request headers.
      * @return Authentication result.
      */
-    Result authenticate(Iterable<Map.Entry<String, String>> headers);
+    CompletionStage<Result> authenticate(Iterable<Map.Entry<String, String>> headers);
 
     /**
      * HTTP request authentication result.

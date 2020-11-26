@@ -24,6 +24,7 @@
 package com.artipie.http.auth;
 
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Mechanism to authenticate user by token.
@@ -38,5 +39,5 @@ public interface TokenAuthentication {
      * @param token Token.
      * @return User if authenticated.
      */
-    Optional<Authentication.User> user(String token);
+    CompletionStage<Optional<Authentication.User>> user(String token);
 }
