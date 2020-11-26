@@ -83,6 +83,22 @@ public final class AuthorizationTest {
     }
 
     @Test
+    void shouldFailToParseSchemeWhenInvalidFormat() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new Authorization("some_text").scheme()
+        );
+    }
+
+    @Test
+    void shouldFailToParseCredentialsWhenInvalidFormat() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new Authorization("whatever").credentials()
+        );
+    }
+
+    @Test
     void shouldFailToExtractValueFromEmptyHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,

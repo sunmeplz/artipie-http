@@ -47,7 +47,7 @@ public final class Authorization extends Header.Wrap {
     /**
      * Header value RegEx.
      */
-    private static final Pattern VALUE = Pattern.compile("(?<scheme>[^ ]*)( (?<credentials>.*))?");
+    private static final Pattern VALUE = Pattern.compile("(?<scheme>[^ ]+) (?<credentials>.+)");
 
     /**
      * Ctor.
@@ -104,7 +104,7 @@ public final class Authorization extends Header.Wrap {
         final String value = this.getValue();
         final Matcher matcher = VALUE.matcher(value);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException(
+            throw new IllegalStateException(
                 String.format("Failed to parse header value: %s", value)
             );
         }
