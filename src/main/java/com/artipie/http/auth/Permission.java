@@ -125,4 +125,44 @@ public interface Permission {
             );
         }
     }
+
+    /**
+     * Permission composed from multiple origin permissions.
+     * Permission allows action when at least one of the origin permissions
+     * allows the action for specified user.
+     *
+     * @since 0.17
+     */
+    final class Any implements Permission {
+
+        /**
+         * Origin permissions.
+         */
+        private final Iterable<Permission> origin;
+
+        /**
+         * Ctor.
+         *
+         * @param origin Origin permissions.
+         */
+        public Any(final Permission... origin) {
+            this(Arrays.asList(origin));
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param origin Origin permissions.
+         */
+        public Any(final Iterable<Permission> origin) {
+            this.origin = origin;
+        }
+
+        @Override
+        public boolean allowed(final Authentication.User user) {
+            return StreamSupport.stream(this.origin.spliterator(), false).anyMatch(
+                perm -> perm.allowed(user)
+            );
+        }
+    }
 }
