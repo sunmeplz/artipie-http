@@ -41,4 +41,13 @@ public final class AuthorizationBearerTest {
             new IsEqual<>("Bearer mF_9.B5f-4.1JqM")
         );
     }
+
+    @Test
+    void shouldHaveExpectedToken() {
+        final String token = "123.abc";
+        MatcherAssert.assertThat(
+            new Authorization.Bearer(token).token(),
+            new IsEqual<>(token)
+        );
+    }
 }

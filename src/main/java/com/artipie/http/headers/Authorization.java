@@ -27,16 +27,15 @@ import com.artipie.http.Headers;
 import com.artipie.http.auth.BasicAuthScheme;
 import com.artipie.http.auth.BearerAuthScheme;
 import com.artipie.http.rq.RqHeaders;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.cactoos.text.Base64Decoded;
 import org.cactoos.text.Base64Encoded;
 
 /**
  * Authorization header.
  *
  * @since 0.12
- * @todo #191:60min Extract header value parsing logic from `BasicIdentities`
- *  Now there is code for parsing `Authorization` header content,
- *  but it is contained in `BasicIdentities` class. The code could be generalized and extracted to
- *  `Authorization`, `Authorization.Bearer` and `BasicAuthorizationHeader` classes.
  */
 public final class Authorization extends Header.Wrap {
 
@@ -44,6 +43,11 @@ public final class Authorization extends Header.Wrap {
      * Header name.
      */
     public static final String NAME = "Authorization";
+
+    /**
+     * Header value RegEx.
+     */
+    private static final Pattern VALUE = Pattern.compile("(?<scheme>[^ ]*)( (?<credentials>.*))?");
 
     /**
      * Ctor.
@@ -74,6 +78,40 @@ public final class Authorization extends Header.Wrap {
     }
 
     /**
+     * Read scheme from header value.
+     *
+     * @return Scheme string.
+     */
+    public String scheme() {
+        return this.matcher().group("scheme");
+    }
+
+    /**
+     * Read credentials from header value.
+     *
+     * @return Credentials string.
+     */
+    public String credentials() {
+        return this.matcher().group("credentials");
+    }
+
+    /**
+     * Creates matcher for header value.
+     *
+     * @return Matcher for header value.
+     */
+    private Matcher matcher() {
+        final String value = this.getValue();
+        final Matcher matcher = VALUE.matcher(value);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException(
+                String.format("Failed to parse header value: %s", value)
+            );
+        }
+        return matcher;
+    }
+
+    /**
      * Basic authentication `Authorization` header.
      *
      * @since 0.12
@@ -87,12 +125,52 @@ public final class Authorization extends Header.Wrap {
          * @param password Password.
          */
         public Basic(final String username, final String password) {
-            super(
-                new Authorization(
-                    BasicAuthScheme.NAME,
-                    new Base64Encoded(String.format("%s:%s", username, password)).toString()
-                )
-            );
+            this(new Base64Encoded(String.format("%s:%s", username, password)).toString());
+        }
+
+        /**
+         * Ctor.
+         *
+         * @param credentials Credentials.
+         */
+        public Basic(final String credentials) {
+            super(new Authorization(BasicAuthScheme.NAME, credentials));
+        }
+
+        /**
+         * Read credentials from header value.
+         *
+         * @return Credentials string.
+         */
+        public String credentials() {
+            return new Authorization(this.getValue()).credentials();
+        }
+
+        /**
+         * Read username from header value.
+         *
+         * @return Username string.
+         */
+        public String username() {
+            return this.tokens()[0];
+        }
+
+        /**
+         * Read password from header value.
+         *
+         * @return Password string.
+         */
+        public String password() {
+            return this.tokens()[1];
+        }
+
+        /**
+         * Read tokens from decoded credentials.
+         *
+         * @return Tokens array.
+         */
+        private String[] tokens() {
+            return new Base64Decoded(this.credentials()).toString().split(":");
         }
     }
 
@@ -110,6 +188,15 @@ public final class Authorization extends Header.Wrap {
          */
         public Bearer(final String token) {
             super(new Authorization(BearerAuthScheme.NAME, token));
+        }
+
+        /**
+         * Read token from header value.
+         *
+         * @return Token string.
+         */
+        public String token() {
+            return new Authorization(this.getValue()).credentials();
         }
     }
 }

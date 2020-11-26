@@ -75,8 +75,9 @@ public final class BearerAuthScheme implements AuthScheme {
     private Optional<Authentication.User> user(final Iterable<Map.Entry<String, String>> headers) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
-            .filter(hdr -> hdr.startsWith(BearerAuthScheme.NAME))
-            .map(hdr -> hdr.substring(BearerAuthScheme.NAME.length() + 1))
+            .map(Authorization::new)
+            .filter(hdr -> hdr.scheme().equals(BearerAuthScheme.NAME))
+            .map(hdr -> new Authorization.Bearer(hdr.credentials()).token())
             .flatMap(this.auth::user);
     }
 
