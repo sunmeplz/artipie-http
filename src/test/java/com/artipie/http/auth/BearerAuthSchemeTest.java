@@ -27,6 +27,7 @@ import com.artipie.http.Headers;
 import com.artipie.http.headers.Authorization;
 import com.artipie.http.headers.Header;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.hamcrest.MatcherAssert;
@@ -52,10 +53,14 @@ final class BearerAuthSchemeTest {
         new BearerAuthScheme(
             tkn -> {
                 capture.set(tkn);
-                return Optional.of(new Authentication.User("alice"));
+                return CompletableFuture.completedFuture(
+                    Optional.of(new Authentication.User("alice"))
+                );
             },
             "realm=\"artipie.com\""
-        ).authenticate(new Headers.From(new Authorization.Bearer(token)));
+        ).authenticate(
+            new Headers.From(new Authorization.Bearer(token))
+        ).toCompletableFuture().join();
         MatcherAssert.assertThat(
             capture.get(),
             new IsEqual<>(token)
@@ -69,9 +74,11 @@ final class BearerAuthSchemeTest {
         final Optional<Authentication.User> user = Optional.ofNullable(name)
             .map(Authentication.User::new);
         final Optional<Authentication.User> result = new BearerAuthScheme(
-            tkn -> user,
+            tkn -> CompletableFuture.completedFuture(user),
             "whatever"
-        ).authenticate(new Headers.From(new Authorization.Bearer("abc"))).user();
+        ).authenticate(
+            new Headers.From(new Authorization.Bearer("abc"))
+        ).toCompletableFuture().join().user();
         MatcherAssert.assertThat(result, new IsEqual<>(user));
     }
 
@@ -80,9 +87,9 @@ final class BearerAuthSchemeTest {
     void shouldNotAuthWhenNoAuthHeader(final Headers headers) {
         final String params = "realm=\"artipie.com/auth\",param1=\"123\"";
         final AuthScheme.Result result = new BearerAuthScheme(
-            tkn -> Optional.empty(),
+            tkn -> CompletableFuture.completedFuture(Optional.empty()),
             params
-        ).authenticate(headers);
+        ).authenticate(headers).toCompletableFuture().join();
         MatcherAssert.assertThat(
             "Not authenticated",
             result.user().isPresent(),

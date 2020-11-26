@@ -27,6 +27,8 @@ import com.artipie.http.headers.Authorization;
 import com.artipie.http.rq.RqHeaders;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Basic authentication method.
@@ -54,8 +56,10 @@ public final class BasicAuthScheme implements AuthScheme {
     }
 
     @Override
-    public Result authenticate(final Iterable<Map.Entry<String, String>> headers) {
-        return this.user(headers).<Result>map(Success::new).orElseGet(Failure::new);
+    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers) {
+        return CompletableFuture.completedFuture(
+            this.user(headers).<Result>map(Success::new).orElseGet(Failure::new)
+        );
     }
 
     /**

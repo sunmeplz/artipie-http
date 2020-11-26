@@ -26,6 +26,7 @@ package com.artipie.http.auth;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
+import com.artipie.http.async.AsyncResponse;
 import com.artipie.http.headers.WwwAuthenticate;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithHeaders;
@@ -79,21 +80,24 @@ public final class AuthSlice implements Slice {
         if (this.perm.allowed(Permissions.ANY_USER)) {
             response = this.origin.response(line, headers, body);
         } else {
-            final AuthScheme.Result result = this.auth.authenticate(headers);
-            response = result.user().map(this.perm::allowed).map(
-                allowed -> {
-                    final Response rsp;
-                    if (allowed) {
-                        rsp = this.origin.response(line, headers, body);
-                    } else {
-                        rsp = new RsWithStatus(RsStatus.FORBIDDEN);
-                    }
-                    return rsp;
-                }
-            ).orElseGet(
-                () -> new RsWithHeaders(
-                    new RsWithStatus(RsStatus.UNAUTHORIZED),
-                    new Headers.From(new WwwAuthenticate(result.challenge()))
+            response = new AsyncResponse(
+                this.auth.authenticate(headers).thenApply(
+                    result -> result.user().map(this.perm::allowed).map(
+                        allowed -> {
+                            final Response rsp;
+                            if (allowed) {
+                                rsp = this.origin.response(line, headers, body);
+                            } else {
+                                rsp = new RsWithStatus(RsStatus.FORBIDDEN);
+                            }
+                            return rsp;
+                        }
+                    ).orElseGet(
+                        () -> new RsWithHeaders(
+                            new RsWithStatus(RsStatus.UNAUTHORIZED),
+                            new Headers.From(new WwwAuthenticate(result.challenge()))
+                        )
+                    )
                 )
             );
         }

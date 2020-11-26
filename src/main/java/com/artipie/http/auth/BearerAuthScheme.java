@@ -27,6 +27,8 @@ import com.artipie.http.headers.Authorization;
 import com.artipie.http.rq.RqHeaders;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Basic authentication method.
@@ -62,8 +64,10 @@ public final class BearerAuthScheme implements AuthScheme {
     }
 
     @Override
-    public Result authenticate(final Iterable<Map.Entry<String, String>> headers) {
-        return this.user(headers).<Result>map(Success::new).orElseGet(Failure::new);
+    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers) {
+        return this.user(headers).thenApply(
+            user -> user.<Result>map(Success::new).orElseGet(Failure::new)
+        );
     }
 
     /**
@@ -72,13 +76,16 @@ public final class BearerAuthScheme implements AuthScheme {
      * @param headers Headers
      * @return User, empty if not authenticated
      */
-    private Optional<Authentication.User> user(final Iterable<Map.Entry<String, String>> headers) {
+    private CompletionStage<Optional<Authentication.User>> user(
+        final Iterable<Map.Entry<String, String>> headers
+    ) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
             .map(Authorization::new)
             .filter(hdr -> hdr.scheme().equals(BearerAuthScheme.NAME))
             .map(hdr -> new Authorization.Bearer(hdr.credentials()).token())
-            .flatMap(this.auth::user);
+            .map(this.auth::user)
+            .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
     }
 
     /**
