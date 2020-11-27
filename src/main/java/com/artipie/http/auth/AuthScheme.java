@@ -25,6 +25,7 @@ package com.artipie.http.auth;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -33,6 +34,23 @@ import java.util.concurrent.CompletionStage;
  * @since 0.17
  */
 public interface AuthScheme {
+
+    /**
+     * Absent auth scheme that authenticates any request as "anonymous" user.
+     */
+    AuthScheme NONE = ignored -> CompletableFuture.completedFuture(
+        new AuthScheme.Result() {
+            @Override
+            public Optional<Authentication.User> user() {
+                return Optional.of(new Authentication.User("anonymous"));
+            }
+
+            @Override
+            public String challenge() {
+                throw new UnsupportedOperationException();
+            }
+        }
+    );
 
     /**
      * Authenticate HTTP request by it's headers.
