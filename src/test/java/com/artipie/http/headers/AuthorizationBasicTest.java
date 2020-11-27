@@ -41,4 +41,29 @@ public final class AuthorizationBasicTest {
             new IsEqual<>("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
         );
     }
+
+    @Test
+    void shouldHaveExpectedCredentials() {
+        final String credentials = "123.abc";
+        MatcherAssert.assertThat(
+            new Authorization.Basic(credentials).credentials(),
+            new IsEqual<>(credentials)
+        );
+    }
+
+    @Test
+    void shouldHaveExpectedUsername() {
+        MatcherAssert.assertThat(
+            new Authorization.Basic("YWxpY2U6b3BlbiBzZXNhbWU=").username(),
+            new IsEqual<>("alice")
+        );
+    }
+
+    @Test
+    void shouldHaveExpectedPassword() {
+        MatcherAssert.assertThat(
+            new Authorization.Basic("QWxhZGRpbjpxd2VydHk=").password(),
+            new IsEqual<>("qwerty")
+        );
+    }
 }

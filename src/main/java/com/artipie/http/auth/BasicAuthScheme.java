@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import org.cactoos.text.Base64Decoded;
 
 /**
  * Basic authentication method.
@@ -71,10 +70,10 @@ public final class BasicAuthScheme implements AuthScheme {
     private Optional<Authentication.User> user(final Iterable<Map.Entry<String, String>> headers) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
-            .filter(hdr -> hdr.startsWith(BasicAuthScheme.NAME))
-            .map(hdr -> new Base64Decoded(hdr.substring(BasicAuthScheme.NAME.length() + 1)))
-            .map(dec -> dec.toString().split(":"))
-            .flatMap(cred -> this.auth.user(cred[0].trim(), cred[1].trim()));
+            .map(Authorization::new)
+            .filter(hdr -> hdr.scheme().equals(BasicAuthScheme.NAME))
+            .map(hdr -> new Authorization.Basic(hdr.credentials()))
+            .flatMap(hdr -> this.auth.user(hdr.username(), hdr.password()));
     }
 
     /**

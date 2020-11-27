@@ -67,6 +67,38 @@ public final class AuthorizationTest {
     }
 
     @Test
+    void shouldHaveExpectedScheme() {
+        MatcherAssert.assertThat(
+            new Authorization("Digest abc===").scheme(),
+            new IsEqual<>("Digest")
+        );
+    }
+
+    @Test
+    void shouldHaveExpectedCredentials() {
+        MatcherAssert.assertThat(
+            new Authorization("Bearer 123.abc").credentials(),
+            new IsEqual<>("123.abc")
+        );
+    }
+
+    @Test
+    void shouldFailToParseSchemeWhenInvalidFormat() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new Authorization("some_text").scheme()
+        );
+    }
+
+    @Test
+    void shouldFailToParseCredentialsWhenInvalidFormat() {
+        Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> new Authorization("whatever").credentials()
+        );
+    }
+
+    @Test
     void shouldFailToExtractValueFromEmptyHeaders() {
         Assertions.assertThrows(
             IllegalStateException.class,
