@@ -24,53 +24,28 @@
 package com.artipie.http.rs;
 
 import com.artipie.asto.Content;
+import com.artipie.http.Headers;
 import com.artipie.http.headers.ContentLength;
-import com.artipie.http.headers.Header;
-import com.artipie.http.hm.ResponseMatcher;
 import com.artipie.http.hm.RsHasHeaders;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link RsWithBody}.
- * @since 0.9
+ * Test for {@link RsFull}.
+ *
+ * @since 0.18
  */
-final class RsWithBodyTest {
-
-    @Test
-    void createsResponseWithStatusOkAndBody() {
-        final byte[] body = "abc".getBytes();
-        MatcherAssert.assertThat(
-            new RsWithBody(ByteBuffer.wrap(body)),
-            new ResponseMatcher(body)
-        );
-    }
-
-    @Test
-    void appendsBody() {
-        final String body = "def";
-        MatcherAssert.assertThat(
-            new RsWithBody(new RsWithStatus(RsStatus.CREATED), body, StandardCharsets.UTF_8),
-            new ResponseMatcher(RsStatus.CREATED, body, StandardCharsets.UTF_8)
-        );
-    }
-
-    @Test
-    void appendsContentSizeHeader() {
-        final int size = 100;
-        MatcherAssert.assertThat(
-            new RsWithBody(StandardRs.EMPTY, new Content.From(new byte[size])),
-            new RsHasHeaders(new Header("Content-Length", String.valueOf(size)))
-        );
-    }
+final class RsFullTest {
 
     @Test
     void appendsContentSizeHeaderForContentBody() {
-        final int size = 17;
+        final int size = 100;
         MatcherAssert.assertThat(
-            new RsWithBody(new Content.From(new byte[size])),
+            new RsFull(
+                RsStatus.OK,
+                Headers.EMPTY,
+                new Content.From(new byte[size])
+            ),
             new RsHasHeaders(new ContentLength(size))
         );
     }

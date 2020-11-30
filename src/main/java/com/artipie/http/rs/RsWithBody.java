@@ -115,6 +115,15 @@ public final class RsWithBody implements Response {
     }
 
     /**
+     * Creates new response with body content.
+     *
+     * @param body Content.
+     */
+    public RsWithBody(final Content body) {
+        this(StandardRs.EMPTY, body);
+    }
+
+    /**
      * Decorates origin response body with content.
      * @param origin Response
      * @param body Content
