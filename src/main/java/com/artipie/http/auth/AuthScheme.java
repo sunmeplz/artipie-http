@@ -81,4 +81,70 @@ public interface AuthScheme {
          */
         String challenge();
     }
+
+    /**
+     * Fake implementation of {@link AuthScheme}.
+     * @since 0.17.5
+     */
+    final class Fake implements AuthScheme {
+
+        /**
+         * Fake challange constant.
+         */
+        public static final String FAKE_CHLLNG = "fake";
+
+        /**
+         * Optional of User.
+         */
+        private final Optional<Authentication.User> usr;
+
+        /**
+         * Challenge.
+         */
+        private final String chllng;
+
+        /**
+         * Ctor.
+         * @param usr User
+         * @param chllng Challenge
+         */
+        public Fake(final Optional<Authentication.User> usr, final String chllng) {
+            this.usr = usr;
+            this.chllng = chllng;
+        }
+
+        /**
+         * Ctor.
+         * @param name User name
+         */
+        public Fake(final String name) {
+            this(Optional.of(new Authentication.User(name)), Fake.FAKE_CHLLNG);
+        }
+
+        /**
+         * Ctor.
+         */
+        public Fake() {
+            this(Optional.empty(), Fake.FAKE_CHLLNG);
+        }
+
+        @Override
+        public CompletionStage<Result> authenticate(
+            final Iterable<Map.Entry<String, String>> headers
+        ) {
+            return CompletableFuture.completedFuture(
+                new AuthScheme.Result() {
+                    @Override
+                    public Optional<Authentication.User> user() {
+                        return Fake.this.usr;
+                    }
+
+                    @Override
+                    public String challenge() {
+                        return Fake.this.chllng;
+                    }
+                }
+            );
+        }
+    }
 }
