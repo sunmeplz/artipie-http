@@ -30,33 +30,14 @@ import java.net.ServerSocket;
 /**
  * Provides random free port.
  * @since 0.18
+ * @checkstyle NonStaticMethodCheck (500 lines)
  */
 public final class RandomFreePort {
-    /**
-     * Random free port.
-     */
-    private final int port;
-
-    /**
-     * Ctor.
-     */
-    public RandomFreePort() {
-        this.port = RandomFreePort.freePort();
-    }
-
-    /**
-     * Returns free port.
-     * @return Free port
-     */
-    public int value() {
-        return this.port;
-    }
-
     /**
      * Returns free port.
      * @return Free port.
      */
-    private static int freePort() {
+    public int get() {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
         } catch (final IOException exc) {
