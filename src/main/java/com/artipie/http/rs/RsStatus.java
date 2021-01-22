@@ -117,6 +117,14 @@ public enum RsStatus {
      */
     EXPECTATION_FAILED("417"),
     /**
+     * Misdirected Request.
+     */
+    MISDIRECTED_REQUEST("421"),
+    /**
+     * Too Many Requests.
+     */
+    TOO_MANY_REQUESTS("429"),
+    /**
      * Internal Server Error.
      */
     INTERNAL_ERROR("500"),
