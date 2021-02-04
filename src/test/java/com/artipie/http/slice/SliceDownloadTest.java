@@ -29,17 +29,20 @@ import com.artipie.asto.Storage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.http.hm.ResponseMatcher;
 import com.artipie.http.hm.RsHasBody;
+import com.artipie.http.hm.RsHasHeaders;
 import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link SliceDownload}.
+ *
  * @since 1.0
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
@@ -80,6 +83,25 @@ public final class SliceDownloadTest {
                 get("/empty.txt"), Collections.emptyList(), Flowable.empty()
             ),
             new ResponseMatcher(body)
+        );
+    }
+
+    @Test
+    void downloadsByKeyFromPathAndHasProperHeader() throws Exception {
+        final Storage storage = new InMemoryStorage();
+        final String path = "some/path/target.txt";
+        final byte[] data = "goodbye".getBytes(StandardCharsets.UTF_8);
+        storage.save(new Key.From(path), new Content.From(data)).get();
+        MatcherAssert.assertThat(
+            new SliceDownload(storage).response(
+                get(path),
+                Collections.emptyList(),
+                Flowable.empty()
+            ),
+            new RsHasHeaders(
+                new MapEntry<>("Content-Length", "7"),
+                new MapEntry<>("Content-Disposition", "attachment; filename=\"target.txt\"")
+            )
         );
     }
 
