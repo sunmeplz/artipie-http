@@ -25,10 +25,14 @@ package com.artipie.http.headers;
 
 import com.artipie.http.Headers;
 import com.artipie.http.rq.RqHeaders;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.cactoos.iterable.IterableOf;
+import org.cactoos.iterable.Sticky;
+import org.cactoos.map.MapEntry;
+import org.cactoos.map.MapOf;
 
 /**
  * Content-Disposition header.
@@ -46,18 +50,43 @@ public final class ContentDisposition extends Header.Wrap {
     /**
      * Header directives.
      */
-    private static final Pattern DIRECTIVES = Pattern.compile(
-        "(?<key> \\w+ ) (?:= [\"] (?<value> [^\"]+ ) [\"] )?[;]?",
-        Pattern.COMMENTS
-    );
+    private final Map<String, String> directives;
 
     /**
      * Ctor.
      *
      * @param value Header value.
+     * @todo #212:30m Update cactoos.
+     *  Bump cactoos to the latest version and remove Sticky
+     *  decorator from defintion of `directives`.
      */
     public ContentDisposition(final String value) {
         super(new Header(ContentDisposition.NAME, value));
+        this.directives = new MapOf<>(
+            new Sticky<>(
+                new IterableOf<>(
+                    new Iterator<Map.Entry<String, String>>() {
+                        private final Matcher matcher = Pattern.compile(
+                            "(?<key> \\w+ ) (?:= [\"] (?<value> [^\"]+ ) [\"] )?[;]?",
+                            Pattern.COMMENTS
+                        ).matcher(value);
+
+                        @Override
+                        public boolean hasNext() {
+                            return this.matcher.find();
+                        }
+
+                        @Override
+                        public Map.Entry<String, String> next() {
+                            return new MapEntry<>(
+                                this.matcher.group("key"),
+                                this.matcher.group("value")
+                            );
+                        }
+                    }
+                )
+            )
+        );
     }
 
     /**
@@ -75,7 +104,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return String.
      */
     public String fileName() {
-        return this.values().get("filename");
+        return this.directives.get("filename");
     }
 
     /**
@@ -85,7 +114,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return String.
      */
     public String fieldName() {
-        return this.values().get("name");
+        return this.directives.get("name");
     }
 
     /**
@@ -94,7 +123,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return Boolean flag.
      */
     public Boolean isInline() {
-        return this.values().containsKey("inline");
+        return this.directives.containsKey("inline");
     }
 
     /**
@@ -103,21 +132,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return Boolean flag.
      */
     public Boolean isAttachment() {
-        return this.values().containsKey("attachment");
+        return this.directives.containsKey("attachment");
     }
 
-    /**
-     * Parse header value to a map.
-     *
-     * @return Map of keys and values.
-     */
-    private Map<String, String> values() {
-        final Map<String, String> values = new HashMap<>();
-        final String value = this.getValue();
-        final Matcher matcher = ContentDisposition.DIRECTIVES.matcher(value);
-        while (matcher.find()) {
-            values.put(matcher.group("key"), matcher.group("value"));
-        }
-        return values;
-    }
 }
