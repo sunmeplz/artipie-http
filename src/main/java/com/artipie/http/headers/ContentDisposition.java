@@ -44,12 +44,17 @@ public final class ContentDisposition extends Header.Wrap {
     public static final String NAME = "Content-Disposition";
 
     /**
-     * Header directives.
+     * Header directives pattern.
      */
     private static final Pattern DIRECTIVES = Pattern.compile(
         "(?<key> \\w+ ) (?:= [\"] (?<value> [^\"]+ ) [\"] )?[;]?",
         Pattern.COMMENTS
     );
+
+    /**
+     * Parsed directives.
+     */
+    private final Map<String, String> directives;
 
     /**
      * Ctor.
@@ -58,6 +63,7 @@ public final class ContentDisposition extends Header.Wrap {
      */
     public ContentDisposition(final String value) {
         super(new Header(ContentDisposition.NAME, value));
+        this.directives = this.parse();
     }
 
     /**
@@ -75,7 +81,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return String.
      */
     public String fileName() {
-        return this.values().get("filename");
+        return this.directives.get("filename");
     }
 
     /**
@@ -85,7 +91,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return String.
      */
     public String fieldName() {
-        return this.values().get("name");
+        return this.directives.get("name");
     }
 
     /**
@@ -94,7 +100,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return Boolean flag.
      */
     public Boolean isInline() {
-        return this.values().containsKey("inline");
+        return this.directives.containsKey("inline");
     }
 
     /**
@@ -103,7 +109,7 @@ public final class ContentDisposition extends Header.Wrap {
      * @return Boolean flag.
      */
     public Boolean isAttachment() {
-        return this.values().containsKey("attachment");
+        return this.directives.containsKey("attachment");
     }
 
     /**
@@ -111,10 +117,9 @@ public final class ContentDisposition extends Header.Wrap {
      *
      * @return Map of keys and values.
      */
-    private Map<String, String> values() {
+    private Map<String, String> parse() {
+        final Matcher matcher = ContentDisposition.DIRECTIVES.matcher(this.getValue());
         final Map<String, String> values = new HashMap<>();
-        final String value = this.getValue();
-        final Matcher matcher = ContentDisposition.DIRECTIVES.matcher(value);
         while (matcher.find()) {
             values.put(matcher.group("key"), matcher.group("value"));
         }
