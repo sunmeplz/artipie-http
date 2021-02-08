@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import org.cactoos.list.ListOf;
+import org.cactoos.iterable.IterableOf;
 import org.reactivestreams.Publisher;
 
 /**
@@ -105,7 +105,9 @@ public final class SliceDownload implements Slice {
                                             .thenApply(
                                                 content -> new RsFull(
                                                     RsStatus.OK,
-                                                    new ListOf<>(new ContentFileName(uri)),
+                                                    new IterableOf<Map.Entry<String, String>>(
+                                                        new ContentFileName(uri)
+                                                    ),
                                                     content
                                                 )
                                             );
