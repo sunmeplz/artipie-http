@@ -25,6 +25,7 @@ package com.artipie.http.slice;
 
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.async.AsyncResponse;
@@ -105,7 +106,7 @@ public final class SliceDownload implements Slice {
                                             .thenApply(
                                                 content -> new RsFull(
                                                     RsStatus.OK,
-                                                    new IterableOf<Map.Entry<String, String>>(
+                                                    new Headers.From(
                                                         new ContentFileName(uri)
                                                     ),
                                                     content
