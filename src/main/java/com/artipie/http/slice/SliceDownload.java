@@ -25,17 +25,21 @@ package com.artipie.http.slice;
 
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
+import com.artipie.http.Headers;
 import com.artipie.http.Response;
 import com.artipie.http.Slice;
 import com.artipie.http.async.AsyncResponse;
+import com.artipie.http.headers.ContentFileName;
 import com.artipie.http.rq.RequestLineFrom;
+import com.artipie.http.rs.RsFull;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
-import com.artipie.http.rs.RsWithStatus;
+import com.artipie.http.rs.StandardRs;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import org.reactivestreams.Publisher;
 
@@ -45,6 +49,7 @@ import org.reactivestreams.Publisher;
  * It converts URI path to storage {@link com.artipie.asto.Key}
  * and use it to access storage.
  * </p>
+ *
  * @see SliceUpload
  * @since 0.6
  */
@@ -62,6 +67,7 @@ public final class SliceDownload implements Slice {
 
     /**
      * Slice by key from storage.
+     *
      * @param storage Storage
      */
     public SliceDownload(final Storage storage) {
@@ -70,6 +76,7 @@ public final class SliceDownload implements Slice {
 
     /**
      * Slice by key from storage using custom URI path transformation.
+     *
      * @param storage Storage
      * @param transform Transformation
      */
@@ -84,29 +91,39 @@ public final class SliceDownload implements Slice {
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body) {
         return new AsyncResponse(
-            CompletableFuture.supplyAsync(() -> new RequestLineFrom(line).uri().getPath())
-                .thenApply(this.transform)
+            CompletableFuture
+                .supplyAsync(new RequestLineFrom(line)::uri)
                 .thenCompose(
-                    key -> this.storage.exists(key).thenCompose(
-                        // @checkstyle ReturnCountCheck (10 lines)
-                        exist -> {
-                            if (exist) {
-                                return this.storage.value(key)
-                                    .thenApply(RsWithBody::new)
-                                    .thenApply(rsp -> new RsWithStatus(rsp, RsStatus.OK));
-                            } else {
-                                return CompletableFuture.completedFuture(
-                                    new RsWithStatus(
-                                        new RsWithBody(
-                                            String.format("Key %s not found", key.string()),
-                                            StandardCharsets.UTF_8
-                                        ),
-                                        RsStatus.NOT_FOUND
-                                    )
-                                );
-                            }
-                        }
-                    )
+                    uri -> {
+                        final Key key = this.transform.apply(uri.getPath());
+                        return this.storage.exists(key)
+                            .thenCompose(
+                                exist -> {
+                                    final CompletionStage<Response> result;
+                                    if (exist) {
+                                        result = this.storage.value(key)
+                                            .thenApply(
+                                                content -> new RsFull(
+                                                    RsStatus.OK,
+                                                    new Headers.From(
+                                                        new ContentFileName(uri)
+                                                    ),
+                                                    content
+                                                )
+                                            );
+                                    } else {
+                                        result = CompletableFuture.completedFuture(
+                                            new RsWithBody(
+                                                StandardRs.NOT_FOUND,
+                                                String.format("Key %s not found", key.string()),
+                                                StandardCharsets.UTF_8
+                                            )
+                                        );
+                                    }
+                                    return result;
+                                }
+                            );
+                    }
                 )
         );
     }
