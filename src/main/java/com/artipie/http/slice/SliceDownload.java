@@ -34,14 +34,13 @@ import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rs.RsFull;
 import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
-import com.artipie.http.rs.RsWithStatus;
+import com.artipie.http.rs.StandardRs;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import org.cactoos.iterable.IterableOf;
 import org.reactivestreams.Publisher;
 
 /**
@@ -114,12 +113,10 @@ public final class SliceDownload implements Slice {
                                             );
                                     } else {
                                         result = CompletableFuture.completedFuture(
-                                            new RsWithStatus(
-                                                new RsWithBody(
-                                                    String.format("Key %s not found", key.string()),
-                                                    StandardCharsets.UTF_8
-                                                ),
-                                                RsStatus.NOT_FOUND
+                                            new RsWithBody(
+                                                StandardRs.NOT_FOUND,
+                                                String.format("Key %s not found", key.string()),
+                                                StandardCharsets.UTF_8
                                             )
                                         );
                                     }
