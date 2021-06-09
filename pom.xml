@@ -168,6 +168,11 @@ SOFTWARE.
       <version>1.0.3</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>wtf.g4s8</groupId>
+      <artifactId>mime</artifactId>
+      <version>2.0.0</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -230,7 +235,7 @@ SOFTWARE.
                     <limit>
                       <counter>CLASS</counter>
                       <value>MISSEDCOUNT</value>
-                      <maximum>24</maximum>
+                      <maximum>25</maximum>
                     </limit>
                   </limits>
                 </rule>
