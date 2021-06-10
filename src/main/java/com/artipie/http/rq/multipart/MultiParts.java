@@ -5,6 +5,8 @@
 package com.artipie.http.rq.multipart;
 
 import com.artipie.ArtipieException;
+import com.artipie.http.misc.ByteBufferTokenizer;
+
 import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;

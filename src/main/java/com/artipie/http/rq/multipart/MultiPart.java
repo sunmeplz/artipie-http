@@ -5,6 +5,9 @@
 package com.artipie.http.rq.multipart;
 
 import com.artipie.http.Headers;
+import com.artipie.http.misc.BufAccumulator;
+import com.artipie.http.misc.ByteBufferTokenizer;
+import com.artipie.http.misc.DummySubscription;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
