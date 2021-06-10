@@ -5,13 +5,14 @@
 package com.artipie.http.rq.multipart;
 
 import com.artipie.http.Headers;
-import org.reactivestreams.Subscriber;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 /**
@@ -105,15 +106,18 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      * @param ready Ready callback
      * @param exec Back-pressure async executor
      */
-    public MultiPart(Subscription upstream, Consumer<? super RqMultipart.Part> ready, ExecutorService exec) {
+    MultiPart(final Subscription upstream, final Consumer<? super RqMultipart.Part> ready,
+        final ExecutorService exec) {
         this.upstream = upstream;
         this.ready = ready;
         this.exec = exec;
-        this.tokenizer = new ByteBufferTokenizer(this, DELIM.getBytes(), CAP_PART);
-        this.hdr = new MultipartHeaders(CAP_HEADER);
+        this.tokenizer = new ByteBufferTokenizer(
+            this, MultiPart.DELIM.getBytes(), MultiPart.CAP_PART
+        );
+        this.hdr = new MultipartHeaders(MultiPart.CAP_HEADER);
         this.downstream = new AtomicReference<>();
-        this.state = new AtomicInteger(STATE_HEADER);
-        this.tmpacc = new BufAccumulator(256);
+        this.state = new AtomicInteger(MultiPart.STATE_HEADER);
+        this.tmpacc = new BufAccumulator(MultiPart.CAP_HEADER);
         this.completed = new AtomicBoolean();
     }
 
@@ -123,24 +127,66 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
     }
 
     @Override
-    public synchronized void subscribe(Subscriber<? super ByteBuffer> sub) {
-        if (this.downstream.get() != null) {
-            sub.onSubscribe(DummySubscription.VALUE);
-            sub.onError(new IllegalStateException("Downstream already connected"));
-            return;
+    public void subscribe(final Subscriber<? super ByteBuffer> sub) {
+        synchronized (this.downstream) {
+            if (this.downstream.get() != null) {
+                sub.onSubscribe(DummySubscription.VALUE);
+                sub.onError(new IllegalStateException("Downstream already connected"));
+                return;
+            }
+            sub.onSubscribe(this);
+            final ByteBuffer acc = this.tmpacc.duplicate();
+            acc.rewind();
+            if (acc.hasRemaining()) {
+                sub.onNext(acc);
+            }
+            this.tmpacc.close();
+            if (this.completed.get()) {
+                sub.onComplete();
+            } else {
+                this.downstream.set(sub);
+            }
         }
-        sub.onSubscribe(this);
-        final ByteBuffer acc = this.tmpacc.duplicate();
-        acc.rewind();
-        if (acc.hasRemaining()) {
-            sub.onNext(acc);
+    }
+
+    @Override
+    public void receive(final ByteBuffer next, final boolean end) {
+        synchronized (this.downstream) {
+            final int current = this.state.get();
+            if (current == MultiPart.STATE_HEADER) {
+                this.hdr.push(next);
+                this.upstream.request(1);
+                if (end) {
+                    this.state.incrementAndGet();
+                    this.ready.accept(this);
+                }
+            } else if (current == MultiPart.STATE_BODY) {
+                final Subscriber<? super ByteBuffer> subscriber = this.downstream.get();
+                if (subscriber == null) {
+                    this.tmpacc.push(next);
+                } else {
+                    subscriber.onNext(next);
+                }
+            }
+            if (end && current == MultiPart.STATE_BODY
+                && this.completed.compareAndSet(false, true)) {
+                final Subscriber<? super ByteBuffer> sub = this.downstream.getAndSet(null);
+                if (sub != null) {
+                    sub.onComplete();
+                }
+            }
         }
-        this.tmpacc.close();
-        if (this.completed.get()) {
-            sub.onComplete();
-        } else {
-            this.downstream.set(sub);
-        }
+    }
+
+    @Override
+    public void request(final long amt) {
+        this.exec.submit(() -> this.upstream.request(amt));
+    }
+
+    @Override
+    public void cancel() {
+        this.downstream.set(null);
+        this.upstream.cancel();
     }
 
     /**
@@ -155,46 +201,6 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      * Flush all data in temporary buffers.
      */
     void flush() {
-        this.push(ByteBuffer.wrap(DELIM.getBytes()));
-    }
-
-    @Override
-    public synchronized void receive(final ByteBuffer next, final boolean end) {
-        final int current = state.get();
-        switch (current) {
-            case STATE_HEADER:
-                this.hdr.push(next);
-                this.upstream.request(1);
-                break;
-            case STATE_BODY:
-                final Subscriber<? super ByteBuffer> subscriber = this.downstream.get();
-                if (subscriber == null) {
-                    this.tmpacc.push(next);
-                } else {
-                    subscriber.onNext(next);
-                }
-                break;
-        }
-        if (end && current == STATE_HEADER) {
-            this.state.incrementAndGet();
-            this.ready.accept(this);
-        }
-        if (end && current == STATE_BODY && this.completed.compareAndSet(false, true)) {
-            final Subscriber<? super ByteBuffer> sub = this.downstream.getAndSet(null);
-            if (sub != null) {
-                sub.onComplete();
-            }
-        }
-    }
-
-    @Override
-    public void request(final long amt) {
-        this.exec.submit(() -> this.upstream.request(amt));
-    }
-
-    @Override
-    public void cancel() {
-        this.downstream.set(null);
-        this.upstream.cancel();
+        this.push(ByteBuffer.wrap(MultiPart.DELIM.getBytes(StandardCharsets.US_ASCII)));
     }
 }
