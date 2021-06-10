@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 final class RqMultipartTest {
 
     @Test
-//    @Disabled
+    @Disabled
     @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     void processesSimpleMultipartRequest() throws Exception {
         final String first = String.join(
