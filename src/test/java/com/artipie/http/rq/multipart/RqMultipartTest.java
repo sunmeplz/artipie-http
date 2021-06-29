@@ -9,13 +9,11 @@ import com.artipie.asto.ext.ContentAs;
 import com.artipie.http.headers.ContentType;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * Test case for multipart request parser.
@@ -57,8 +55,7 @@ final class RqMultipartTest {
         final List<String> parsed = Flowable.fromPublisher(
             new RqMultipart(
                 new ContentType("multipart/mixed; boundary=\"simple boundary\""),
-                new Content.From(simple.getBytes(StandardCharsets.US_ASCII)),
-                Executors.newCachedThreadPool()
+                new Content.From(simple.getBytes(StandardCharsets.US_ASCII))
             ).parts()
         ).<String>flatMapSingle(
             part -> Single.just(part).to(ContentAs.STRING)

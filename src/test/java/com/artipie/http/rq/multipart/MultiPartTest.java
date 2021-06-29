@@ -28,7 +28,7 @@ final class MultiPartTest {
         final Flowable<ByteBuffer> upstream = Flowable.fromArray(
             "Content-l", "ength", ": 24\r\n",
             "Con", "tent-typ", "e: ", "appl", "ication/jso", "n\r\n\r\n{\"foo",
-            "\": \"b", "ar\", ", "\"val\": [4]}\r\n"
+            "\": \"b", "ar\", ", "\"val\": [4]}"
         ).map(str -> ByteBuffer.wrap(str.getBytes()));
         final CompletableFuture<RqMultipart.Part> future = new CompletableFuture<>();
         upstream.subscribe(new Subscriber(future));
@@ -80,7 +80,8 @@ final class MultiPartTest {
                     return;
                 }
                 this.part = new MultiPart(
-                    subscription, MultiParts.Completion.FAKE, this.future::complete, Executors.newCachedThreadPool()
+                    subscription, Completion.FAKE, this.future::complete,
+                    Executors.newCachedThreadPool()
                 );
                 subscription.request(1);
             }

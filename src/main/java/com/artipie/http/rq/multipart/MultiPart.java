@@ -102,15 +102,21 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      */
     private final AtomicBoolean completed;
 
-    private final MultiParts.Completion<?> completion;
+    /**
+     * Completion handler.
+     */
+    private final Completion<?> completion;
 
     /**
      * New multipart request part.
      * @param upstream Upstream subscription
+     * @param completion Upstream completion handler
      * @param ready Ready callback
      * @param exec Back-pressure async executor
+     * @checkstyle ParameterNumberCheck (5 lines)
      */
-    MultiPart(final Subscription upstream, final MultiParts.Completion<?> completion, final Consumer<? super RqMultipart.Part> ready,
+    MultiPart(final Subscription upstream, final Completion<?> completion,
+        final Consumer<? super RqMultipart.Part> ready,
         final ExecutorService exec) {
         this.upstream = upstream;
         this.ready = ready;
@@ -155,14 +161,6 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 this.downstream.set(sub);
             }
         }
-    }
-
-    private static String debugBuf(final ByteBuffer buf) {
-        final ByteBuffer duplicate = buf.duplicate();
-        duplicate.rewind();
-        final byte[] bytes = new byte[duplicate.remaining()];
-        duplicate.get(bytes);
-        return new String(bytes);
     }
 
     @Override

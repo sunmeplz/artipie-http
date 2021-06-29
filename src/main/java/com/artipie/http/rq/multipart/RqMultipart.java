@@ -9,13 +9,9 @@ import com.artipie.http.ArtipieHttpException;
 import com.artipie.http.Headers;
 import com.artipie.http.headers.ContentType;
 import com.artipie.http.rs.RsStatus;
+import java.nio.ByteBuffer;
 import org.reactivestreams.Publisher;
 import wtf.g4s8.mime.MimeType;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Multipart request.
@@ -45,28 +41,24 @@ public final class RqMultipart {
      */
     private Publisher<ByteBuffer> upstream;
 
-    private final ExecutorService exec;
-
     /**
      * Multipart request from headers and body upstream.
-     *  @param headers Request headers
-     * @param body    Upstream
-     * @param exec
+     * @param headers Request headers
+     * @param body Upstream
      */
-    public RqMultipart(final Headers headers, final Publisher<ByteBuffer> body, ExecutorService exec) {
-        this(new ContentType(headers), body, exec);
+    public RqMultipart(final Headers headers, final Publisher<ByteBuffer> body) {
+        this(new ContentType(headers), body);
     }
 
     /**
      * Multipart request from content type and body upstream.
      *
      * @param ctype Content type
-     * @param body  Upstream
+     * @param body Upstream
      */
-    public RqMultipart(final ContentType ctype, final Publisher<ByteBuffer> body, ExecutorService exec) {
+    public RqMultipart(final ContentType ctype, final Publisher<ByteBuffer> body) {
         this.ctype = ctype;
         this.upstream = body;
-        this.exec = exec;
     }
 
     /**
@@ -75,8 +67,8 @@ public final class RqMultipart {
      * @return Publisher of parts
      */
     public Publisher<Part> parts() {
-        final MultiParts pub = new MultiParts(this.boundary(), this.exec);
-        exec.submit(() -> this.upstream.subscribe(pub));
+        final MultiParts pub = new MultiParts(this.boundary());
+        pub.subscribeAsync(this.upstream);
         return pub;
     }
 
@@ -85,14 +77,12 @@ public final class RqMultipart {
      * @return Boundary string
      */
     private String boundary() {
-        final String header = MimeType.of(ctype.getValue())
-                .param("boundary")
-                .orElseThrow(
-                        () -> new ArtipieHttpException(
-                                RsStatus.BAD_REQUEST,
-                                "Content-type boundary param missed"
-                        )
-                );
+        final String header = MimeType.of(this.ctype.getValue()).param("boundary").orElseThrow(
+            () -> new ArtipieHttpException(
+                RsStatus.BAD_REQUEST,
+                "Content-type boundary param missed"
+            )
+        );
         return String.format("\r\n--%s", header);
     }
 
