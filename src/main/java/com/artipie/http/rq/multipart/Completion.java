@@ -46,7 +46,7 @@ final class Completion<T> {
     );
 
     /**
-     * Downstreams counter.
+     * Downstream counter.
      */
     private volatile int counter;
 
@@ -61,11 +61,17 @@ final class Completion<T> {
     private final Subscriber<? super T> downstream;
 
     /**
+     * Synchronization object.
+     */
+    private final Object lock;
+
+    /**
      * New completion.
      * @param downstream Subscriber reference
      */
     Completion(final Subscriber<? super T> downstream) {
         this.downstream = downstream;
+        this.lock = new Object();
     }
 
     /**
@@ -73,8 +79,10 @@ final class Completion<T> {
      */
     @SuppressWarnings("PMD.AssignmentInOperand")
     void itemCompleted() {
-        synchronized (this.downstream) {
+        System.out.println("item complted");
+        synchronized (this.lock) {
             if (--this.counter == 0 && this.completed) {
+                System.out.println("complete downstream");
                 this.downstream.onComplete();
             }
         }
@@ -84,7 +92,7 @@ final class Completion<T> {
      * Notify downstream item started.
      */
     void itemStarted() {
-        synchronized (this.downstream) {
+        synchronized (this.lock) {
             assert !this.completed;
             ++this.counter;
         }
@@ -94,9 +102,11 @@ final class Completion<T> {
      * Notify upstream completed.
      */
     void upstreamCompleted() {
-        synchronized (this.downstream) {
+        synchronized (this.lock) {
+            System.out.println("upstream completed");
             this.completed = true;
             if (this.counter == 0) {
+                System.out.println("complete downstream");
                 this.downstream.onComplete();
             }
         }
