@@ -93,6 +93,12 @@ SOFTWARE.
     </dependency>
     <!-- Test only dependencies -->
     <dependency>
+      <groupId>org.reactivestreams</groupId>
+      <artifactId>reactive-streams-tck</artifactId>
+      <version>1.0.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-client</artifactId>
       <version>4.1.0</version>
@@ -112,6 +118,12 @@ SOFTWARE.
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>7.4.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

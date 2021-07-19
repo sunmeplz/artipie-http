@@ -4,8 +4,11 @@
  */
 package com.artipie.http.misc;
 
+import org.cqfn.rio.channel.ReadableChannel;
+
 import java.io.Closeable;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -16,7 +19,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  * @since 1.0
  */
 @NotThreadSafe
-public final class BufAccumulator implements Closeable {
+public final class BufAccumulator implements ReadableByteChannel {
 
     /**
      * Buffer.
@@ -56,6 +59,10 @@ public final class BufAccumulator implements Closeable {
             this.buffer = resized;
         }
         return this;
+    }
+
+    public boolean empty() {
+        return this.buffer.position() == 0;
     }
 
     /**
@@ -117,6 +124,23 @@ public final class BufAccumulator implements Closeable {
         this.buffer.limit(0);
     }
 
+    @Override
+    public int read(final ByteBuffer dst) {
+        this.check();
+        if (this.buffer.position() == 0) {
+            return -1;
+        }
+        final ByteBuffer src = this.buffer.duplicate();
+        src.rewind();
+        final int rem = Math.min(src.remaining(), dst.remaining());
+        src.limit(rem);
+        dst.put(src);
+        this.buffer.position(rem);
+        this.buffer.compact();
+        this.buffer.limit(this.buffer.position());
+        return rem;
+    }
+
     /**
      * Get byte array.
      *
@@ -137,6 +161,11 @@ public final class BufAccumulator implements Closeable {
         // @checkstyle MethodBodyCommentsCheck (1 lines)
         // assign to null means broken state, it's verified by `check` method.
         this.buffer = null;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return this.buffer != null;
     }
 
     /**

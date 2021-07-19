@@ -6,14 +6,24 @@ package com.artipie.http.rq.multipart;
 
 import com.artipie.asto.Content;
 import com.artipie.asto.ext.ContentAs;
+import com.artipie.asto.ext.PublisherAs;
 import com.artipie.http.headers.ContentType;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test case for multipart request parser.
@@ -22,6 +32,7 @@ import org.junit.jupiter.api.Test;
 final class RqMultipartTest {
 
     @Test
+//    @Timeout(1)
     @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     void processesFullMultipartRequest() throws Exception {
         final String first = String.join(
@@ -32,7 +43,7 @@ final class RqMultipartTest {
         final String second = String.join(
             "\n",
             "2) This is explicitly typed plain ASCII text.",
-            "It DOES end with a linebreak."
+            "It DOES end with a linebreak.", ""
         );
         final String simple = String.join(
             "\r\n",
@@ -52,13 +63,16 @@ final class RqMultipartTest {
             "--simple boundary--",
             "This is the epilogue.  It is also to be ignored."
         );
+
         final List<String> parsed = Flowable.fromPublisher(
             new RqMultipart(
                 new ContentType("multipart/mixed; boundary=\"simple boundary\""),
                 new Content.From(simple.getBytes(StandardCharsets.US_ASCII))
             ).parts()
         ).<String>flatMapSingle(
-            part -> Single.just(part).to(ContentAs.STRING)
+            part -> Single.fromFuture(new PublisherAs(part).string(StandardCharsets.US_ASCII).toCompletableFuture())
+        ).doOnNext(
+                next -> System.out.printf("NEXT: %s\n", next)
         ).toList().blockingGet();
         MatcherAssert.assertThat(
             parsed,

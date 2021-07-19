@@ -4,7 +4,13 @@
  */
 package com.artipie.http.misc;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -21,11 +27,6 @@ public final class Pipeline<D> implements Subscriber<D>, Subscription {
     private final Object lock;
 
     /**
-     * Async executor.
-     */
-    private final ExecutorService exec;
-
-    /**
      * Downstream subscriber.
      */
     private volatile Subscriber<? super D> downstream;
@@ -36,12 +37,20 @@ public final class Pipeline<D> implements Subscriber<D>, Subscription {
     private volatile Subscription upstream;
 
     /**
-     * New pipeline.
-     * @param exec Async executor
+     * Completed cache.
      */
-    public Pipeline(final ExecutorService exec) {
+    private volatile boolean completed;
+
+    /**
+     * Error cache.
+     */
+    private volatile Throwable error;
+
+    /**
+     * New pipeline.
+     */
+    public Pipeline() {
         this.lock = new Object();
-        this.exec = exec;
     }
 
     /**
@@ -49,68 +58,103 @@ public final class Pipeline<D> implements Subscriber<D>, Subscription {
      * @param sub Downstream subscriber
      */
     public void connect(final Subscriber<? super D> sub) {
-        this.exec.submit(
-            () -> {
-                synchronized (this.lock) {
-                    if (this.downstream != null) {
-                        sub.onSubscribe(DummySubscription.VALUE);
-                        sub.onError(new IllegalStateException("Downstream already connected"));
-                        return;
-                    }
-                    this.downstream = sub;
-                    this.checkRequest();
-                }
+        synchronized (this.lock) {
+            if (this.downstream != null) {
+                sub.onSubscribe(DummySubscription.VALUE);
+                sub.onError(new IllegalStateException("Downstream already connected"));
+                return;
             }
-        );
+            if (this.completed && this.error == null) {
+                sub.onSubscribe(DummySubscription.VALUE);
+                sub.onComplete();
+            } else if (this.error != null) {
+                sub.onSubscribe(DummySubscription.VALUE);
+                sub.onError(this.error);
+            } else {
+                this.downstream = sub;
+                this.checkRequest();
+            }
+        }
     }
-
 
     @Override
     public void onComplete() {
-        this.exec.submit(() -> this.downstream.onComplete());
+        synchronized (this.lock) {
+            if (this.downstream == null) {
+                this.completed = true;
+            } else {
+                this.downstream.onComplete();
+            }
+            this.cleanup();
+        }
     }
 
     @Override
     public void onError(final Throwable err) {
-        this.exec.submit(() -> this.downstream.onError(err));
+        synchronized (this.lock) {
+            if (this.downstream == null) {
+                this.completed = true;
+                this.error = err;
+            } else {
+                this.downstream.onError(err);
+            }
+            this.cleanup();
+        }
     }
 
     @Override
     public void onNext(final D item) {
-        this.exec.submit(() -> this.downstream.onNext(item));
+        synchronized (this.lock) {
+            assert this.downstream != null;
+            this.downstream.onNext(item);
+        }
     }
 
     @Override
     public void onSubscribe(final Subscription sub) {
-        this.exec.submit(
-            () -> {
-                synchronized (this.lock) {
-                    if (this.upstream != null) {
-                        throw new IllegalStateException("Can't subscribe twice");
-                    }
-                    this.upstream = sub;
-                    this.checkRequest();
-                }
+        synchronized (this.lock) {
+            if (this.upstream != null) {
+                throw new IllegalStateException("Can't subscribe twice");
             }
-        );
+            this.upstream = sub;
+            this.checkRequest();
+        }
     }
 
     @Override
     public void cancel() {
-        this.exec.submit(() -> this.upstream.cancel());
+        synchronized (this.lock) {
+            this.cleanup();
+        }
     }
 
     @Override
     public void request(final long amt) {
-        this.exec.submit(() -> this.upstream.request(amt));
+        assert this.downstream != null && this.upstream != null;
+        this.upstream.request(amt);
     }
 
     /**
      * Check if all required parts are connected, and request from upstream if so.
      */
     private void checkRequest() {
-        if (this.downstream != null && this.upstream != null) {
-            this.upstream.request(1);
+        synchronized (this.lock) {
+            if (this.downstream != null && this.upstream != null) {
+                this.downstream.onSubscribe(this);
+                this.upstream.request(1L);
+            }
         }
+    }
+
+    /**
+     * According to reactive-stream specification, should clear upstream
+     * reference and optionally cancel the upstream.
+     */
+    private void cleanup() {
+        if (this.upstream != null) {
+            this.upstream.cancel();
+        }
+        this.upstream = null;
+        this.downstream = null;
     }
 }

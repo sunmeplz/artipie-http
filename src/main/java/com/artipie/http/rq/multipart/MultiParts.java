@@ -6,13 +6,11 @@ package com.artipie.http.rq.multipart;
 
 import com.artipie.ArtipieException;
 import com.artipie.http.misc.ByteBufferTokenizer;
-import com.artipie.http.misc.DummySubscription;
 import com.artipie.http.misc.Pipeline;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -43,6 +41,11 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
     private final ExecutorService exec;
 
     /**
+     * State synchronization.
+     */
+    private final Object lock;
+
+    /**
      * Current part.
      */
     private volatile MultiPart current;
@@ -66,9 +69,10 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
             this, boundary.getBytes(StandardCharsets.US_ASCII)
         );
         this.exec = Executors.newSingleThreadExecutor();
-        this.pipeline = new Pipeline<>(this.exec);
+        this.pipeline = new Pipeline<>();
         this.completion = new Completion<>(this.pipeline);
         this.state = new State();
+        this.lock = new Object();
     }
 
     /**
@@ -92,11 +96,13 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
     @Override
     public void onNext(final ByteBuffer chunk) {
         this.tokenizer.push(chunk);
+        this.pipeline.request(1L);
     }
 
     @Override
     public void onError(final Throwable err) {
         this.pipeline.onError(new ArtipieException("Upstream failed", err));
+        this.exec.shutdown();
     }
 
     @Override
@@ -106,18 +112,16 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
 
     @Override
     public void receive(final ByteBuffer next, final boolean end) {
-        synchronized (this.pipeline) {
+        synchronized (this.lock) {
             this.state.patch(next, end);
             if (this.state.shouldIgnore()) {
-                this.pipeline.request(1L);
                 return;
             }
             if (this.state.started()) {
                 this.completion.itemStarted();
                 this.current = new MultiPart(
-                    this.pipeline, this.completion,
-                    part -> this.pipeline.onNext(part),
-                    this.exec
+                    this.completion,
+                    part -> this.exec.submit(() -> this.pipeline.onNext(part))
                 );
             }
             this.current.push(next);
