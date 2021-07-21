@@ -84,8 +84,7 @@ final class MultipartHeaders implements Headers {
      */
     void push(final ByteBuffer chunk) {
         synchronized (this.lock) {
-            this.accumulator.push(chunk);
+            this.accumulator.write(chunk);
         }
     }
 }
-

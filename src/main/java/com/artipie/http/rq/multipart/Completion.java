@@ -4,8 +4,6 @@
  */
 package com.artipie.http.rq.multipart;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -79,10 +77,8 @@ final class Completion<T> {
      */
     @SuppressWarnings("PMD.AssignmentInOperand")
     void itemCompleted() {
-        System.out.println("item complted");
         synchronized (this.lock) {
             if (--this.counter == 0 && this.completed) {
-                System.out.println("complete downstream");
                 this.downstream.onComplete();
             }
         }
@@ -103,10 +99,8 @@ final class Completion<T> {
      */
     void upstreamCompleted() {
         synchronized (this.lock) {
-            System.out.println("upstream completed");
             this.completed = true;
             if (this.counter == 0) {
-                System.out.println("complete downstream");
                 this.downstream.onComplete();
             }
         }

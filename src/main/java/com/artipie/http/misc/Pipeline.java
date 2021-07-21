@@ -4,13 +4,6 @@
  */
 package com.artipie.http.misc;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
@@ -19,6 +12,7 @@ import org.reactivestreams.Subscription;
  * @param <D> Downstream type
  * @since 1.0
  */
+@SuppressWarnings("PMD.NullAssignment")
 public final class Pipeline<D> implements Subscriber<D>, Subscription {
 
     /**
@@ -57,6 +51,7 @@ public final class Pipeline<D> implements Subscriber<D>, Subscription {
      * Connect downstream.
      * @param sub Downstream subscriber
      */
+    @SuppressWarnings("PMD.ConfusingTernary")
     public void connect(final Subscriber<? super D> sub) {
         synchronized (this.lock) {
             if (this.downstream != null) {

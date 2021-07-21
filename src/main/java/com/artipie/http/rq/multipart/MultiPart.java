@@ -20,6 +20,7 @@ import org.reactivestreams.Subscription;
  * Multipart request part.
  * @since 1.0
  */
+@SuppressWarnings("PMD.NullAssignment")
 final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver, Subscription {
 
     /**
@@ -118,7 +119,6 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
         this.hdr = new MultipartHeaders(MultiPart.CAP_HEADER);
         this.tmpacc = new BufAccumulator(MultiPart.CAP_HEADER);
         this.lock = new Object();
-
     }
 
     @Override
@@ -142,14 +142,14 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
     @Override
     public void receive(final ByteBuffer next, final boolean end) {
         synchronized (this.lock) {
-            if (!this.head) {
+            if (this.head) {
+                this.nextChunk(next);
+            } else {
                 this.hdr.push(next);
                 if (end) {
                     this.head = true;
                     this.ready.accept(this);
                 }
-            } else {
-                this.nextChunk(next);
             }
         }
     }
@@ -180,12 +180,42 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
     }
 
     /**
+     * Push next chunk of raw data.
+     * @param chunk Chunk buffer
+     */
+    void push(final ByteBuffer chunk) {
+        synchronized (this.lock) {
+            if (this.head) {
+                this.nextChunk(chunk);
+            } else {
+                this.tokenizer.push(chunk);
+                if (this.head) {
+                    this.tokenizer.close();
+                }
+            }
+        }
+    }
+
+    /**
+     * Flush all data in temporary buffers.
+     */
+    void flush() {
+        synchronized (this.lock) {
+            if (!this.head) {
+                this.tokenizer.close();
+            }
+            this.completed = true;
+            this.exec.submit(this::deliver);
+        }
+    }
+
+    /**
      * Process next chunk of body data.
      * @param next Next buffer
      */
     private void nextChunk(final ByteBuffer next) {
-        this.tmpacc.push(next);
-        if (downstream != null) {
+        this.tmpacc.write(next);
+        if (this.downstream != null) {
             this.exec.submit(this::deliver);
         }
     }
@@ -213,36 +243,6 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 this.exec.shutdown();
                 this.completion.itemCompleted();
             }
-        }
-    }
-
-    /**
-     * Push next chunk of raw data.
-     * @param chunk Chunk buffer
-     */
-    void push(final ByteBuffer chunk) {
-        synchronized (this.lock) {
-            if (!this.head) {
-                this.tokenizer.push(chunk);
-                if (this.head) {
-                    this.tokenizer.close();
-                }
-            } else {
-                this.nextChunk(chunk);
-            }
-        }
-    }
-
-    /**
-     * Flush all data in temporary buffers.
-     */
-    void flush() {
-        synchronized (this.lock) {
-            if (!this.head) {
-                this.tokenizer.close();
-            }
-            this.completed = true;
-            this.exec.submit(this::deliver);
         }
     }
 }

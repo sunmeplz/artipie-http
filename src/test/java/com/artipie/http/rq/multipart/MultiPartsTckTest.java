@@ -1,20 +1,15 @@
+/*
+ * The MIT License (MIT) Copyright (c) 2020-2021 artipie.com
+ * https://github.com/artipie/npm-adapter/LICENSE.txt
+ */
 package com.artipie.http.rq.multipart;
 
-import com.artipie.http.rq.RqHeaders;
 import io.reactivex.Flowable;
-import io.reactivex.internal.functions.Functions;
-import io.reactivex.subjects.SingleSubject;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.tck.PublisherVerification;
 import org.reactivestreams.tck.TestEnvironment;
-
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Test case for {@link MultiPart}.
@@ -25,24 +20,23 @@ import java.util.stream.StreamSupport;
  * @checkstyle ReturnCountCheck (500 lines)
  */
 @SuppressWarnings(
-        {
-                "PMD.TestClassWithoutTestCases", "PMD.OnlyOneReturn",
-                "PMD.JUnit4TestShouldUseBeforeAnnotation"
-        }
+    {
+        "PMD.TestClassWithoutTestCases", "PMD.OnlyOneReturn",
+        "PMD.JUnit4TestShouldUseBeforeAnnotation"
+    }
 )
-public final class MultiPartsTckTest
-        extends PublisherVerification<Integer> {
+public final class MultiPartsTckTest extends PublisherVerification<Integer> {
 
+    /**
+     * Test environment.
+     */
     private final TestEnvironment env;
 
     /**
-     * Ctor.
+     * Primary ctor.
+     * @param env Tets environemnt
      */
-    public MultiPartsTckTest() {
-        this(new TestEnvironment(true));
-    }
-
-    public MultiPartsTckTest(TestEnvironment env) {
+    public MultiPartsTckTest(final TestEnvironment env) {
         super(env);
         this.env = env;
     }
@@ -51,15 +45,17 @@ public final class MultiPartsTckTest
     public Publisher<Integer> createPublisher(final long size) {
         final String boundary = "--bnd";
         final MultiParts target = new MultiParts(boundary);
-        target.subscribeAsync(Flowable.rangeLong(0, size).map(id -> newChunk(id, id == size - 1, boundary)));
+        target.subscribeAsync(
+            Flowable.rangeLong(0, size).map(id -> this.newChunk(id, id == size - 1, boundary))
+        );
         return Flowable.fromPublisher(target).flatMapSingle(
-                part -> Flowable.fromPublisher(part).reduce(0, (acc, buf) -> acc + buf.remaining())
+            part -> Flowable.fromPublisher(part).reduce(0, (acc, buf) -> acc + buf.remaining())
         );
     }
 
     @Override
     public Publisher<Integer> createFailedPublisher() {
-       return null;
+        return null;
     }
 
     @Override
@@ -72,21 +68,29 @@ public final class MultiPartsTckTest
         return 1;
     }
 
+    /**
+     * Create new chunk.
+     * @param id Chunk number
+     * @param end True if a last chank in sequence
+     * @param boundary Boundary string
+     * @return Chunk buffer
+     */
+    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     private ByteBuffer newChunk(final long id, final boolean end, final String boundary) {
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder chunk = new StringBuilder(40);
         if (id == 0) {
-            sb.append("\r\n");
+            chunk.append("\r\n");
         }
-        sb.append(boundary)
-                .append("\r\n")
-                .append("Id: ").append(id).append("\r\n")
-                .append("\r\n")
-                .append("<id>").append(id).append("</id>")
-                .append("\r\n");
+        chunk.append(boundary).append(String.format("\r\nID: %d\r\n\r\n<id>%d</id>\r\n", id, id));
         if (end) {
-            sb.append(String.format("%s--", boundary)).append("\r\n");
+            chunk.append(String.format("%s--", boundary)).append("\r\n");
         }
-        this.env.debug(String.format("newChunk(id=%d, env=%b, boundary='%s') -> %s", id, end, boundary, sb.toString()));
-        return ByteBuffer.wrap(sb.toString().getBytes(StandardCharsets.US_ASCII));
+        this.env.debug(
+            String.format(
+                "newChunk(id=%d, env=%b, boundary='%s') -> %s",
+                id, end, boundary, chunk.toString()
+            )
+        );
+        return ByteBuffer.wrap(chunk.toString().getBytes(StandardCharsets.US_ASCII));
     }
 }

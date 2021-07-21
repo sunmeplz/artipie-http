@@ -1,14 +1,17 @@
+/*
+ * The MIT License (MIT) Copyright (c) 2020-2021 artipie.com
+ * https://github.com/artipie/npm-adapter/LICENSE.txt
+ */
 package com.artipie.http.rq.multipart;
 
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.subjects.SingleSubject;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.tck.PublisherVerification;
-import org.reactivestreams.tck.TestEnvironment;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.tck.PublisherVerification;
+import org.reactivestreams.tck.TestEnvironment;
 
 /**
  * Test case for {@link MultiPart}.
@@ -19,13 +22,17 @@ import java.util.concurrent.Executors;
  * @checkstyle ReturnCountCheck (500 lines)
  */
 @SuppressWarnings(
-        {
-                "PMD.TestClassWithoutTestCases", "PMD.OnlyOneReturn",
-                "PMD.JUnit4TestShouldUseBeforeAnnotation"
-        }
+    {
+        "PMD.TestClassWithoutTestCases", "PMD.OnlyOneReturn",
+        "PMD.JUnit4TestShouldUseBeforeAnnotation"
+    }
 )
-public final class MultiPartTckTest
-        extends PublisherVerification<ByteBuffer> {
+public final class MultiPartTckTest extends PublisherVerification<ByteBuffer> {
+
+    /**
+     * Test buffer size.
+     */
+    private static final int TEST_BUF = 4096;
 
     /**
      * Ctor.
@@ -36,32 +43,25 @@ public final class MultiPartTckTest
 
     @Override
     public Publisher<ByteBuffer> createPublisher(final long size) {
-        SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
-        final MultiPart part = new MultiPart(
-                Completion.FAKE,
-                subj::onSuccess
-        );
+        final SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
+        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess);
         Executors.newCachedThreadPool().submit(
-                () -> {
-                    part.push(ByteBuffer.wrap("\r\n\r\n".getBytes()));
-                    byte[] data = new byte[4096];
-                    Arrays.fill(data, (byte) 'A');
-                    System.out.printf("prepare data, size=%d\n", size);
-                    for (long pos = size; pos > 0; pos--) {
-                        System.out.printf("pushing %d/%d\n", size - pos, size);
-                        part.push(ByteBuffer.wrap(data));
-                    }
-                    System.out.println("flushing");
-                    part.flush();
+            () -> {
+                part.push(ByteBuffer.wrap("\r\n\r\n".getBytes()));
+                final byte[] data = new byte[MultiPartTckTest.TEST_BUF];
+                Arrays.fill(data, (byte) 'A');
+                for (long pos = size; pos > 0; --pos) {
+                    part.push(ByteBuffer.wrap(data));
                 }
+                part.flush();
+            }
         );
-
         return subj.flatMapPublisher(Functions.identity());
     }
 
     @Override
     public Publisher<ByteBuffer> createFailedPublisher() {
-       return null;
+        return null;
     }
 
     @Override
