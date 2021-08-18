@@ -17,40 +17,53 @@ import com.artipie.http.rt.ByMethodsRule;
 import com.artipie.http.rt.RtRulePath;
 import com.artipie.http.rt.SliceRoute;
 import com.artipie.vertx.VertxSliceServer;
-import com.jcabi.log.Logger;
-import io.vertx.reactivex.core.Vertx;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import javax.json.Json;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.Testcontainers;
-import org.testcontainers.containers.Container;
-import org.testcontainers.containers.GenericContainer;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 /**
  * Slices integration tests.
  * @since 0.20
+ * @checkstyle MagicNumberCheck (500 lines)
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
+@EnabledForJreRange(min = JRE.JAVA_11, disabledReason = "HTTP client is not supported prior JRE_11")
 public final class SliceITCase {
 
     /**
-     * Vertx instance.
+     * Test target slice.
      */
-    private static final Vertx VERTX = Vertx.vertx();
+    private static final Slice TARGET = new SliceRoute(
+        new RtRulePath(
+            new ByMethodsRule(RqMethod.GET),
+            new BasicAuthSlice(
+                new SliceSimple(
+                    new RsJson(
+                        () -> Json.createObjectBuilder().add("any", "any").build()
+                    )
+                ),
+                Authentication.ANONYMOUS,
+                new Permission.ByName(Permissions.FREE, Action.Standard.READ)
+            )
+        )
+    );
 
     /**
      * Vertx slice server instance.
      */
     private VertxSliceServer server;
-
-    /**
-     * Container.
-     */
-    private GenericContainer<?> cntn;
 
     /**
      * Application port.
@@ -60,24 +73,18 @@ public final class SliceITCase {
     @BeforeEach
     void init() throws Exception {
         this.port = new RandomFreePort().get();
-        this.server = new VertxSliceServer(
-            SliceITCase.VERTX, new LoggingSlice(new TestSlice()), this.port
-        );
+        this.server = new VertxSliceServer(SliceITCase.TARGET, this.port);
         this.server.start();
-        Testcontainers.exposeHostPorts(this.port);
-        this.cntn = new GenericContainer<>("alpine:3.11")
-            .withCommand("tail", "-f", "/dev/null").withWorkingDirectory("/w");
-        this.cntn.start();
-        this.exec("apk", "add", "--no-cache", "curl");
     }
 
     @Test
+    @Timeout(10)
     void singleRequestWorks() throws Exception {
         this.getRequest();
     }
 
     @Test
-    @Disabled
+    @Timeout(10)
     void doubleRequestWorks() throws Exception {
         this.getRequest();
         this.getRequest();
@@ -86,52 +93,17 @@ public final class SliceITCase {
     @AfterEach
     void stop() {
         this.server.stop();
-        this.cntn.stop();
+        this.server.close();
     }
 
     private void getRequest() throws Exception {
-        MatcherAssert.assertThat(
-            this.exec(
-                "curl", "-v",
-                String.format("http://host.testcontainers.internal:%s/any", this.port)
-            ),
-            new StringContains("{\"any\":\"any\"}")
+        final HttpResponse<String> rsp = HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder(
+                URI.create(String.format("http://localhost:%d/any", this.port))
+            ).GET().build(),
+            HttpResponse.BodyHandlers.ofString()
         );
+        MatcherAssert.assertThat("status", rsp.statusCode(), Matchers.equalTo(200));
+        MatcherAssert.assertThat("body", rsp.body(), new StringContains("{\"any\":\"any\"}"));
     }
-
-    private String exec(final String... command) throws Exception {
-        final Container.ExecResult res = this.cntn.execInContainer(command);
-        Logger.debug(this, "Command:\n%s\nResult:\n%s", String.join(" ", command), res.toString());
-        return res.toString();
-    }
-
-    /**
-     * Test slice implementation.
-     * @since 0.20
-     */
-    private static final class TestSlice extends Slice.Wrap {
-
-        /**
-         * Ctor.
-         */
-        protected TestSlice() {
-            super(
-                new SliceRoute(
-                    new RtRulePath(
-                        new ByMethodsRule(RqMethod.GET),
-                        new BasicAuthSlice(
-                            new SliceSimple(
-                                new RsJson(
-                                    () -> Json.createObjectBuilder().add("any", "any").build()
-                                )
-                            ),
-                            Authentication.ANONYMOUS,
-                            new Permission.ByName(Permissions.FREE, Action.Standard.READ)
-                        )
-                    )
-                )
-            );
-        }
-    }
-
 }

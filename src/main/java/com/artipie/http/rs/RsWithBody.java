@@ -174,7 +174,10 @@ public final class RsWithBody implements Response {
             final RsStatus status,
             final Headers headers,
             final Publisher<ByteBuffer> none) {
-            return this.origin.accept(status, headers, this.body);
+            return this.origin.accept(
+                status, headers,
+                Flowable.fromPublisher(this.body).map(ByteBuffer::duplicate)
+            );
         }
     }
 }
