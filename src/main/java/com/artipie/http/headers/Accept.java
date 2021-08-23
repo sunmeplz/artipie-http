@@ -5,11 +5,10 @@
 package com.artipie.http.headers;
 
 import com.artipie.http.rq.RqHeaders;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import wtf.g4s8.mime.MimeType;
 
 /**
  * Accept header, check
@@ -43,34 +42,10 @@ public final class Accept {
      * @return Set or the values
      */
     public List<String> values() {
-        final Map<String, Float> map = new HashMap<>();
-        new RqHeaders(this.headers, Accept.NAME).stream().flatMap(
-            val -> Arrays.stream(val.split(", "))
-        ).forEach(
-            item -> {
-                final int index = item.indexOf(";");
-                String sub = item;
-                final float weight;
-                if (index > 0) {
-                    sub = item.substring(0, index);
-                    // @checkstyle MagicNumberCheck (1 line)
-                    weight = Float.parseFloat(item.substring(index + 3));
-                } else {
-                    weight = 1;
-                }
-                map.compute(
-                    sub, (key, val) -> {
-                        float min = weight;
-                        if (val != null) {
-                            min = Float.min(weight, val);
-                        }
-                        return min;
-                    }
-                );
-            }
-        );
-        return map.entrySet().stream()
-            .sorted((one, two) -> Float.compare(two.getValue(), one.getValue()))
-            .map(Map.Entry::getKey).collect(Collectors.toList());
+        return MimeType.parse(
+            new RqHeaders(this.headers, Accept.NAME).stream().collect(Collectors.joining(","))
+        ).stream()
+            .map(mime -> String.format("%s/%s", mime.type(), mime.subtype()))
+            .collect(Collectors.toList());
     }
 }

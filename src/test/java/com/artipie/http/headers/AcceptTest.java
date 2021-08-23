@@ -25,13 +25,8 @@ class AcceptTest {
                     new Header("Accept", "image/webp;q=0.5, multipart/mixed")
                 )
             ).values(),
-            Matchers.anyOf(
-                Matchers.contains(
-                    "text/html", "multipart/mixed", "application/xml", "image/webp", "audio/aac"
-                ),
-                Matchers.contains(
-                    "multipart/mixed", "text/html", "application/xml", "image/webp", "audio/aac"
-                )
+            Matchers.contains(
+                "multipart/mixed", "text/html", "application/xml", "image/webp", "audio/aac"
             )
         );
     }
@@ -47,7 +42,7 @@ class AcceptTest {
                 )
             ).values(),
             Matchers.contains(
-                "multipart/mixed", "application/xml", "text/html", "text/json", "image/bmp"
+                "multipart/mixed", "text/html", "application/xml", "image/bmp", "text/json"
             )
         );
     }
@@ -62,6 +57,24 @@ class AcceptTest {
                 )
             ).values(),
             Matchers.contains("application/json", "audio/aac", "text/*")
+        );
+    }
+
+    @Test
+    void parseDockerClientHeader() {
+        MatcherAssert.assertThat(
+            new Accept(
+                new Headers.From(
+                    // @checkstyle LineLengthCheck (1 line)
+                    new Header("Accept", "application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.distribution.manifest.v1+json,application/vnd.docker.distribution.manifest.list.v2+json")
+                )
+            ).values(),
+            Matchers.contains(
+                "application/vnd.docker.distribution.manifest.list.v2+json",
+                "application/vnd.docker.distribution.manifest.v1+json",
+                "application/vnd.docker.distribution.manifest.v2+json",
+                "application/vnd.oci.image.manifest.v1+json"
+            )
         );
     }
 }

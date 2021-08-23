@@ -178,7 +178,7 @@ SOFTWARE.
     <dependency>
       <groupId>wtf.g4s8</groupId>
       <artifactId>mime</artifactId>
-      <version>v2.1</version>
+      <version>v2.2</version>
     </dependency>
   </dependencies>
   <build>
