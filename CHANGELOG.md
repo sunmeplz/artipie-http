@@ -1,3 +1,8 @@
+## v0.21
+
+ - feat: added optional slice (#364)
+ - fix: Corrected short license link (#365)
+
 ## v0.20
 
  - fix: parse accept header correctly (#361)
