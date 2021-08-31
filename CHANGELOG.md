@@ -1,3 +1,7 @@
+## v0.22
+
+ - feat: add multipart filter method (#368)
+
 ## v0.21
 
  - feat: added optional slice (#364)
