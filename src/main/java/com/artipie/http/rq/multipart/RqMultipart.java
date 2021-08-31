@@ -9,7 +9,9 @@ import com.artipie.http.ArtipieHttpException;
 import com.artipie.http.Headers;
 import com.artipie.http.headers.ContentType;
 import com.artipie.http.rs.RsStatus;
+import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
+import java.util.function.Predicate;
 import org.reactivestreams.Publisher;
 import wtf.g4s8.mime.MimeType;
 
@@ -70,6 +72,29 @@ public final class RqMultipart {
         final MultiParts pub = new MultiParts(this.boundary());
         pub.subscribeAsync(this.upstream);
         return pub;
+    }
+
+    /**
+     * Filter parts by headers predicate.
+     * @param pred Headers predicate
+     * @return Parts publisher
+     */
+    public Publisher<Part> filter(final Predicate<Headers> pred) {
+        return Flowable.fromPublisher(this.parts()).map(
+            part -> {
+                final Part result;
+                if (pred.test(part.headers())) {
+                    result = part;
+                } else {
+                    result = new EmptyPart(
+                        Flowable.fromPublisher(part)
+                            .ignoreElements().toFlowable()
+                            .cast(ByteBuffer.class)
+                    );
+                }
+                return result;
+            }
+        );
     }
 
     /**
