@@ -20,7 +20,7 @@ final class AuthSchemeNoneTest {
     @Test
     void shouldAuthEmptyHeadersAsAnonymous() {
         MatcherAssert.assertThat(
-            AuthScheme.NONE.authenticate(Headers.EMPTY)
+            AuthScheme.NONE.authenticate(Headers.EMPTY, "any")
                 .toCompletableFuture().join()
                 .user()
                 .map(Authentication.User::name),

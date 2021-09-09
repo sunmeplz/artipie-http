@@ -37,7 +37,9 @@ public final class BasicAuthScheme implements AuthScheme {
     }
 
     @Override
-    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers) {
+    public CompletionStage<Result> authenticate(
+        final Iterable<Map.Entry<String, String>> headers, final String line
+    ) {
         return CompletableFuture.completedFuture(
             this.user(headers).<Result>map(Success::new).orElseGet(Failure::new)
         );

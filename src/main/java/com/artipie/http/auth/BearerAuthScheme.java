@@ -45,7 +45,8 @@ public final class BearerAuthScheme implements AuthScheme {
     }
 
     @Override
-    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers) {
+    public CompletionStage<Result> authenticate(final Iterable<Map.Entry<String, String>> headers,
+        final String line) {
         return this.user(headers).thenApply(
             user -> user.<Result>map(Success::new).orElseGet(Failure::new)
         );

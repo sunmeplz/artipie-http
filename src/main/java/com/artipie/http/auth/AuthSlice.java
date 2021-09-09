@@ -62,7 +62,7 @@ public final class AuthSlice implements Slice {
             response = this.origin.response(line, headers, body);
         } else {
             response = new AsyncResponse(
-                this.auth.authenticate(headers).thenApply(
+                this.auth.authenticate(headers, line).thenApply(
                     result -> result.user().map(this.perm::allowed).map(
                         allowed -> {
                             final Response rsp;

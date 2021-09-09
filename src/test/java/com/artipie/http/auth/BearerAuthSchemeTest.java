@@ -40,7 +40,8 @@ final class BearerAuthSchemeTest {
             },
             "realm=\"artipie.com\""
         ).authenticate(
-            new Headers.From(new Authorization.Bearer(token))
+            new Headers.From(new Authorization.Bearer(token)),
+            "GET http://not/used HTTP/1.1"
         ).toCompletableFuture().join();
         MatcherAssert.assertThat(
             capture.get(),
@@ -58,7 +59,7 @@ final class BearerAuthSchemeTest {
             tkn -> CompletableFuture.completedFuture(user),
             "whatever"
         ).authenticate(
-            new Headers.From(new Authorization.Bearer("abc"))
+            new Headers.From(new Authorization.Bearer("abc")), "GET http://any HTTP/1.1"
         ).toCompletableFuture().join().user();
         MatcherAssert.assertThat(result, new IsEqual<>(user));
     }
@@ -70,7 +71,7 @@ final class BearerAuthSchemeTest {
         final AuthScheme.Result result = new BearerAuthScheme(
             tkn -> CompletableFuture.completedFuture(Optional.empty()),
             params
-        ).authenticate(headers).toCompletableFuture().join();
+        ).authenticate(headers, "GET http://ignored HTTP/1.1").toCompletableFuture().join();
         MatcherAssert.assertThat(
             "Not authenticated",
             result.user().isPresent(),

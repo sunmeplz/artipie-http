@@ -19,7 +19,7 @@ public interface AuthScheme {
     /**
      * Absent auth scheme that authenticates any request as "anonymous" user.
      */
-    AuthScheme NONE = ignored -> CompletableFuture.completedFuture(
+    AuthScheme NONE = (hdrs, line)  -> CompletableFuture.completedFuture(
         new AuthScheme.Result() {
             @Override
             public Optional<Authentication.User> user() {
@@ -34,12 +34,23 @@ public interface AuthScheme {
     );
 
     /**
+     * Authenticate HTTP request by it's headers and request line.
+     *
+     * @param headers Request headers.
+     * @param line Request line.
+     * @return Authentication result.
+     */
+    CompletionStage<Result> authenticate(Iterable<Map.Entry<String, String>> headers, String line);
+
+    /**
      * Authenticate HTTP request by it's headers.
      *
      * @param headers Request headers.
      * @return Authentication result.
      */
-    CompletionStage<Result> authenticate(Iterable<Map.Entry<String, String>> headers);
+    default CompletionStage<Result> authenticate(Iterable<Map.Entry<String, String>> headers) {
+        return this.authenticate(headers, "");
+    }
 
     /**
      * HTTP request authentication result.
@@ -111,7 +122,8 @@ public interface AuthScheme {
 
         @Override
         public CompletionStage<Result> authenticate(
-            final Iterable<Map.Entry<String, String>> headers
+            final Iterable<Map.Entry<String, String>> headers,
+            final String line
         ) {
             return CompletableFuture.completedFuture(
                 new AuthScheme.Result() {

@@ -180,4 +180,30 @@ public final class Authorization extends Header.Wrap {
             return new Authorization(this.getValue()).credentials();
         }
     }
+
+    /**
+     * Token authentication `Authorization` header.
+     *
+     * @since 0.23
+     */
+    public static final class Token extends Header.Wrap {
+
+        /**
+         * Ctor.
+         *
+         * @param token Token.
+         */
+        public Token(final String token) {
+            super(new Authorization("token", token));
+        }
+
+        /**
+         * Read token from header value.
+         *
+         * @return Token string.
+         */
+        public String token() {
+            return new Authorization(this.getValue()).credentials();
+        }
+    }
 }
