@@ -1,3 +1,8 @@
+## v0.23
+
+ - feat: added rq line to AuthScheme and token auth header (#372) 
+ - deps: bump vertx-web-client from 4.1.1 to 4.1.3 (#370)
+
 ## v0.22
 
  - feat: add multipart filter method (#368)
