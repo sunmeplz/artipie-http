@@ -66,7 +66,7 @@ final class MultipartHeaders implements Headers {
                                 final String[] parts = line.split(":");
                                 return new Header(
                                     parts[0].trim().toLowerCase(Locale.US),
-                                    parts[1].trim().toLowerCase(Locale.US)
+                                    parts[1].trim()
                                 );
                             }
                         ).collect(Collectors.toList())

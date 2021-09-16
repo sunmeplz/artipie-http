@@ -1,3 +1,7 @@
+## v0.23.1
+
+ - fix: MultipartHeaders: header values are not case-insensitive (#376) 
+
 ## v0.23
 
  - feat: added rq line to AuthScheme and token auth header (#372) 
