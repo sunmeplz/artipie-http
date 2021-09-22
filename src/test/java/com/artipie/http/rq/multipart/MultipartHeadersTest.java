@@ -26,7 +26,8 @@ final class MultipartHeadersTest {
             "\r\n",
             "Accept: application/json",
             "Content-length: 100",
-            "Connection: keep-alive"
+            "Connection: keep-alive",
+            "Content-Disposition: form-data; name=\"content\"; filename=\"My-Test.txt\""
         );
         for (int pos = 0, take = 3; pos < source.length(); pos += take, ++take) {
             if (pos + take > source.length()) {
@@ -40,7 +41,10 @@ final class MultipartHeadersTest {
             Matchers.containsInAnyOrder(
                 new Header("Accept", "application/json"),
                 new Header("Connection", "keep-alive"),
-                new Header("Content-length", "100")
+                new Header("Content-length", "100"),
+                new Header(
+                    "Content-Disposition", "form-data; name=\"content\"; filename=\"My-Test.txt\""
+                )
             )
         );
     }
