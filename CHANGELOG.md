@@ -1,3 +1,11 @@
+## v0.24
+
+ - deps: bump slf4j-simple from 1.7.31 to 1.7.32 (#351)
+ - deps: bump vertx-web-client from 4.1.3 to 4.1.4 (#378)
+ - deps: bump junit-jupiter-engine from 5.7.2 to 5.8.0 (#375)
+ - fix: multipart request body parsing
+ - deps: bump asto from v1.3.4 to v1.5.1 (#379)
+
 ## v0.23.1
 
  - fix: MultipartHeaders: header values are not case-insensitive (#376) 
