@@ -225,6 +225,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      */
     private void deliver() {
         synchronized (this.lock) {
+            boolean delivered = false;
             while (this.demand > 0) {
                 final ByteBuffer out = ByteBuffer.allocate(4096);
                 if (this.tmpacc.read(out) < 0) {
@@ -232,11 +233,15 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 }
                 out.flip();
                 this.downstream.onNext(out);
+                delivered = true;
                 if (this.demand != Long.MAX_VALUE) {
                     --this.demand;
                 }
             }
             if (this.completed && this.tmpacc.empty()) {
+                if (!delivered) {
+                    this.downstream.onNext(ByteBuffer.allocate(0));
+                }
                 this.tmpacc.close();
                 this.downstream.onComplete();
                 this.downstream = null;

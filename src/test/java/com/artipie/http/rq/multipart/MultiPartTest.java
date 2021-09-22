@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test case for {@link MultiPart}.
@@ -51,6 +52,29 @@ final class MultiPartTest {
                 .string(StandardCharsets.US_ASCII)
                 .toCompletableFuture().get(),
             Matchers.equalTo("{\"foo\": \"bar\", \"val\": [4]}")
+        );
+    }
+
+    @Test
+    @Timeout(1)
+    void parseEmptyBody() throws Exception {
+        final SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
+        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess);
+        Executors.newCachedThreadPool().submit(
+            () -> {
+                part.push(
+                    ByteBuffer.wrap(
+                        "Content-Length: 0\r\n\r\n".getBytes(StandardCharsets.US_ASCII)
+                    )
+                );
+                part.flush();
+            }
+        );
+        MatcherAssert.assertThat(
+            new PublisherAs(subj.flatMapPublisher(Functions.identity()))
+                .string(StandardCharsets.US_ASCII)
+                .toCompletableFuture().get(),
+            Matchers.equalTo("")
         );
     }
 }

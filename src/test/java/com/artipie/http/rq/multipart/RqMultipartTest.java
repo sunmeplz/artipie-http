@@ -74,6 +74,63 @@ final class RqMultipartTest {
     }
 
     @Test
+    // @Timeout(1)
+    void multipartWithEmptyBodies() throws Exception {
+        // @checkstyle LineLengthCheck (100 lines)
+        final String payload = String.join(
+            "\r\n",
+            "--92fd51d48f874720a066238b824c0146",
+            "Content-Disposition: form-data; name=\"maintainer\"",
+            "",
+            "",
+            "--92fd51d48f874720a066238b824c0146",
+            "Content-Disposition: form-data; name=\"maintainer_email\"",
+            "",
+            "",
+            "--92fd51d48f874720a066238b824c0146",
+            "Content-Disposition: form-data; name=\"license\"",
+            "",
+            "MIT",
+            "--92fd51d48f874720a066238b824c0146--"
+        );
+        final List<String> parsed = Flowable.fromPublisher(
+            new RqMultipart(
+                new ContentType("multipart/mixed; boundary=\"92fd51d48f874720a066238b824c0146\""),
+                new Content.From(payload.getBytes(StandardCharsets.US_ASCII))
+            ).parts()
+        ).<String>flatMapSingle(
+            part -> Single.fromFuture(
+                new PublisherAs(part).string(StandardCharsets.US_ASCII).toCompletableFuture()
+            ).map(body -> String.format("%s: %s", new ContentDisposition(part.headers()).fieldName(), body))
+        ).toList().blockingGet();
+        MatcherAssert.assertThat(
+            parsed,
+            Matchers.containsInAnyOrder("maintainer: ", "maintainer_email: ", "license: MIT")
+        );
+    }
+
+    @Test
+    void dontSkipNonPreambleFirstEmptyPart() {
+        final String payload = String.join(
+            "\r\n",
+            "--123",
+            "Foo: bar",
+            "",
+            "",
+            "--123--"
+        );
+        MatcherAssert.assertThat(
+            Flowable.fromPublisher(
+                new RqMultipart(
+                    new ContentType("multipart/mixed; boundary=\"123\""),
+                    new Content.From(payload.getBytes(StandardCharsets.US_ASCII))
+                ).parts()
+            ).flatMap(Flowable::fromPublisher).toList().blockingGet(),
+            Matchers.not(Matchers.empty())
+        );
+    }
+
+    @Test
     void readOnePartOfRequest() {
         // @checkstyle LineLengthCheck (100 lines)
         final String payload = String.join(

@@ -137,6 +137,14 @@ final class State {
     }
 
     /**
+     * Is in initial state.
+     * @return True if current state is initial
+     */
+    boolean isInit() {
+        return (this.flags & State.INIT) == State.INIT;
+    }
+
+    /**
      * Check if state is in start of the part.
      * @return True if in start
      */
