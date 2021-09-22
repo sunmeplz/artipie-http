@@ -6,12 +6,15 @@ package com.artipie.http.misc;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -53,6 +56,21 @@ final class ByteBufferTokenizerTest {
         }
     }
 
+    @Test
+    void deliverEmptyPart() {
+        final Deque<ByteBuffer> result = new LinkedList<>();
+        try (AccReceiver rec = new AccReceiver(result);
+            ByteBufferTokenizer tokenizer = new ByteBufferTokenizer(rec, "|".getBytes(), 1)) {
+            tokenizer.push(
+                ByteBuffer.wrap("|second||fourth".getBytes(StandardCharsets.US_ASCII))
+            );
+        }
+        MatcherAssert.assertThat(
+            result.stream().map(ByteBufferTokenizerTest::bufToStr).collect(Collectors.toList()),
+            Matchers.contains("", "second", "", "fourth")
+        );
+    }
+
     private static String bufToStr(final ByteBuffer buf) {
         final byte[] bts = new byte[buf.remaining()];
         buf.get(bts);
@@ -72,11 +90,27 @@ final class ByteBufferTokenizerTest {
         private final Deque<ByteBuffer> result;
 
         /**
+         * Chunk processor.
+         */
+        private final Function<ByteBuffer, ByteBuffer> processor;
+
+        /**
          * New test receiver.
          * @param result Queue
          */
         AccReceiver(final Deque<ByteBuffer> result) {
+            this(result, Function.identity());
+        }
+
+        /**
+         * New test receiver with processor.
+         * @param result Queue
+         * @param processor Chunk processor
+         */
+        AccReceiver(final Deque<ByteBuffer> result,
+            final Function<ByteBuffer, ByteBuffer> processor) {
             this.result = result;
+            this.processor = processor;
         }
 
         @Override

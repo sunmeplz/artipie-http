@@ -95,7 +95,21 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
 
     @Override
     public void onNext(final ByteBuffer chunk) {
-        this.tokenizer.push(chunk);
+        final ByteBuffer next;
+        if (this.state.isInit()) {
+            // multipart preamble is tricky:
+            // if request is started with boundary, then it donesn't have a preamble
+            // but we're splitting it by \r\n<boundary> token.
+            // To tell tokenizer emmit empty chunk on non-preamble first buffer started with
+            // boudnary we need to add \r\n to it.
+            next = ByteBuffer.allocate(chunk.limit() + 2);
+            next.put("\r\n".getBytes(StandardCharsets.US_ASCII));
+            next.put(chunk);
+            next.rewind();
+        } else {
+            next = chunk;
+        }
+        this.tokenizer.push(next);
         this.pipeline.request(1L);
     }
 
