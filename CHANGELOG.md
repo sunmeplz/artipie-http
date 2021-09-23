@@ -1,3 +1,7 @@
+## v0.25
+
+ - fix: parse colon in multipart headers correctly (#384)
+
 ## v0.24
 
  - deps: bump slf4j-simple from 1.7.31 to 1.7.32 (#351)
