@@ -63,7 +63,7 @@ final class MultipartHeaders implements Headers {
                     this.cache = new Headers.From(
                         Arrays.stream(hstr.split("\r\n")).filter(str -> !str.isEmpty()).map(
                             line -> {
-                                final String[] parts = line.split(":");
+                                final String[] parts = line.split(":", 2);
                                 return new Header(
                                     parts[0].trim().toLowerCase(Locale.US),
                                     parts[1].trim()

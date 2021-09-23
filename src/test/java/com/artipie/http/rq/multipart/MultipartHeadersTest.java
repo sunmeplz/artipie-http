@@ -4,10 +4,13 @@
  */
 package com.artipie.http.rq.multipart;
 
+import com.artipie.http.headers.ContentDisposition;
 import com.artipie.http.headers.Header;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -46,6 +49,21 @@ final class MultipartHeadersTest {
                     "Content-Disposition", "form-data; name=\"content\"; filename=\"My-Test.txt\""
                 )
             )
+        );
+    }
+
+    @Test
+    void buildHeadersWithColon() {
+        final MultipartHeaders headers = new MultipartHeaders(1);
+        headers.push(
+            ByteBuffer.wrap(
+                "Content-Disposition: form-data; name=\":action\""
+                    .getBytes(StandardCharsets.US_ASCII)
+            )
+        );
+        MatcherAssert.assertThat(
+            new ContentDisposition(headers).fieldName(),
+            new IsEqual<>(":action")
         );
     }
 }

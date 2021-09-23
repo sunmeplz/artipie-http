@@ -78,4 +78,12 @@ public final class ContentDispositionTest {
             new IsEqual<>("foo.jpg")
         );
     }
+
+    @Test
+    void readNameWithColons() {
+        MatcherAssert.assertThat(
+            new ContentDisposition("form-data; name=\":action\"").fieldName(),
+            new IsEqual<>(":action")
+        );
+    }
 }
