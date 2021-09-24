@@ -6,6 +6,7 @@ package com.artipie.http.rq.multipart;
 
 import com.artipie.asto.Content;
 import com.artipie.asto.ext.PublisherAs;
+import com.artipie.asto.test.TestResource;
 import com.artipie.http.headers.ContentDisposition;
 import com.artipie.http.headers.ContentType;
 import io.reactivex.Flowable;
@@ -207,5 +208,18 @@ final class RqMultipartTest {
         ).flatMap(part -> part);
         final byte[] target = new PublisherAs(body).bytes().toCompletableFuture().join();
         MatcherAssert.assertThat(target, Matchers.equalTo("0000000000000000000000000000000000000000".getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    @Test
+    void parseCondaPayload() throws Exception {
+        final byte[] payload = new TestResource("multipart").asBytes();
+        final int size = Flowable.fromPublisher(
+            new RqMultipart(
+                new ContentType("multipart/mixed; boundary=\"92fd51d48f874720a066238b824c0146\""),
+                new Content.From(payload)
+            ).parts()
+        ).flatMap(Flowable::fromPublisher).reduce(0, (acc, chunk) -> acc + chunk.remaining()).blockingGet();
+        // @checkstyle MagicNumberCheck (1 line)
+        MatcherAssert.assertThat(size, Matchers.equalTo(4163));
     }
 }
