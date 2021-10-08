@@ -12,11 +12,13 @@ import com.artipie.http.rs.RsStatus;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsEqual;
 import org.reactivestreams.Publisher;
@@ -36,10 +38,27 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
     /**
      * Check response has string body in charset.
      * @param body Body string
+     */
+    public RsHasBody(final String body) {
+        this(Matchers.is(body), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Check response has string body in charset.
+     * @param body Body string
      * @param charset Charset encoding
      */
     public RsHasBody(final String body, final Charset charset) {
-        this(body.getBytes(charset));
+        this(Matchers.is(body), charset);
+    }
+
+    /**
+     * Check response has string body in charset.
+     * @param body Body string
+     * @param charset Charset encoding
+     */
+    public RsHasBody(final Matcher<String> body, final Charset charset) {
+        this(new IsString(charset, body));
     }
 
     /**
@@ -129,4 +148,5 @@ public final class RsHasBody extends TypeSafeMatcher<Response> {
             );
         }
     }
+
 }

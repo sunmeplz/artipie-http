@@ -4,6 +4,7 @@
  */
 package com.artipie.http.hm;
 
+import com.artipie.asto.Content;
 import com.artipie.http.Headers;
 import com.artipie.http.headers.ContentLength;
 import com.artipie.http.headers.Header;
@@ -19,8 +20,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
+import org.hamcrest.core.IsNot;
 import org.junit.jupiter.api.Test;
+import org.llorllale.cactoos.matchers.Matches;
 
 /**
  * Test for {@link ResponseMatcher}.
@@ -182,6 +186,52 @@ class ResponseMatcherTest {
                     )
                 ),
             new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void matchersBodyAndStatus() {
+        MatcherAssert.assertThat(
+            new ResponseMatcher(
+                RsStatus.NOT_FOUND,
+                Matchers.containsString("404"),
+                StandardCharsets.UTF_8
+            ),
+            new IsNot<>(
+                new Matches<>(
+                    new RsFull(
+                        RsStatus.NOT_FOUND,
+                        Headers.EMPTY,
+                        new Content.From(
+                            "hello".getBytes(StandardCharsets.UTF_8)
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    @Test
+    void matchersBodyMismatches() {
+        MatcherAssert.assertThat(
+            new ResponseMatcher("yyy"),
+            new IsNot<>(
+                new Matches<>(
+                    new RsWithBody("YYY", StandardCharsets.UTF_8)
+                )
+            )
+        );
+    }
+
+    @Test
+    void matchersBodyIgnoringCase() {
+        MatcherAssert.assertThat(
+            new ResponseMatcher(
+                Matchers.equalToIgnoringCase("xxx")
+            ),
+            new Matches<>(
+                new RsWithBody("XXX", StandardCharsets.UTF_8)
+            )
         );
     }
 }

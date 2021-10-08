@@ -5,6 +5,7 @@
 package com.artipie.http.rs.common;
 
 import com.artipie.http.headers.Header;
+import com.artipie.http.hm.IsJson;
 import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
 import com.artipie.http.rs.CachedResponse;
@@ -13,11 +14,14 @@ import javax.json.Json;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import wtf.g4s8.hamcrest.json.JsonHas;
+import wtf.g4s8.hamcrest.json.JsonValueIs;
 
 /**
  * Test case for {@link RsJson}.
  *
  * @since 0.16
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 final class RsJsonTest {
 
@@ -41,6 +45,22 @@ final class RsJsonTest {
     }
 
     @Test
+    void bodyMatchesJson() {
+        final String field = "faz";
+        MatcherAssert.assertThat(
+            new RsJson(Json.createObjectBuilder().add(field, true)),
+            new RsHasBody(
+                new IsJson(
+                    new JsonHas(
+                        field,
+                        new JsonValueIs(true)
+                    )
+                )
+            )
+        );
+    }
+
+    @Test
     void headersHasContentType() {
         MatcherAssert.assertThat(
             new CachedResponse(
@@ -57,4 +77,5 @@ final class RsJsonTest {
             )
         );
     }
+
 }

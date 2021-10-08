@@ -10,20 +10,26 @@ import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
 import io.reactivex.Flowable;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
+import org.hamcrest.core.IsNot;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.llorllale.cactoos.matchers.Matches;
 
 /**
  * Tests for {@link RsHasBody}.
  *
  * @since 0.4
  */
-class RsHasBodyTest {
+final class RsHasBodyTest {
 
     @Test
     void shouldMatchEqualBody() {
@@ -74,6 +80,45 @@ class RsHasBodyTest {
         MatcherAssert.assertThat(
             new RsHasBody(data).matches(response),
             new IsEqual<>(true)
+        );
+    }
+
+    @Test
+    void shouldWorkWithContainsMatcherMismatches() {
+        MatcherAssert.assertThat(
+            new RsHasBody("XXX"),
+            new IsNot<>(
+                new Matches<>(
+                    new RsWithBody(
+                        "xxx", StandardCharsets.UTF_8
+                    )
+                )
+            )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"bytes", "more bytes"})
+    void shouldWorkWithContainsMatcher(final String content) {
+        MatcherAssert.assertThat(
+            new RsHasBody(
+                Matchers.equalToIgnoringCase(content),
+                StandardCharsets.UTF_8
+            ),
+            Matchers.<Matcher<Response>>allOf(
+                new Matches<>(
+                    new RsWithBody(
+                        content,
+                        StandardCharsets.UTF_8
+                    )
+                ),
+                new Matches<>(
+                    new RsWithBody(
+                        content.toUpperCase(Locale.ROOT),
+                        StandardCharsets.UTF_8
+                    )
+                )
+            )
         );
     }
 }
