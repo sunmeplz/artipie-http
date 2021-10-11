@@ -4,11 +4,20 @@
  */
 package com.artipie.http.auth;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.aggregator.AggregateWith;
+import org.junit.jupiter.params.aggregator.ArgumentsAccessor;
+import org.junit.jupiter.params.aggregator.ArgumentsAggregationException;
+import org.junit.jupiter.params.aggregator.ArgumentsAggregator;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
@@ -16,7 +25,7 @@ import org.junit.jupiter.params.provider.CsvSource;
  *
  * @since 0.15
  */
-public final class AuthenticationTest {
+final class AuthenticationTest {
 
     @Test
     void wrapDelegatesToOrigin() {
@@ -82,6 +91,28 @@ public final class AuthenticationTest {
         );
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "Alice,staff,admin",
+        "Bob,wheel",
+        "Jeff,wheel,vip"
+    })
+    void userHasProperToString(
+        final String username,
+        @AggregateWith(AuthenticationTest.AsCollection.class)
+        final Collection<String> groups
+    ) {
+        MatcherAssert.assertThat(
+            new Authentication.User(username, groups),
+            Matchers.hasToString(
+                Matchers.allOf(
+                    Matchers.containsString(username),
+                    Matchers.stringContainsInOrder(groups)
+                )
+            )
+        );
+    }
+
     @Test
     void emptyOptionalIfNotPresent() {
         MatcherAssert.assertThat(
@@ -107,6 +138,22 @@ public final class AuthenticationTest {
          */
         protected TestAuthentication(final Authentication auth) {
             super(auth);
+        }
+    }
+
+    /**
+     * Aggregate trailing parameters.
+     *
+     * @since 0.5.2
+     */
+    private static final class AsCollection implements ArgumentsAggregator {
+
+        @Override
+        public Object aggregateArguments(final ArgumentsAccessor accessor,
+            final ParameterContext context) throws ArgumentsAggregationException {
+            return IntStream.range(context.getIndex(), accessor.size())
+                .mapToObj(accessor::getString)
+                .collect(Collectors.toList());
         }
     }
 }

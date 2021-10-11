@@ -101,6 +101,16 @@ public interface Authentication {
         public int hashCode() {
             return Objects.hash(this.uname, this.ugroups);
         }
+
+        @Override
+        public String toString() {
+            return String.format(
+                "%s(%s, %s)",
+                this.getClass().getSimpleName(),
+                this.uname,
+                this.ugroups
+            );
+        }
     }
 
     /**
