@@ -1,3 +1,15 @@
+## v0.26
+
+ - 03a19bd deps: bump asto from v1.5.1 to v1.8.0 (#395)
+ - ee959a3 deps: bump matchers-json from 1.0.3 to 1.4.0 (#389)
+ - cd020d4 deps: bump jetty-servlet from 10.0.6 to 10.0.7 (#393)
+ - e350e43 deps: bump jetty-server from 10.0.6 to 10.0.7 (#394)
+ - 812f635 feat: override toString in Authentication.User (#390)
+ - 87a62b6 deps: bump vertx-web-client from 4.1.4 to 4.1.5 (#392)
+ - b9c2342 feat(matchers): matching body with string matcher
+ - 191f445 test(multipart): added test for conda payload (#386)
+ - a8a4014 deps: bump junit-jupiter-engine from 5.8.0 to 5.8.1 (#385)
+
 ## v0.25
 
  - fix: parse colon in multipart headers correctly (#384)
