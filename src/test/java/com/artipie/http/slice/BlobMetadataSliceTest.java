@@ -55,6 +55,7 @@ final class BlobMetadataSliceTest {
                 Matchers.allOf(
                     new RsHasStatus(RsStatus.OK),
                     new RsHasHeaders(
+                        // @checkstyle MagicNumberCheck (1 line)
                         new ContentLength(8),
                         new ContentDisposition("attachment; filename=\"foo\""),
                         new ContentLength(0)
