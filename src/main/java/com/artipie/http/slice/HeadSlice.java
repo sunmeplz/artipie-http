@@ -31,8 +31,8 @@ import org.reactivestreams.Publisher;
  * @since 0.26.2
  * @todo #397:30min Use this class in artipie/files-adapter.
  *  We should replace {@link HeadSlice} of artipie/files-adapter by
- *  this one. Before doing this task, we need to fix {@link RsFull} about header
- *  duplication and the next release of artipie/http.
+ *  this one. Before doing this task, be sure that at least version
+ *  1.8.1 of artipie/http has been released.
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 public final class HeadSlice implements Slice {
