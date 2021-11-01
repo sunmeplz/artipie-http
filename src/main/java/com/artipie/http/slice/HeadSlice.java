@@ -30,12 +30,12 @@ import org.reactivestreams.Publisher;
  *
  * @since 0.26.2
  * @todo #397:30min Use this class in artipie/files-adapter.
- *  We should replace {@link BlobMetadataSlice} of artipie/files-adapter by
+ *  We should replace {@link HeadSlice} of artipie/files-adapter by
  *  this one. Before doing this task, we need to fix {@link RsFull} about header
  *  duplication and the next release of artipie/http.
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-public final class BlobMetadataSlice implements Slice {
+public final class HeadSlice implements Slice {
 
     /**
      * Storage.
@@ -52,7 +52,7 @@ public final class BlobMetadataSlice implements Slice {
      *
      * @param storage Storage
      */
-    public BlobMetadataSlice(final Storage storage) {
+    public HeadSlice(final Storage storage) {
         this(storage, KeyFromPath::new);
     }
 
@@ -62,7 +62,7 @@ public final class BlobMetadataSlice implements Slice {
      * @param storage Storage
      * @param transform Transformation
      */
-    public BlobMetadataSlice(
+    public HeadSlice(
         final Storage storage,
         final Function<String, Key> transform) {
         this.storage = storage;

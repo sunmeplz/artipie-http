@@ -23,12 +23,12 @@ import org.hamcrest.core.IsAnything;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link BlobMetadataSlice}.
+ * Tests for {@link HeadSlice}.
  *
  * @since 0.26.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-final class BlobMetadataSliceTest {
+final class HeadSliceTest {
 
     /**
      * Storage.
@@ -42,7 +42,7 @@ final class BlobMetadataSliceTest {
         new BlockingStorage(this.storage).save(key, "anything".getBytes());
         new BlockingStorage(this.storage).save(another, "another".getBytes());
         MatcherAssert.assertThat(
-            new BlobMetadataSlice(this.storage),
+            new HeadSlice(this.storage),
             new SliceHasResponse(
                 Matchers.allOf(
                     new RsHasStatus(RsStatus.OK),
