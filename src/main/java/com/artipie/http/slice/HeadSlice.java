@@ -13,16 +13,15 @@ import com.artipie.http.async.AsyncResponse;
 import com.artipie.http.headers.ContentFileName;
 import com.artipie.http.headers.ContentLength;
 import com.artipie.http.rq.RequestLineFrom;
-import com.artipie.http.rs.RsFull;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithHeaders;
+import com.artipie.http.rs.StandardRs;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import com.artipie.http.rs.StandardRs;
 import org.reactivestreams.Publisher;
 
 /**
@@ -50,7 +49,7 @@ public final class HeadSlice implements Slice {
     /**
      * Other headers specific to the storage.
      */
-    private final Function<Storage, CompletionStage<Headers>> headers;
+    private final Function<Storage, CompletionStage<Headers>> addhdrs;
 
     /**
      * Slice by key from storage.
@@ -70,16 +69,16 @@ public final class HeadSlice implements Slice {
      *
      * @param storage Storage
      * @param transform Transformation
-     * @param headers Additional headers
+     * @param addhdrs Additional headers
      */
     public HeadSlice(
         final Storage storage,
         final Function<String, Key> transform,
-        final Function<Storage, CompletionStage<Headers>> headers
+        final Function<Storage, CompletionStage<Headers>> addhdrs
     ) {
         this.storage = storage;
         this.transform = transform;
-        this.headers = headers;
+        this.addhdrs = addhdrs;
     }
 
     @Override
@@ -110,9 +109,9 @@ public final class HeadSlice implements Slice {
                                                 )
                                             )
                                             .thenCompose(
-                                                res -> this.headers.apply(this.storage)
+                                                res -> this.addhdrs.apply(this.storage)
                                                     .thenApply(
-                                                        hds -> new RsWithHeaders(res, hds)
+                                                        hdrs -> new RsWithHeaders(res, hdrs)
                                                     )
                                             );
                                     } else {
