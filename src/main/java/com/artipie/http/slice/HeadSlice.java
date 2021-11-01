@@ -60,7 +60,7 @@ public final class HeadSlice implements Slice {
         this(
             storage,
             KeyFromPath::new,
-            sto -> CompletableFuture.completedStage(Headers.EMPTY)
+            sto -> CompletableFuture.completedFuture(Headers.EMPTY)
         );
     }
 
