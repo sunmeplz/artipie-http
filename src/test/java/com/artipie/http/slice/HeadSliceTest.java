@@ -17,9 +17,9 @@ import com.artipie.http.hm.SliceHasResponse;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rq.RqMethod;
 import com.artipie.http.rs.RsStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.IsAnything;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -51,7 +51,7 @@ final class HeadSliceTest {
                         new ContentLength(8),
                         new ContentDisposition("attachment; filename=\"foo\"")
                     ),
-                    new RsHasBody(new IsAnything<>())
+                    new RsHasBody(StringUtils.EMPTY)
                 ),
                 new RequestLine(RqMethod.HEAD, "/foo")
             )
