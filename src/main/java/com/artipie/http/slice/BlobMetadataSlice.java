@@ -4,7 +4,6 @@
  */
 package com.artipie.http.slice;
 
-import com.artipie.asto.Content;
 import com.artipie.asto.Key;
 import com.artipie.asto.Storage;
 import com.artipie.http.Headers;
@@ -15,15 +14,15 @@ import com.artipie.http.headers.ContentFileName;
 import com.artipie.http.headers.ContentLength;
 import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rs.RsFull;
-import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithBody;
-import com.artipie.http.rs.StandardRs;
+import com.artipie.http.rs.RsWithHeaders;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import com.artipie.http.rs.StandardRs;
 import org.reactivestreams.Publisher;
 
 /**
@@ -90,13 +89,12 @@ public final class BlobMetadataSlice implements Slice {
                                         result = this.storage.size(key)
                                             .thenApply(
                                                 size ->
-                                                    new RsFull(
-                                                        RsStatus.OK,
+                                                    new RsWithHeaders(
+                                                        StandardRs.OK,
                                                         new Headers.From(
                                                             new ContentFileName(uri),
                                                             new ContentLength(size)
-                                                        ),
-                                                        Content.EMPTY
+                                                        )
                                                     )
                                             );
                                     } else {

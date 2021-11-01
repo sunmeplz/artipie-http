@@ -10,15 +10,16 @@ import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.http.headers.ContentDisposition;
 import com.artipie.http.headers.ContentLength;
+import com.artipie.http.hm.RsHasBody;
 import com.artipie.http.hm.RsHasHeaders;
 import com.artipie.http.hm.RsHasStatus;
 import com.artipie.http.hm.SliceHasResponse;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rq.RqMethod;
-import com.artipie.http.rs.RsFull;
 import com.artipie.http.rs.RsStatus;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsAnything;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,15 +35,6 @@ final class BlobMetadataSliceTest {
      */
     private final Storage storage = new InMemoryStorage();
 
-    /**
-     * Tests that headers are correct when returning found.
-     *  @todo #397:30min Fix {@link RsFull} that duplicates header.
-     *   We notice (in this test) that due to the empty content, {@link RsFull}
-     *   firstly add a content length with value of 0. After that, BlobMetadataSlice
-     *   adds a content length with size of the blob found. We think that {@link RsFull}
-     *   should avoid header duplication. It should overwrite the existing one. After
-     *   fixing this issue, remove {@code new ContentLength(0)} in the test below.
-     */
     @Test
     void returnsFound() {
         final Key key = new Key.From("foo");
@@ -57,9 +49,9 @@ final class BlobMetadataSliceTest {
                     new RsHasHeaders(
                         // @checkstyle MagicNumberCheck (1 line)
                         new ContentLength(8),
-                        new ContentDisposition("attachment; filename=\"foo\""),
-                        new ContentLength(0)
-                    )
+                        new ContentDisposition("attachment; filename=\"foo\"")
+                    ),
+                    new RsHasBody(new IsAnything<>())
                 ),
                 new RequestLine(RqMethod.HEAD, "/foo")
             )
