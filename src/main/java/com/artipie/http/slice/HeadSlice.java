@@ -48,12 +48,21 @@ public final class HeadSlice implements Slice {
     private final Function<String, Key> transform;
 
     /**
+     * Other headers specific to the storage.
+     */
+    private final Function<Storage, CompletionStage<Headers>> headers;
+
+    /**
      * Slice by key from storage.
      *
      * @param storage Storage
      */
     public HeadSlice(final Storage storage) {
-        this(storage, KeyFromPath::new);
+        this(
+            storage,
+            KeyFromPath::new,
+            sto -> CompletableFuture.completedStage(Headers.EMPTY)
+        );
     }
 
     /**
@@ -61,12 +70,16 @@ public final class HeadSlice implements Slice {
      *
      * @param storage Storage
      * @param transform Transformation
+     * @param headers Additional headers
      */
     public HeadSlice(
         final Storage storage,
-        final Function<String, Key> transform) {
+        final Function<String, Key> transform,
+        final Function<Storage, CompletionStage<Headers>> headers
+    ) {
         this.storage = storage;
         this.transform = transform;
+        this.headers = headers;
     }
 
     @Override
@@ -88,13 +101,18 @@ public final class HeadSlice implements Slice {
                                     if (exist) {
                                         result = this.storage.size(key)
                                             .thenApply(
-                                                size ->
-                                                    new RsWithHeaders(
-                                                        StandardRs.OK,
-                                                        new Headers.From(
-                                                            new ContentFileName(uri),
-                                                            new ContentLength(size)
-                                                        )
+                                                size -> new RsWithHeaders(
+                                                    StandardRs.OK,
+                                                    new Headers.From(
+                                                        new ContentFileName(uri),
+                                                        new ContentLength(size)
+                                                    )
+                                                )
+                                            )
+                                            .thenCompose(
+                                                res -> this.headers.apply(this.storage)
+                                                    .thenApply(
+                                                        hds -> new RsWithHeaders(res, hds)
                                                     )
                                             );
                                     } else {
