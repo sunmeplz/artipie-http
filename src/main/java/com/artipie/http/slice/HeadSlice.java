@@ -16,11 +16,13 @@ import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithHeaders;
 import com.artipie.http.rs.StandardRs;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.reactivestreams.Publisher;
 
@@ -47,38 +49,61 @@ public final class HeadSlice implements Slice {
     private final Function<String, Key> transform;
 
     /**
-     * Other headers specific to the storage.
+     * Function to get response headers.
      */
-    private final Function<Storage, CompletionStage<Headers>> addhdrs;
+    private final BiFunction<String, Headers, CompletionStage<Headers>> resheaders;
 
     /**
-     * Slice by key from storage.
+     * Ctor.
      *
      * @param storage Storage
      */
     public HeadSlice(final Storage storage) {
         this(
             storage,
-            KeyFromPath::new,
-            sto -> CompletableFuture.completedFuture(Headers.EMPTY)
+            KeyFromPath::new
         );
     }
 
     /**
-     * Slice by key from storage using custom URI path transformation.
+     * Ctor.
      *
      * @param storage Storage
      * @param transform Transformation
-     * @param addhdrs Additional headers
+     */
+    public HeadSlice(final Storage storage, final Function<String, Key> transform) {
+        this(
+            storage,
+            transform,
+            (line, headers) -> {
+                final URI uri = new RequestLineFrom(line).uri();
+                final Key key = transform.apply(uri.getPath());
+                return storage.size(key)
+                    .thenApply(
+                        size -> new Headers.From(
+                            new ContentFileName(uri),
+                            new ContentLength(size)
+                        )
+                    );
+            }
+        );
+    }
+
+    /**
+     * Ctor.
+     *
+     * @param storage Storage
+     * @param transform Transformation
+     * @param resheaders Function to get response headers
      */
     public HeadSlice(
         final Storage storage,
         final Function<String, Key> transform,
-        final Function<Storage, CompletionStage<Headers>> addhdrs
+        final BiFunction<String, Headers, CompletionStage<Headers>> resheaders
     ) {
         this.storage = storage;
         this.transform = transform;
-        this.addhdrs = addhdrs;
+        this.resheaders = resheaders;
     }
 
     @Override
@@ -98,22 +123,11 @@ public final class HeadSlice implements Slice {
                                 exist -> {
                                     final CompletionStage<Response> result;
                                     if (exist) {
-                                        result = this.storage.size(key)
-                                            .thenApply(
-                                                size -> new RsWithHeaders(
-                                                    StandardRs.OK,
-                                                    new Headers.From(
-                                                        new ContentFileName(uri),
-                                                        new ContentLength(size)
-                                                    )
-                                                )
-                                            )
-                                            .thenCompose(
-                                                res -> this.addhdrs.apply(this.storage)
-                                                    .thenApply(
-                                                        hdrs -> new RsWithHeaders(res, hdrs)
-                                                    )
-                                            );
+                                        result = this.resheaders
+                                            .apply(line, new Headers.From(headers))
+                                                .thenApply(
+                                                    hdrs -> new RsWithHeaders(StandardRs.OK, hdrs)
+                                                );
                                     } else {
                                         result = CompletableFuture.completedFuture(
                                             new RsWithBody(
