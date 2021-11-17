@@ -11,8 +11,7 @@ import com.artipie.http.Slice;
 import com.artipie.http.rq.RequestLine;
 import com.artipie.http.rs.CachedResponse;
 import io.reactivex.Flowable;
-import org.cactoos.func.StickyFunc;
-import org.cactoos.func.UncheckedFunc;
+import java.util.function.Function;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -29,9 +28,14 @@ public final class SliceHasResponse extends TypeSafeMatcher<Slice> {
     private final Matcher<? extends Response> rsp;
 
     /**
-     * Response function from slice.
+     * Function to get response from slice.
      */
-    private final UncheckedFunc<Slice, Response> target;
+    private final Function<? super Slice, ? extends Response> responser;
+
+    /**
+     * Response cache.
+     */
+    private Response rcache;
 
     /**
      * New response matcher for slice with request line.
@@ -53,18 +57,12 @@ public final class SliceHasResponse extends TypeSafeMatcher<Slice> {
     public SliceHasResponse(final Matcher<? extends Response> rsp, final RequestLine line,
         final Headers headers, final Content body) {
         this.rsp = rsp;
-        this.target = new UncheckedFunc<>(
-            new StickyFunc<>(
-                slice -> new CachedResponse(
-                    slice.response(line.toString(), headers, body)
-                )
-            )
-        );
+        this.responser = slice -> slice.response(line.toString(), headers, body);
     }
 
     @Override
     public boolean matchesSafely(final Slice item) {
-        return this.rsp.matches(this.target.apply(item));
+        return this.rsp.matches(this.response(item));
     }
 
     @Override
@@ -74,6 +72,18 @@ public final class SliceHasResponse extends TypeSafeMatcher<Slice> {
 
     @Override
     public void describeMismatchSafely(final Slice item, final Description description) {
-        description.appendText("response was: ").appendValue(this.target.apply(item));
+        description.appendText("response was: ").appendValue(this.response(item));
+    }
+
+    /**
+     * Response for slice.
+     * @param slice Target slice
+     * @return Cached response
+     */
+    private Response response(final Slice slice) {
+        if (this.rcache == null) {
+            this.rcache = new CachedResponse(this.responser.apply(slice));
+        }
+        return this.rcache;
     }
 }

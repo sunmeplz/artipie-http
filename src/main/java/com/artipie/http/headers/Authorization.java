@@ -8,10 +8,10 @@ import com.artipie.http.Headers;
 import com.artipie.http.auth.BasicAuthScheme;
 import com.artipie.http.auth.BearerAuthScheme;
 import com.artipie.http.rq.RqHeaders;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.cactoos.text.Base64Decoded;
-import org.cactoos.text.Base64Encoded;
 
 /**
  * Authorization header.
@@ -106,7 +106,11 @@ public final class Authorization extends Header.Wrap {
          * @param password Password.
          */
         public Basic(final String username, final String password) {
-            this(new Base64Encoded(String.format("%s:%s", username, password)).toString());
+            this(
+                Base64.getEncoder().encodeToString(
+                    String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8)
+                )
+            );
         }
 
         /**
@@ -151,7 +155,10 @@ public final class Authorization extends Header.Wrap {
          * @return Tokens array.
          */
         private String[] tokens() {
-            return new Base64Decoded(this.credentials()).toString().split(":");
+            return new String(
+                Base64.getDecoder().decode(this.credentials()),
+                StandardCharsets.UTF_8
+            ).split(":");
         }
     }
 

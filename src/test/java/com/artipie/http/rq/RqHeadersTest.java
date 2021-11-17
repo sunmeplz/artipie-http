@@ -11,9 +11,9 @@ import org.cactoos.iterable.IterableOf;
 import org.cactoos.map.MapEntry;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.llorllale.cactoos.matchers.TextHasString;
 
 /**
  * Test case for {@link RqHeaders}.
@@ -52,8 +52,8 @@ public final class RqHeadersTest {
                     new MapEntry<>("Range", "100")
                 ),
                 "content-type"
-            ),
-            new TextHasString(value)
+            ).asString(),
+            new IsEqual<>(value)
         );
     }
 

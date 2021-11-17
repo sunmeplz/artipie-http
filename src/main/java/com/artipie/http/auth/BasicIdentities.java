@@ -6,9 +6,10 @@ package com.artipie.http.auth;
 
 import com.artipie.http.headers.Authorization;
 import com.artipie.http.rq.RqHeaders;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import org.cactoos.text.Base64Decoded;
 
 /**
  * BasicIdentities. Implementation of {@link Identities} for Basic authorization.
@@ -45,7 +46,8 @@ public final class BasicIdentities implements Identities {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
             .filter(hdr -> hdr.startsWith(BasicIdentities.PREFIX))
-            .map(hdr -> new Base64Decoded(hdr.substring(BasicIdentities.PREFIX.length())))
+            .map(hdr -> Base64.getDecoder().decode(hdr.substring(BasicIdentities.PREFIX.length())))
+            .map(bts -> new String(bts, StandardCharsets.UTF_8))
             .map(dec -> dec.toString().split(":"))
             .flatMap(
                 cred -> this.auth.user(cred[0].trim(), cred[1].trim())

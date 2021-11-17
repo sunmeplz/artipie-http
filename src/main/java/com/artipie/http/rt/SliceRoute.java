@@ -11,10 +11,10 @@ import com.artipie.http.rs.RsWithBody;
 import com.artipie.http.rs.RsWithStatus;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.cactoos.list.ListOf;
 import org.reactivestreams.Publisher;
 
 /**
@@ -50,7 +50,7 @@ public final class SliceRoute implements Slice {
      * @param routes Routes
      */
     public SliceRoute(final RtPath... routes) {
-        this(new ListOf<>(routes));
+        this(Arrays.asList(routes));
     }
 
     /**

@@ -7,9 +7,9 @@ package com.artipie.http.rt;
 import com.artipie.http.rq.RequestLineFrom;
 import com.artipie.http.rq.RqHeaders;
 import com.artipie.http.rq.RqMethod;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.cactoos.list.ListOf;
 
 /**
  * Routing rule.
@@ -49,7 +49,7 @@ public interface RtRule {
          * @param rules Rules array
          */
         public Multiple(final RtRule... rules) {
-            super(new ListOf<>(rules));
+            super(Arrays.asList(rules));
         }
 
         /**
@@ -77,7 +77,7 @@ public interface RtRule {
          * @param rules Rules array
          */
         public All(final RtRule... rules) {
-            this(new ListOf<>(rules));
+            this(Arrays.asList(rules));
         }
 
         /**
@@ -118,7 +118,7 @@ public interface RtRule {
          * @param rules Rules array
          */
         public Any(final RtRule... rules) {
-            this(new ListOf<>(rules));
+            this(Arrays.asList(rules));
         }
 
         /**

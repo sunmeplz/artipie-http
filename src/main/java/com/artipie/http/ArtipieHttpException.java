@@ -6,10 +6,8 @@ package com.artipie.http;
 
 import com.artipie.ArtipieException;
 import com.artipie.http.rs.RsStatus;
-import java.util.Collections;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.cactoos.map.MapEntry;
-import org.cactoos.map.MapOf;
 
 /**
  * Base HTTP exception for Artipie endpoints.
@@ -23,41 +21,39 @@ public final class ArtipieHttpException extends ArtipieException {
     /**
      * HTTP error codes reasons map.
      */
-    private static final Map<String, String> MEANINGS = Collections.unmodifiableMap(
-        new MapOf<String, String>(
-            new MapEntry<>("400", "Bad request"),
-            new MapEntry<>("401", "Unauthorized"),
-            new MapEntry<>("402", "Payment Required"),
-            new MapEntry<>("403", "Forbidden"),
-            new MapEntry<>("404", "Not Found"),
-            new MapEntry<>("405", "Method Not Allowed"),
-            new MapEntry<>("406", "Not Acceptable"),
-            new MapEntry<>("407", "Proxy Authentication Required"),
-            new MapEntry<>("408", "Request Timeout"),
-            new MapEntry<>("409", "Conflict"),
-            new MapEntry<>("410", "Gone"),
-            new MapEntry<>("411", "Length Required"),
-            new MapEntry<>("412", "Precondition Failed"),
-            new MapEntry<>("413", "Payload Too Large"),
-            new MapEntry<>("414", "URI Too Long"),
-            new MapEntry<>("415", "Unsupported Media Type"),
-            new MapEntry<>("416", "Range Not Satisfiable"),
-            new MapEntry<>("417", "Expectation Failed"),
-            new MapEntry<>("418", "I'm a teapot"),
-            new MapEntry<>("421", "Misdirected Request"),
-            new MapEntry<>("422", "Unprocessable Entity (WebDAV)"),
-            new MapEntry<>("423", "Locked (WebDAV)"),
-            new MapEntry<>("424", "Failed Dependency (WebDAV)"),
-            new MapEntry<>("425", "Too Early"),
-            new MapEntry<>("426", "Upgrade Required"),
-            new MapEntry<>("428", "Precondition Required"),
-            new MapEntry<>("429", "Too Many Requests"),
-            new MapEntry<>("431", "Request Header Fields Too Large"),
-            new MapEntry<>("451", "Unavailable For Legal Reasons"),
-            new MapEntry<>("500", "Internal Server Error"),
-            new MapEntry<>("501", "Not Implemented")
-        )
-    );
+    private static final Map<String, String> MEANINGS = new ImmutableMap.Builder<String, String>()
+        .put("400", "Bad request")
+        .put("401", "Unauthorized")
+        .put("402", "Payment Required")
+        .put("403", "Forbidden")
+        .put("404", "Not Found")
+        .put("405", "Method Not Allowed")
+        .put("406", "Not Acceptable")
+        .put("407", "Proxy Authentication Required")
+        .put("408", "Request Timeout")
+        .put("409", "Conflict")
+        .put("410", "Gone")
+        .put("411", "Length Required")
+        .put("412", "Precondition Failed")
+        .put("413", "Payload Too Large")
+        .put("414", "URI Too Long")
+        .put("415", "Unsupported Media Type")
+        .put("416", "Range Not Satisfiable")
+        .put("417", "Expectation Failed")
+        .put("418", "I'm a teapot")
+        .put("421", "Misdirected Request")
+        .put("422", "Unprocessable Entity (WebDAV)")
+        .put("423", "Locked (WebDAV)")
+        .put("424", "Failed Dependency (WebDAV)")
+        .put("425", "Too Early")
+        .put("426", "Upgrade Required")
+        .put("428", "Precondition Required")
+        .put("429", "Too Many Requests")
+        .put("431", "Request Header Fields Too Large")
+        .put("451", "Unavailable For Legal Reasons")
+        .put("500", "Internal Server Error")
+        .put("501", "Not Implemented")
+        .build();
 
     /**
      * HTTP status code for error.
