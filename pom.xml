@@ -46,6 +46,18 @@ SOFTWARE.
       <email>g4s8.public@gmail.com</email>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Olivier B. OURA</name>
+      <email>baudoliver7@gmail.com</email>
+      <organization>baudoliver7.com</organization>
+      <organizationUrl>https://www.baudoliver7.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+0</timezone>
+    </contributor>
+  </contributors>
   <scm>
     <connection>scm:git:git://github.com/artipie/http.git</connection>
     <developerConnection>scm:git:ssh://github.com:artipie/http.git</developerConnection>
