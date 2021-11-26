@@ -27,7 +27,7 @@ import org.reactivestreams.Publisher;
 
 /**
  * Slice that gzips requested content.
- * @since 1.2
+ * @since 1.1
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 final class GzipSlice implements Slice {

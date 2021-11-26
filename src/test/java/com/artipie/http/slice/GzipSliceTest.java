@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link GzipSlice}.
- * @since 0.1
+ * @since 1.1
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  * @checkstyle MagicNumberCheck (500 lines)
  */
@@ -53,14 +53,14 @@ class GzipSliceTest {
                             new ContentLength(13)
                         )
                     ),
-                    new RsHasBody(this.gzip(data))
+                    new RsHasBody(GzipSliceTest.gzip(data))
                 ),
                 new RequestLine(RqMethod.GET, "/any")
             )
         );
     }
 
-    private byte[] gzip(final byte[] data) throws IOException {
+    static byte[] gzip(final byte[] data) throws IOException {
         final ByteArrayOutputStream res = new ByteArrayOutputStream();
         try (GZIPOutputStream gzos = new GZIPOutputStream(res)) {
             gzos.write(data);
