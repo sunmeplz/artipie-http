@@ -8,7 +8,10 @@ import com.google.common.base.Splitter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -55,27 +58,54 @@ public final class RqParams {
         if (this.query == null) {
             result = Optional.empty();
         } else {
-            result = StreamSupport.stream(
-                Splitter.on("&").omitEmptyStrings().split(this.query).spliterator(),
-                false
-            ).flatMap(
-                param -> {
-                    final String prefix = String.format("%s=", name);
-                    final Stream<String> value;
-                    if (param.startsWith(prefix)) {
-                        value = Stream.of(param.substring(prefix.length()));
-                    } else {
-                        value = Stream.empty();
-                    }
-                    return value;
-                }
-            ).findFirst();
+            result = this.findValues(name).findFirst();
         }
-        return result.map(RqParams::decode);
+        return result;
+    }
+
+    /**
+     * Get values for parameter value by name.
+     * Empty {@link List} is returned if parameter not found.
+     * Return List with all founded values if parameters with same name present in query
+     *
+     * @param name Parameter name.
+     * @return List of Parameter values
+     */
+    public List<? extends String> values(final String name) {
+        final List<String> results;
+        if (this.query == null) {
+            results = Collections.emptyList();
+        } else {
+            results = this.findValues(name).collect(Collectors.toList());
+        }
+        return results;
+    }
+
+    /**
+     * Find in query all values for given parameter name.
+     * @param name Parameter name
+     * @return Stream {@link Stream} of found values
+     */
+    private Stream<String> findValues(final String name) {
+        return StreamSupport.stream(
+            Splitter.on("&").omitEmptyStrings().split(this.query).spliterator(), false
+        ).flatMap(
+            param -> {
+                final String prefix = String.format("%s=", name);
+                final Stream<String> value;
+                if (param.startsWith(prefix)) {
+                    value = Stream.of(param.substring(prefix.length()));
+                } else {
+                    value = Stream.empty();
+                }
+                return value;
+            }
+        ).map(RqParams::decode);
     }
 
     /**
      * Decode string using URL-encoding.
+     *
      * @param enc Encoded string
      * @return Decoded string
      */
