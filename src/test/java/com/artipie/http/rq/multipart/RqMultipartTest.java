@@ -9,11 +9,13 @@ import com.artipie.asto.ext.PublisherAs;
 import com.artipie.asto.test.TestResource;
 import com.artipie.http.headers.ContentDisposition;
 import com.artipie.http.headers.ContentType;
+import com.artipie.http.rq.RqHeaders;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import org.reactivestreams.Publisher;
 /**
  * Test case for multipart request parser.
  * @since 1.0
+ * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 final class RqMultipartTest {
@@ -132,6 +135,7 @@ final class RqMultipartTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     void readOnePartOfRequest() {
         // @checkstyle LineLengthCheck (100 lines)
         final String payload = String.join(
@@ -211,6 +215,52 @@ final class RqMultipartTest {
     }
 
     @Test
+    void inspectParts() {
+        final String payload = String.join(
+            "\r\n",
+            "--bnd123",
+            "Test: 1",
+            "",
+            "data-1",
+            "--bnd123",
+            "Test: 2",
+            "",
+            "data-2",
+            "--bnd123",
+            "Test: 3",
+            "",
+            "data-3",
+            "",
+            "--bnd123--"
+        );
+        final List<String> parts = Flowable.fromPublisher(
+            new RqMultipart(
+                new ContentType("multipart/mixed; boundary=\"bnd123\""),
+                new Content.From(payload.getBytes(StandardCharsets.US_ASCII))
+            ).inspect(
+                (part, inspector) -> {
+                    if (new RqHeaders(part.headers(), "Test").get(0).equals("2")) {
+                        inspector.accept(part);
+                    } else {
+                        inspector.ignore(part);
+                    }
+                    final CompletableFuture<Void> res = new CompletableFuture<>();
+                    res.complete(null);
+                    return res;
+                }
+            )
+        ).flatMapSingle(
+            part -> Single.fromFuture(new PublisherAs(part).asciiString().toCompletableFuture())
+        ).toList().blockingGet();
+        MatcherAssert.assertThat("parts must have one element", parts, Matchers.hasSize(1));
+        MatcherAssert.assertThat(
+            "part element must have correct body",
+            parts.get(0),
+            Matchers.equalTo("data-2")
+        );
+    }
+
+    @Test
     void parseCondaPayload() throws Exception {
         final byte[] payload = new TestResource("multipart").asBytes();
         final int size = Flowable.fromPublisher(
@@ -218,7 +268,8 @@ final class RqMultipartTest {
                 new ContentType("multipart/mixed; boundary=\"92fd51d48f874720a066238b824c0146\""),
                 new Content.From(payload)
             ).parts()
-        ).flatMap(Flowable::fromPublisher).reduce(0, (acc, chunk) -> acc + chunk.remaining()).blockingGet();
+        ).flatMap(Flowable::fromPublisher)
+            .reduce(0, (acc, chunk) -> acc + chunk.remaining()).blockingGet();
         // @checkstyle MagicNumberCheck (1 line)
         MatcherAssert.assertThat(size, Matchers.equalTo(4163));
     }

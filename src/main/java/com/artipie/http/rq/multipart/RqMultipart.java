@@ -9,8 +9,12 @@ import com.artipie.http.ArtipieHttpException;
 import com.artipie.http.Headers;
 import com.artipie.http.headers.ContentType;
 import com.artipie.http.rs.RsStatus;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
 import org.reactivestreams.Publisher;
 import wtf.g4s8.mime.MimeType;
@@ -75,24 +79,50 @@ public final class RqMultipart {
     }
 
     /**
+     * Inspect all parts of multipart request.
+     * <p>
+     * This method uses {@code Inspector} function as parameter to
+     * construct result publisher. Inspector receives all parts one by one
+     * with sink parameter for downstream. Inspector MUST exlplicitly accept or
+     * ignore each part, in case if some part is not accepter or ignored,
+     * publisher WILL fail with exception. All accepted parts will be sent to
+     * downstream publisher one by one depends on downstream processing logic.
+     * In case if inspector replaces the body of some part on accept or ignore calls,
+     * it MUST ensure that origin part publisher will be read either directly in
+     * insepct method or later with replaced publisher (e.g. valid replacement could
+     * be a {@code map()} function called on origin publisher).
+     * </p>
+     * @param inspector Function to inspect the part
+     * @return Accepted parts by inspector
+     */
+    public Publisher<? extends Part> inspect(final Inspector inspector) {
+        return Flowable.fromPublisher(this.parts()).flatMapSingle(
+            part -> {
+                final InternalSink sink = new InternalSink();
+                return Completable.fromFuture(inspector.inspect(part, sink).toCompletableFuture())
+                    .andThen(sink.filter());
+            }
+        ).filter(part -> part != Part.EMPTY);
+    }
+
+    /**
      * Filter parts by headers predicate.
      * @param pred Headers predicate
      * @return Parts publisher
+     * @deprecated Use inspect method directly, see #418 ticket for details
      */
-    public Publisher<Part> filter(final Predicate<Headers> pred) {
-        return Flowable.fromPublisher(this.parts()).map(
-            part -> {
-                final Part result;
+    @Deprecated
+    public Publisher<? extends Part> filter(final Predicate<Headers> pred) {
+        return this.inspect(
+            (part, sink) -> {
                 if (pred.test(part.headers())) {
-                    result = part;
+                    sink.accept(part);
                 } else {
-                    result = new EmptyPart(
-                        Flowable.fromPublisher(part)
-                            .ignoreElements().toFlowable()
-                            .cast(ByteBuffer.class)
-                    );
+                    sink.ignore(part);
                 }
-                return result;
+                final CompletableFuture<Void> res = new CompletableFuture<>();
+                res.complete(null);
+                return res;
             }
         );
     }
@@ -119,10 +149,125 @@ public final class RqMultipart {
     public interface Part extends Publisher<ByteBuffer> {
 
         /**
+         * Empty part.
+         */
+        Part EMPTY = new EmptyPart(Flowable.never());
+
+        /**
          * Part headers.
          *
          * @return Headers
          */
         Headers headers();
+    }
+
+    /**
+     * A function which inspects upstream parts.
+     *
+     * @implNote it MUST either
+     * accept or ignore each part using sink downstream. In case if
+     * some part is not accepted or ignored, the publisher WILL fail
+     * with exception.
+     * @implNote Sink parameter is not thread safe - do not try to
+     * update its state asynchronously, update should be finished
+     * before result future completes.
+     * @since 1.1
+     */
+    @FunctionalInterface
+    public interface Inspector {
+
+        /**
+         * Inspect a part and report the result to sink.
+         * @param part Upstream part
+         * @param sink Downstream sink
+         * @return Future on complete
+         */
+        CompletionStage<Void> inspect(Part part, Sink sink);
+    }
+
+    /**
+     * Inspection sink.
+     * <p>
+     * Provides the methods for accepting or ignoring upstream items.
+     * </p>
+     * @since 1.1
+     */
+    public interface Sink {
+
+        /**
+         * Accept item for downstream.
+         * @param part Part for downstream
+         */
+        void accept(Part part);
+
+        /**
+         * Ignore item.
+         * @param part Part will be drained and ignored
+         */
+        void ignore(Part part);
+    }
+
+    /**
+     * Internal sink implementation to keep parts in memory.
+     * @since 1.1
+     */
+    private static final class InternalSink implements Sink {
+
+        /**
+         * Accepted item.
+         */
+        private Part accepted;
+
+        /**
+         * Ignored item.
+         */
+        private Part ignored;
+
+        @Override
+        public void accept(final Part part) {
+            this.check();
+            this.accepted = part;
+        }
+
+        @Override
+        public void ignore(final Part part) {
+            this.check();
+            this.ignored = part;
+        }
+
+        /**
+         * Create filter single source which either returns accepted item, or
+         * drain ignored item and return empty after that.
+         * @return Single source
+         * @checkstyle ReturnCountCheck (20 lines)
+         */
+        @SuppressWarnings({"PMD.ConfusingTernary", "PMD.OnlyOneReturn"})
+        Single<? extends Part> filter() {
+            if (this.accepted != null) {
+                return Single.just(this.accepted);
+            } else if (this.ignored != null) {
+                return Flowable.fromPublisher(this.ignored)
+                    .ignoreElements().toSingleDefault(Part.EMPTY);
+            } else {
+                return Single.error(
+                    () -> new IllegalStateException(
+                        "Part should be accepted or ignored explicitly"
+                    )
+                );
+            }
+        }
+
+        /**
+         * Check if part was accepted or rejected.
+         * @param err
+         */
+        private void check() {
+            if (this.accepted != null) {
+                throw new IllegalStateException("Part was accepted already");
+            }
+            if (this.ignored != null) {
+                throw new IllegalStateException("Part was ignored already");
+            }
+        }
     }
 }
