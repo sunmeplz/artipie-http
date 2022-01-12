@@ -1,3 +1,16 @@
+## v1.1
+
+ - 66a3270 - feat(multipart): inspect method for RqMultipart (#419)
+   by Kirill <g4s8.public@gmail.com>
+ - 4074d32 - feat: add RqParams values method (#416)
+   by Yuurga <yuurga@gmail.com>
+ - 1a64baa - feat: added `WithGzipSlice` (#408)
+   by Alena <olena.gerasimova@gmail.com>
+ - a512977 - feat: add GzipSlice (#405)
+   by Alena <olena.gerasimova@gmail.com>
+ - bffdac4 - docs: add baudoliver7 as contributor (#403)
+   by Olivier Baudouin OURA <baudoliver7@gmail.com>
+
 ## v0.26
 
  - 03a19bd deps: bump asto from v1.5.1 to v1.8.0 (#395)
