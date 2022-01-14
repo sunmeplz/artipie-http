@@ -104,7 +104,7 @@ SOFTWARE.
     <dependency>
       <groupId>wtf.g4s8</groupId>
       <artifactId>mime</artifactId>
-      <version>v2.2</version>
+      <version>v2.3.2+java8</version>
     </dependency>
     <!-- Test only dependencies -->
     <dependency>
@@ -194,6 +194,17 @@ SOFTWARE.
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.5.13</version>
+    </dependency>
+    <!-- integration tests -->
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>5.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5-fluent</artifactId>
+      <version>5.1.2</version>
     </dependency>
   </dependencies>
   <build>
