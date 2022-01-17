@@ -31,6 +31,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
@@ -123,6 +124,60 @@ final class MultipartITCase {
         }
         MatcherAssert.assertThat(
             "content data should be parsed correctly", result.get(), Matchers.equalTo(data)
+        );
+    }
+
+    @Test
+    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
+    void parseBigMultiparRequest() throws Exception {
+        final AtomicReference<String> result = new AtomicReference<>();
+        this.container.deploy(
+            (line, headers, body) -> new AsyncResponse(
+                new PublisherAs(
+                    Flowable.fromPublisher(
+                        new RqMultipart(new Headers.From(headers), body).inspect(
+                            (part, sink) -> {
+                                final ContentDisposition cds =
+                                    new ContentDisposition(part.headers());
+                                if (cds.fieldName().equals("content")) {
+                                    sink.accept(part);
+                                } else {
+                                    sink.ignore(part);
+                                }
+                                final CompletableFuture<Void> res = new CompletableFuture<>();
+                                res.complete(null);
+                                return res;
+                            }
+                        )
+                    ).flatMap(part -> part)
+                ).asciiString().thenAccept(result::set).thenApply(
+                    none -> StandardRs.OK
+                )
+            )
+        );
+        final byte[] buf = new byte[1024*17];
+        final byte[] chunk = "0123456789ABCDEF\n".getBytes(StandardCharsets.US_ASCII);
+        for (int i = 0; i < buf.length; i += chunk.length) {
+            System.arraycopy(chunk, 0, buf, i, chunk.length);
+        }
+        try (CloseableHttpClient cli = HttpClients.createDefault()) {
+            final HttpPost post = new HttpPost(String.format("http://localhost:%d/", this.port));
+            post.setEntity(
+                MultipartEntityBuilder.create()
+                    .addTextBody("name", "test-data")
+                    .addBinaryBody("content", buf)
+                    .addTextBody("foo", "bar")
+                    .build()
+            );
+            try (CloseableHttpResponse rsp = cli.execute(post)) {
+                MatcherAssert.assertThat(
+                    // @checkstyle MagicNumberCheck (1 line)
+                    "code should be 200", rsp.getCode(), Matchers.equalTo(200)
+                );
+            }
+        }
+        MatcherAssert.assertThat(
+            "content data should be parsed correctly", result.get(), Matchers.equalTo(new String(buf, StandardCharsets.US_ASCII))
         );
     }
 
