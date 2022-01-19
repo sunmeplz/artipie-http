@@ -37,32 +37,32 @@ final class State {
     /**
      * Initial state.
      */
-    private static final int INIT = 0;
+    private static final int INIT = 1;
 
     /**
      * Processing preamble.
      */
-    private static final int PREAMBLE = 1;
+    private static final int PREAMBLE = 1 << 1;
 
     /**
      * Processing part.
      */
-    private static final int PART = 1 << 1;
+    private static final int PART = 1 << 2;
 
     /**
      * Finished part.
      */
-    private static final int END = 1 << 2;
+    private static final int END = 1 << 3;
 
     /**
      * Starting part.
      */
-    private static final int START = 1 << 3;
+    private static final int START = 1 << 4;
 
     /**
      * Processing epilogue.
      */
-    private static final int EPILOGUE = 1 << 4;
+    private static final int EPILOGUE = 1 << 5;
 
     /**
      * Patch factories for multipart chunks.
@@ -71,6 +71,7 @@ final class State {
         Collections.unmodifiableList(
             Arrays.asList(
                 (buf, end) -> Patch.equal(State.INIT).addFlags(State.PREAMBLE),
+                (buf, end) -> Patch.hasFlag(State.INIT).removeFlags(State.INIT),
                 (buf, end) -> Patch.hasFlag(State.START).removeFlags(State.START),
                 (buf, end) -> Patch.equal(State.INIT).addFlags(State.START),
                 (buf, end) -> Patch.hasFlag(State.END).addFlags(State.START),
@@ -112,19 +113,49 @@ final class State {
     private volatile int flags;
 
     /**
+     * New init state.
+     */
+    State() {
+        this.flags = State.INIT;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder res = new StringBuilder(38);
+        if (this.hasFlag(State.INIT)) {
+            res.append("INIT,");
+        }
+        if (this.hasFlag(State.PREAMBLE)) {
+            res.append("PREAMBLE,");
+        }
+        if (this.hasFlag(State.PART)) {
+            res.append("PART,");
+        }
+        if (this.hasFlag(State.END)) {
+            res.append("END,");
+        }
+        if (this.hasFlag(State.START)) {
+            res.append("START,");
+        }
+        if (this.hasFlag(State.EPILOGUE)) {
+            res.append("EPILOGUE,");
+        }
+        return res.toString();
+    }
+
+    /**
      * Patch current state with new chunk.
      * @param buf Next chunk
      * @param end End of part
      */
     void patch(final ByteBuffer buf, final boolean end) {
-        State.PATCHERS.stream()
-            .map(factory -> factory.apply(buf, end))
-            .filter(patch -> patch.test(this.flags))
-            .forEach(
-                patch -> {
-                    this.flags = patch.applyAsInt(this.flags);
-                }
-            );
+        for (final BiFunction<ByteBuffer, Boolean, Patch> patcher : State.PATCHERS) {
+            final ByteBuffer copy = buf.duplicate();
+            final Patch patch = patcher.apply(copy, end);
+            if (patch.test(this.flags)) {
+                this.flags = patch.applyAsInt(this.flags);
+            }
+        }
     }
 
     /**
@@ -141,7 +172,7 @@ final class State {
      * @return True if current state is initial
      */
     boolean isInit() {
-        return (this.flags & State.INIT) == State.INIT;
+        return this.hasFlag(State.INIT);
     }
 
     /**
@@ -149,7 +180,7 @@ final class State {
      * @return True if in start
      */
     boolean started() {
-        return (this.flags & State.START) == State.START;
+        return this.hasFlag(State.START);
     }
 
     /**
@@ -157,7 +188,16 @@ final class State {
      * @return True if in the end
      */
     boolean ended() {
-        return (this.flags & State.END) == State.END;
+        return this.hasFlag(State.END);
+    }
+
+    /**
+     * Check state has flag.
+     * @param flag Flag to check
+     * @return True if has
+     */
+    private boolean hasFlag(final int flag) {
+        return (this.flags & flag) == flag;
     }
 
     /**

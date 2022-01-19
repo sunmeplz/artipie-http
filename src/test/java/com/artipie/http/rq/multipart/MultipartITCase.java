@@ -31,7 +31,6 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
@@ -155,10 +154,11 @@ final class MultipartITCase {
                 )
             )
         );
-        final byte[] buf = new byte[1024*17];
+        // @checkstyle MagicNumberCheck (1 line)
+        final byte[] buf = new byte[2048 * 17];
         final byte[] chunk = "0123456789ABCDEF\n".getBytes(StandardCharsets.US_ASCII);
-        for (int i = 0; i < buf.length; i += chunk.length) {
-            System.arraycopy(chunk, 0, buf, i, chunk.length);
+        for (int pos = 0; pos < buf.length; pos += chunk.length) {
+            System.arraycopy(chunk, 0, buf, pos, chunk.length);
         }
         try (CloseableHttpClient cli = HttpClients.createDefault()) {
             final HttpPost post = new HttpPost(String.format("http://localhost:%d/", this.port));
@@ -177,7 +177,9 @@ final class MultipartITCase {
             }
         }
         MatcherAssert.assertThat(
-            "content data should be parsed correctly", result.get(), Matchers.equalTo(new String(buf, StandardCharsets.US_ASCII))
+            "content data should be parsed correctly",
+            result.get(),
+            Matchers.equalTo(new String(buf, StandardCharsets.US_ASCII))
         );
     }
 
