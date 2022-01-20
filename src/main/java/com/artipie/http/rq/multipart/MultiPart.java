@@ -19,6 +19,7 @@ import org.reactivestreams.Subscription;
 /**
  * Multipart request part.
  * @since 1.0
+ * @checkstyle MethodBodyCommentsCheck (500 lines)
  */
 @SuppressWarnings("PMD.NullAssignment")
 final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver, Subscription {
@@ -189,6 +190,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 this.nextChunk(chunk);
             } else {
                 this.tokenizer.push(chunk);
+                // head flag could be changed to true after processing chunk
                 if (this.head) {
                     this.tokenizer.close();
                 }

@@ -35,14 +35,6 @@ final class MultiPartTest {
                     "\": \"b", "ar\", ", "\"val\": [4]}"
                 )) {
                     part.push(ByteBuffer.wrap(chunk.getBytes(StandardCharsets.US_ASCII)));
-                    try {
-                        // @checkstyle MagicNumberCheck (1 line)
-                        Thread.sleep(100L);
-                    } catch (final InterruptedException ignore) {
-                        Thread.currentThread().interrupt();
-                        part.cancel();
-                        return;
-                    }
                 }
                 part.flush();
             }
