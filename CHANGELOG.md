@@ -1,4 +1,13 @@
-## v1.1
+## v1.1.1
+
+ - 5daf8ca - fix(multipart): remove init multipart flag
+   by Kirill <g4s8.public@gmail.com>
+ - 028c569 - test: reproduce multipart body corruption
+   by Kirill <g4s8.public@gmail.com>
+ - c6309c8 - test(multipart): integration test for multipart
+   by Kirill <g4s8.public@gmail.com>
+
+## v1.1.0
 
  - 66a3270 - feat(multipart): inspect method for RqMultipart (#419)
    by Kirill <g4s8.public@gmail.com>
