@@ -45,6 +45,26 @@ class RsHasHeadersTest {
     }
 
     @Test
+    void shouldMatchOneHeader() {
+        final MapEntry<String, String> header = new MapEntry<>(
+            "header1", "value1"
+        );
+        final Response response = new RsWithHeaders(
+            new RsWithStatus(RsStatus.OK),
+            Arrays.asList(
+                header,
+                new MapEntry<>("header2", "value2"),
+                new MapEntry<>("header3", "value3")
+            )
+        );
+        final RsHasHeaders matcher = new RsHasHeaders(header);
+        MatcherAssert.assertThat(
+            matcher.matches(response),
+            new IsEqual<>(true)
+        );
+    }
+
+    @Test
     void shouldNotMatchNotMatchingHeaders() {
         final Response response = new RsWithStatus(RsStatus.OK);
         final RsHasHeaders matcher = new RsHasHeaders(

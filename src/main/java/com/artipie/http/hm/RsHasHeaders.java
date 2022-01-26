@@ -22,7 +22,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.core.IsEqual;
 import org.reactivestreams.Publisher;
 
 /**
@@ -35,7 +34,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
     /**
      * Headers matcher.
      */
-    private final Matcher<Iterable<? extends Entry<String, String>>> headers;
+    private final Matcher<? extends Iterable<? extends Entry<String, String>>> headers;
 
     /**
      * Ctor.
@@ -53,13 +52,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
      * @param headers Expected header matchers in any order.
      */
     public RsHasHeaders(final Iterable<? extends Entry<String, String>> headers) {
-        this(
-            Matchers.containsInAnyOrder(
-                StreamSupport.stream(headers.spliterator(), false).<Entry<String, String>>map(
-                    original -> new Header(original.getKey(), original.getValue())
-                ).map(IsEqual::new).collect(Collectors.toList())
-            )
-        );
+        this(transform(headers));
     }
 
     /**
@@ -69,7 +62,7 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
      */
     @SafeVarargs
     public RsHasHeaders(final Matcher<? super Entry<String, String>>... headers) {
-        this(Matchers.<Entry<String, String>>containsInAnyOrder(Arrays.asList(headers)));
+        this(Matchers.hasItems(headers));
     }
 
     /**
@@ -77,7 +70,9 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
      *
      * @param headers Headers matcher
      */
-    public RsHasHeaders(final Matcher<Iterable<? extends Entry<String, String>>> headers) {
+    public RsHasHeaders(
+        final Matcher<? extends Iterable<? extends Entry<String, String>>> headers
+    ) {
         this.headers = headers;
     }
 
@@ -101,6 +96,29 @@ public final class RsHasHeaders extends TypeSafeMatcher<Response> {
             StreamSupport.stream(out.get().spliterator(), false)
                 .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(";"))
+        );
+    }
+
+    /**
+     * Transforms expected headers to expected header matchers.
+     * This method is necessary to avoid compilation error.
+     *
+     * @param headers Expected headers in any order.
+     * @return Expected header matchers in any order.
+     */
+    private static Matcher<? extends Iterable<Entry<String, String>>> transform(
+        final Iterable<? extends Entry<String, String>> headers
+    ) {
+        return Matchers.allOf(
+            StreamSupport.stream(headers.spliterator(), false)
+                .<Entry<String, String>>map(
+                    original -> new Header(
+                        original.getKey(),
+                        original.getValue()
+                    )
+                )
+                .map(Matchers::hasItem)
+                .collect(Collectors.toList())
         );
     }
 
