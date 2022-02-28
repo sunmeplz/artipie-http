@@ -5,6 +5,7 @@
 package com.artipie.http.slice;
 
 import com.artipie.asto.Key;
+import com.artipie.asto.Meta;
 import com.artipie.asto.Storage;
 import com.artipie.http.Headers;
 import com.artipie.http.Response;
@@ -78,8 +79,11 @@ public final class HeadSlice implements Slice {
             (line, headers) -> {
                 final URI uri = new RequestLineFrom(line).uri();
                 final Key key = transform.apply(uri.getPath());
-                return storage.size(key)
+                return storage.metadata(key)
                     .thenApply(
+                        meta -> meta.read(Meta.OP_SIZE)
+                            .orElseThrow(() -> new IllegalStateException())
+                    ).thenApply(
                         size -> new Headers.From(
                             new ContentFileName(uri),
                             new ContentLength(size)
