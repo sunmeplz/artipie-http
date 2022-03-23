@@ -10,7 +10,6 @@ import com.artipie.http.misc.ByteBufferTokenizer;
 import com.artipie.http.misc.DummySubscription;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import net.jcip.annotations.GuardedBy;
 import org.reactivestreams.Subscriber;
@@ -23,11 +22,6 @@ import org.reactivestreams.Subscription;
  */
 @SuppressWarnings("PMD.NullAssignment")
 final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver, Subscription {
-
-    /**
-     * Shared executor service.
-     */
-    private static final ExecutorService EXEC = Executors.newCachedThreadPool();
 
     /**
      * Header buffer capacity.
@@ -49,6 +43,11 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      */
     @GuardedBy("lock")
     private final ByteBufferTokenizer tokenizer;
+
+    /**
+     * Part processor executor.
+     */
+    private final ExecutorService exec;
 
     /**
      * Multipart header.
@@ -109,8 +108,10 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
      * New multipart request part.
      * @param completion Upstream completion handler
      * @param ready Ready callback
+     * @param exec Executor service
      */
-    MultiPart(final Completion<?> completion, final Consumer<? super RqMultipart.Part> ready) {
+    MultiPart(final Completion<?> completion, final Consumer<? super RqMultipart.Part> ready,
+        final ExecutorService exec) {
         this.ready = ready;
         this.completion = completion;
         this.tokenizer = new ByteBufferTokenizer(
@@ -119,6 +120,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
         this.hdr = new MultipartHeaders(MultiPart.CAP_HEADER);
         this.tmpacc = new BufAccumulator(MultiPart.CAP_HEADER);
         this.lock = new Object();
+        this.exec = exec;
     }
 
     @Override
@@ -169,7 +171,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 this.demand += amt;
             }
         }
-        MultiPart.EXEC.submit(this::deliver);
+        this.exec.submit(this::deliver);
     }
 
     @Override
@@ -206,7 +208,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
                 this.tokenizer.close();
             }
             this.completed = true;
-            MultiPart.EXEC.submit(this::deliver);
+            this.exec.submit(this::deliver);
         }
     }
 
@@ -217,7 +219,7 @@ final class MultiPart implements RqMultipart.Part, ByteBufferTokenizer.Receiver,
     private void nextChunk(final ByteBuffer next) {
         this.tmpacc.write(next);
         if (this.downstream != null) {
-            MultiPart.EXEC.submit(this::deliver);
+            this.exec.submit(this::deliver);
         }
     }
 

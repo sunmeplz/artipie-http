@@ -44,7 +44,10 @@ public final class MultiPartTckTest extends PublisherVerification<ByteBuffer> {
     @Override
     public Publisher<ByteBuffer> createPublisher(final long size) {
         final SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
-        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess);
+        final MultiPart part = new MultiPart(
+            Completion.FAKE, subj::onSuccess,
+            Executors.newCachedThreadPool()
+        );
         Executors.newCachedThreadPool().submit(
             () -> {
                 part.push(ByteBuffer.wrap("\r\n\r\n".getBytes()));

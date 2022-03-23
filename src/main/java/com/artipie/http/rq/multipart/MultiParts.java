@@ -26,6 +26,11 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
     ByteBufferTokenizer.Receiver {
 
     /**
+     * Cached thread pool for parts processing.
+     */
+    private static final ExecutorService CACHED_PEXEC = Executors.newCachedThreadPool();
+
+    /**
      * Upstream downstream pipeline.
      */
     private final Pipeline<RqMultipart.Part> pipeline;
@@ -39,6 +44,11 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
      * Subscription executor service.
      */
     private final ExecutorService exec;
+
+    /**
+     * Part executor service.
+     */
+    private final ExecutorService pexec;
 
     /**
      * State synchronization.
@@ -65,6 +75,15 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
      * @param boundary Boundary token delimiter of parts
      */
     MultiParts(final String boundary) {
+        this(boundary, MultiParts.CACHED_PEXEC);
+    }
+
+    /**
+     * New multipart parts publisher for upstream publisher.
+     * @param boundary Boundary token delimiter of parts
+     * @param pexec Parts processing executor
+     */
+    MultiParts(final String boundary, final ExecutorService pexec) {
         this.tokenizer = new ByteBufferTokenizer(
             this, boundary.getBytes(StandardCharsets.US_ASCII)
         );
@@ -73,6 +92,7 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
         this.completion = new Completion<>(this.pipeline);
         this.state = new State();
         this.lock = new Object();
+        this.pexec = pexec;
     }
 
     /**
@@ -135,7 +155,8 @@ final class MultiParts implements Processor<ByteBuffer, RqMultipart.Part>,
                 this.completion.itemStarted();
                 this.current = new MultiPart(
                     this.completion,
-                    part -> this.exec.submit(() -> this.pipeline.onNext(part))
+                    part -> this.exec.submit(() -> this.pipeline.onNext(part)),
+                    this.pexec
                 );
             }
             this.current.push(next);

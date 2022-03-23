@@ -10,9 +10,13 @@ import io.reactivex.subjects.SingleSubject;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -23,10 +27,26 @@ import org.junit.jupiter.api.Timeout;
  */
 final class MultiPartTest {
 
+    /**
+     * Multi part processor executor.
+     */
+    private ExecutorService exec;
+
+    @BeforeEach
+    void setUp() {
+        this.exec = Executors.newCachedThreadPool();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        this.exec.shutdown();
+        this.exec.awaitTermination(1, TimeUnit.SECONDS);
+    }
+
     @Test
     void parsePart() throws Exception {
         final SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
-        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess);
+        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess, this.exec);
         Executors.newCachedThreadPool().submit(
             () -> {
                 for (final String chunk : Arrays.asList(
@@ -51,7 +71,7 @@ final class MultiPartTest {
     @Timeout(1)
     void parseEmptyBody() throws Exception {
         final SingleSubject<RqMultipart.Part> subj = SingleSubject.create();
-        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess);
+        final MultiPart part = new MultiPart(Completion.FAKE, subj::onSuccess, this.exec);
         Executors.newCachedThreadPool().submit(
             () -> {
                 part.push(
