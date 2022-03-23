@@ -1,3 +1,28 @@
+## v1.1.3
+
+ - ff0bd9a - fix(multipart): use shared thread pool (#442)
+   by Kirill <g4s8.public@gmail.com>
+ - 9236082 - deps: bump vertx-web-client from 4.2.1 to 4.2.5 (#436)
+   by dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+ - 3472bb2 - deps: bump jetty-server from 10.0.7 to 10.0.8 (#440)
+   by dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+ - e27879d - deps: bump jetty-servlet from 10.0.7 to 10.0.8 (#439)
+   by dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+ - e0d8e35 - deps: bump httpclient5-fluent from 5.1.2 to 5.1.3 (#438)
+   by dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+ - 9848a4a - deps: bump asto from v1.9.0 to v1.11.0 (#437)
+   by Kirill <g4s8.public@gmail.com>
+ - bb6159a - fix: use shared thread pool for multipart (#435)
+   by kirill-h5i <72436338+kirill-h5i@users.noreply.github.com>
+ - 31a92fd - test(multipart): multipart - storage integratin (#433)
+   by Kirill <g4s8.public@gmail.com>
+ - 9842050 - deps: bump vertx-server from 0.5 to 1.0.0 (#431)
+   by dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+ - 340d89b - fix: RsHasHeader should check one header among multiple ones. (#427)
+   by Denis Garus <garus.d.g@gmail.com>
+ - 6a81452 - feat: return a list of the files present in a directory (#415)
+   by Denis Garus <garus.d.g@gmail.com>
+
 ## v1.1.1
 
  - 5daf8ca - fix(multipart): remove init multipart flag
