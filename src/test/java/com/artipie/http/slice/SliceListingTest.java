@@ -48,7 +48,7 @@ class SliceListingTest {
     void responseTextType(final String path, final String body) {
         MatcherAssert.assertThat(
             new SliceListing(this.storage, "text/plain", ListingFormat.Standard.TEXT).response(
-                get(path), Collections.emptyList(), Flowable.empty()
+                rqLineFrom(path), Collections.emptyList(), Flowable.empty()
             ),
             new ResponseMatcher(
                 RsStatus.OK,
@@ -71,7 +71,7 @@ class SliceListingTest {
         ).build().toString();
         MatcherAssert.assertThat(
             new SliceListing(this.storage, "application/json", ListingFormat.Standard.JSON)
-                .response(get("one/"), Collections.emptyList(), Flowable.empty()),
+                .response(rqLineFrom("one/"), Collections.emptyList(), Flowable.empty()),
             new ResponseMatcher(
                 RsStatus.OK,
                 Arrays.asList(
@@ -86,7 +86,7 @@ class SliceListingTest {
         );
     }
 
-    private static String get(final String path) {
+    private static String rqLineFrom(final String path) {
         return new RequestLine("GET", path, "HTTP/1.1").toString();
     }
 }
