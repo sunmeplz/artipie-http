@@ -31,10 +31,6 @@ import org.reactivestreams.Publisher;
  * and use it to access storage.
  * </p>
  * @since 1.1.1
- * @todo #158:30min Test SliceListing when listing blobs.
- *  We should test that the type and value of response's content
- *  are correct when we make a request by prefixing in simple text and in JSON
- *  formats.
  * @todo #158:30min Implement HTML standard format.
  *  Currently we have standard enum implementations for simple text and json,
  *  we need implement enum item for HTML format.
