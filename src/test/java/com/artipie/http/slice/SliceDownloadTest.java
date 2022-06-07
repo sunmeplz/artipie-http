@@ -37,17 +37,17 @@ public final class SliceDownloadTest {
         storage.save(new Key.From(path), new Content.From(data)).get();
         MatcherAssert.assertThat(
             new SliceDownload(storage).response(
-                get("/one/two/target.txt"), Collections.emptyList(), Flowable.empty()
+                rqLineFrom("/one/two/target.txt"), Collections.emptyList(), Flowable.empty()
             ),
             new RsHasBody(data)
         );
     }
 
     @Test
-    void returnsNotFoundIfKeyDoesntExist() throws Exception {
+    void returnsNotFoundIfKeyDoesntExist() {
         MatcherAssert.assertThat(
             new SliceDownload(new InMemoryStorage()).response(
-                get("/not-exists"), Collections.emptyList(), Flowable.empty()
+                rqLineFrom("/not-exists"), Collections.emptyList(), Flowable.empty()
             ),
             new RsHasStatus(RsStatus.NOT_FOUND)
         );
@@ -61,7 +61,7 @@ public final class SliceDownloadTest {
         storage.save(new Key.From(path), new Content.From(body)).get();
         MatcherAssert.assertThat(
             new SliceDownload(storage).response(
-                get("/empty.txt"), Collections.emptyList(), Flowable.empty()
+                rqLineFrom("/empty.txt"), Collections.emptyList(), Flowable.empty()
             ),
             new ResponseMatcher(body)
         );
@@ -75,7 +75,7 @@ public final class SliceDownloadTest {
         storage.save(new Key.From(path), new Content.From(data)).get();
         MatcherAssert.assertThat(
             new SliceDownload(storage).response(
-                get(path),
+                rqLineFrom(path),
                 Collections.emptyList(),
                 Flowable.empty()
             ),
@@ -86,7 +86,7 @@ public final class SliceDownloadTest {
         );
     }
 
-    private static String get(final String path) {
+    private static String rqLineFrom(final String path) {
         return new RequestLine("GET", path, "HTTP/1.1").toString();
     }
 }
