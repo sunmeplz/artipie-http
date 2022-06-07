@@ -32,10 +32,11 @@ class SliceListingTest {
     /**
      * Storage.
      */
-    private final Storage storage = new InMemoryStorage();
+    private Storage storage;
 
     @BeforeEach
     void setUp() {
+        this.storage = new InMemoryStorage();
         this.storage.save(new Key.From("one/target1.txt"), new Content.Empty()).join();
         this.storage.save(new Key.From("one/two/target2.txt"), new Content.Empty()).join();
     }
