@@ -37,6 +37,7 @@ class SliceListingTest {
     @BeforeEach
     void setUp() {
         this.storage = new InMemoryStorage();
+        this.storage.save(new Key.From("target0.txt"), new Content.Empty()).join();
         this.storage.save(new Key.From("one/target1.txt"), new Content.Empty()).join();
         this.storage.save(new Key.From("one/two/target2.txt"), new Content.Empty()).join();
     }
@@ -83,6 +84,38 @@ class SliceListingTest {
                     new MapEntry<>("Content-Length", String.valueOf(json.length()))
                 ),
                 json.getBytes(StandardCharsets.UTF_8)
+            )
+        );
+    }
+
+    @Test
+    void responseHtmlType() {
+        final String body = String.join(
+            "\n",
+            "<!DOCTYPE html>",
+            "<html>",
+            "  <head><meta charset=\"utf-8\"/></head>",
+            "  <body>",
+            "    <ul>",
+            "      <li><a href=\"one/target1.txt\">one/target1.txt</a></li>",
+            "      <li><a href=\"one/two/target2.txt\">one/two/target2.txt</a></li>",
+            "    </ul>",
+            "  </body>",
+            "</html>"
+        );
+        MatcherAssert.assertThat(
+            new SliceListing(this.storage, "text/html", ListingFormat.Standard.HTML)
+                .response(rqLineFrom("/one"), Collections.emptyList(), Flowable.empty()),
+            new ResponseMatcher(
+                RsStatus.OK,
+                Arrays.asList(
+                    new MapEntry<>(
+                        "Content-Type",
+                        String.format("text/html; charset=%s", StandardCharsets.UTF_8)
+                    ),
+                    new MapEntry<>("Content-Length", String.valueOf(body.length()))
+                ),
+                body.getBytes(StandardCharsets.UTF_8)
             )
         );
     }

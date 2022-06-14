@@ -108,12 +108,6 @@ SOFTWARE.
     </dependency>
     <!-- Test only dependencies -->
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.reactivestreams</groupId>
       <artifactId>reactive-streams-tck</artifactId>
       <version>1.0.3</version>
