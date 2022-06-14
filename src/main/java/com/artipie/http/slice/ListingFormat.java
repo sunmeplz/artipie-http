@@ -51,8 +51,8 @@ public interface ListingFormat {
         ),
 
         /**
-         * Json format renders keys as JSON array with
-         * keys items.
+         * HTML format renders keys as a list(&lt;ul&gt;) of reference(&lt;a&gt;)
+         * to keys in &lt;li&gt; tags.
          */
         HTML(
             keys -> String.format(
@@ -69,11 +69,14 @@ public interface ListingFormat {
                     "</html>"
                 ),
                 keys.stream().map(
-                    key -> String.format(
-                        "      <li><a href=\"%s\">%s</a></li>",
-                        key.string(),
-                        key.string()
-                    )
+                    key -> {
+                        final String keystr = key.string();
+                        return String.format(
+                            "      <li><a href=\"%s\">%s</a></li>",
+                            keystr,
+                            keystr
+                        );
+                    }
                 ).collect(Collectors.joining("\n"))
             )
         );

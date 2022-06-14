@@ -5,7 +5,6 @@
 package com.artipie.http.slice;
 
 import com.artipie.asto.Key;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -72,7 +71,7 @@ public class ListingFormatTest {
     }
 
     @Test
-    void formatHtmlKeys() throws IOException {
+    void formatHtmlKeys() {
         MatcherAssert.assertThat(
             ListingFormat.Standard.HTML.apply(
                 Arrays.asList(
