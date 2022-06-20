@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hamcrest.text.StringContainsInOrder;
 import org.junit.jupiter.api.Test;
 import wtf.g4s8.hamcrest.json.JsonContains;
 import wtf.g4s8.hamcrest.json.JsonValueIs;
@@ -66,6 +67,50 @@ public class ListingFormatTest {
         MatcherAssert.assertThat(
             ListingFormat.Standard.JSON.apply(Collections.emptyList()),
             new StringIsJson.Array(new JsonContains())
+        );
+    }
+
+    @Test
+    void formatHtmlKeys() {
+        MatcherAssert.assertThat(
+            ListingFormat.Standard.HTML.apply(
+                Arrays.asList(
+                    new Key.From("example0.log"),
+                    new Key.From("one/", "example1.log"),
+                    new Key.From("one/two/", "example2.log")
+                )
+            ),
+            new StringContainsInOrder(
+                Arrays.asList(
+                    "<head>",
+                    "</head",
+                    "<body>",
+                    "  <ul>",
+                    "    <li><a href=",
+                    "  </ul>",
+                    "</body>"
+                ))
+        );
+    }
+
+    @Test
+    void formatHtmlEmptyKeys() {
+        MatcherAssert.assertThat(
+            ListingFormat.Standard.HTML.apply(Collections.emptyList()),
+            Matchers.is(
+                String.join(
+                    "\n",
+                    "<!DOCTYPE html>",
+                    "<html>",
+                    "  <head><meta charset=\"utf-8\"/></head>",
+                    "  <body>",
+                    "    <ul>",
+                    "",
+                    "    </ul>",
+                    "  </body>",
+                    "</html>"
+                )
+            )
         );
     }
 }

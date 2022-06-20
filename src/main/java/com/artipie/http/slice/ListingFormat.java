@@ -48,6 +48,37 @@ public interface ListingFormat {
             keys -> Json.createArrayBuilder(
                 keys.stream().map(Key::string).collect(Collectors.toList())
             ).build().toString()
+        ),
+
+        /**
+         * HTML format renders keys as a list(&lt;ul&gt;) of reference(&lt;a&gt;)
+         * to keys in &lt;li&gt; tags.
+         */
+        HTML(
+            keys -> String.format(
+                String.join(
+                    "\n",
+                    "<!DOCTYPE html>",
+                    "<html>",
+                    "  <head><meta charset=\"utf-8\"/></head>",
+                    "  <body>",
+                    "    <ul>",
+                    "%s",
+                    "    </ul>",
+                    "  </body>",
+                    "</html>"
+                ),
+                keys.stream().map(
+                    key -> {
+                        final String keystr = key.string();
+                        return String.format(
+                            "      <li><a href=\"%s\">%s</a></li>",
+                            keystr,
+                            keystr
+                        );
+                    }
+                ).collect(Collectors.joining("\n"))
+            )
         );
 
         /**
