@@ -12,14 +12,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Basic authentication method.
+ * Bearer authentication method.
  *
  * @since 0.17
  */
 public final class BearerAuthScheme implements AuthScheme {
 
     /**
-     * Basic authentication prefix.
+     * Bearer authentication prefix.
      */
     public static final String NAME = "Bearer";
 

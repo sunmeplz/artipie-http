@@ -4,7 +4,7 @@
  */
 
 /**
- * Artipie authentication and authorization mecahnism.
+ * Artipie authentication and authorization mechanism.
  * @since 0.8
  */
 package com.artipie.http.auth;

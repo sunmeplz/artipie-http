@@ -69,7 +69,7 @@ public interface Permission {
     }
 
     /**
-     * Permission composed from multiple origin permissions.
+     * Permission composed of multiple origin permissions.
      * Permission allows action when all origin permissions allow the action for specified user.
      *
      * @since 0.17
@@ -108,7 +108,7 @@ public interface Permission {
     }
 
     /**
-     * Permission composed from multiple origin permissions.
+     * Permission composed of multiple origin permissions.
      * Permission allows action when at least one of the origin permissions
      * allows the action for specified user.
      *

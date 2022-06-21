@@ -49,7 +49,7 @@ public interface Authentication {
         private final Collection<String> ugroups;
 
         /**
-         * Ctro.
+         * Ctor.
          * @param name Name of the user
          * @param groups User groups
          */
@@ -60,7 +60,7 @@ public interface Authentication {
 
         /**
          * Ctor.
-         * @param name User anme
+         * @param name User name
          */
         public User(final String name) {
             this(name, Collections.emptyList());

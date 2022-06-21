@@ -1,14 +1,23 @@
 <img src="https://www.artipie.com/logo.svg" width="64px" height="64px"/>
 
-[![Maven build](https://github.com/artipie/http/workflows/Maven%20Build/badge.svg)](https://github.com/artipie/http/actions?query=workflow%3A%22Maven+Build%22)
-[![PDD status](http://www.0pdd.com/svg?name=artipie/http)](http://www.0pdd.com/p?name=artipie/http)
-[![License](https://img.shields.io/github/license/artipie/http.svg?style=flat-square)](https://github.com/artipie/http/blob/master/LICENSE)
+[![EO principles respected here](https://www.elegantobjects.org/badge.svg)](https://www.elegantobjects.org)
+[![DevOps By Rultor.com](http://www.rultor.com/b/artipie/http)](http://www.rultor.com/p/artipie/http)
+[![We recommend IntelliJ IDEA](https://www.elegantobjects.org/intellij-idea.svg)](https://www.jetbrains.com/idea/)
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.artipie/http.svg)](https://maven-badges.herokuapp.com/maven-central/com.artipie/http)
 [![Javadoc](http://www.javadoc.io/badge/com.artipie/http.svg)](http://www.javadoc.io/doc/com.artipie/http)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/artipie/http/blob/master/LICENSE.txt)
+[![codecov](https://codecov.io/gh/artipie/maven-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/artipie/maven-adapter)
 [![Hits-of-Code](https://hitsofcode.com/github/artipie/http)](https://hitsofcode.com/view/github/artipie/http)
+[![Maven Central](https://img.shields.io/maven-central/v/com.artipie/http.svg)](https://maven-badges.herokuapp.com/maven-central/com.artipie/http)
+[![PDD status](http://www.0pdd.com/svg?name=artipie/http)](http://www.0pdd.com/p?name=artipie/http)
 
-Artipie HTTP base interfaces.
+# HTTP
+
+Artipie HTTP base interfaces.  
+
+If you have any question or suggestions, do not hesitate to create an issue or contact us in
+[Telegram](https://t.me/artipie).  
+Artipie [roadmap](https://github.com/orgs/artipie/projects/3).
 
 To install add this dependency to `pom.xml` file:
 ```xml
@@ -21,10 +30,10 @@ To install add this dependency to `pom.xml` file:
 
 This module tends to be reactive and provides these interfaces:
  - `Slice` - Arti-pie slice, should be implemented by adapter interface
- or Artipie application, it can receive request data and return reactive response
- - `Response` - returned by `Slice` from adapters, can be sent to `Connection`
+ or Artipie application, it can receive request data and return reactive response;
+ - `Response` - returned by `Slice` from adapters, can be sent to `Connection`;
  - `Connection` - response asks connection to accept response data, `Connection`
- should be implemented by HTTP web server implementation to accept HTTP responses
+ should be implemented by HTTP web server implementation to accept HTTP responses.
 
 Each artipie adapter has to implement `Slice` interface with single method `response`.
 This method should process the request and return reactive response object:
@@ -79,38 +88,39 @@ class Repo extends Slice.Wrap {
 
 ### Authentication
 
-Authentication protocol is specified by `Identities` interface
+Authentication protocol is specified by `AuthScheme` interface
 which parses user identity from request head (line and headers).
 
 Possible implementations are:
- - Basic - from HTTP basic authentication
- - ... TBD
+ - Basic - from HTTP <ins>Basic</ins> authentication
+ - Bearer - from <ins>Bearer</ins> token
+ - Token - from <ins>token</ins> 
 
 ### Authorization
 
 Authorization is specified by `Permissions` interface which checks user permissions
-for action. It can be encapsulated by `SliceAuth` wrapper to perform authorization checks:
+for `Action`. It can be encapsulated by `AuthSlice` wrapper to perform authorization checks:
 ```java
-final Slice slice = new SliceAuth(
+final Slice slice = new AuthSlice(
   new SliceUpload(storage),
-  new Permission.ByName("upload", permissions),
-  new BasicAuth(passwords)
+  new BasicAuthScheme(authentication),
+  new Permission.ByName(permissions, Action.Standard.READ)
 );
 ```
-This slice reads user identity by authentication decoder (`Identities` implementation),
+This slice reads user authentication by authentication decoder (`AuthScheme` implementation),
 if the identity was not found, then 401 error will be returned. Then the identity will be passed
-to authorization check (`Permissions` class) with specified permission (`upload` in the example).
+to authorization check (`Permissions` class) with specified permission (`Action.Standard.READ` in the example).
 If user is not authorized to perform this action 403 error will be returned. If all checks passed
 successfully, then request will be redirected to underlying `Slice` implementation (`SliceUpload`
 in the example).
-...TBD
 
 ### Main components of request
 
 ```java
 final RequestLineFrom request = new RequestLineFrom(line);
 final Uri uri = request.uri();
-final RqMethod = request.method();
+final RqMethod method = request.method();
+final String httpVersion = request.version();
 ```
 
 ### Specific header
@@ -136,6 +146,8 @@ return new AsyncResponse(
 ```
 
 ## How to contribute
+
+Please read [contributing rules](https://github.com/artipie/artipie/blob/master/CONTRIBUTING.md).  
 
 Fork repository, make changes, send us a pull request. We will review
 your changes and apply them to the `master` branch shortly, provided
