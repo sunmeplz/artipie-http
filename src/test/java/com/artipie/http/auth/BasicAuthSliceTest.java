@@ -55,7 +55,7 @@ final class BasicAuthSliceTest {
             new SliceHasResponse(
                 Matchers.allOf(
                     new RsHasStatus(RsStatus.UNAUTHORIZED),
-                    new RsHasHeaders(new Header("WWW-Authenticate", "Basic"))
+                    new RsHasHeaders(new Header("WWW-Authenticate", "Basic realm=\"artipie\""))
                 ),
                 new RequestLine("POST", "/bar", "HTTP/1.2")
             )

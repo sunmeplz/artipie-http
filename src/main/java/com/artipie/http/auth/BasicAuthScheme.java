@@ -24,6 +24,12 @@ public final class BasicAuthScheme implements AuthScheme {
     public static final String NAME = "Basic";
 
     /**
+     * Basic authentication challenge.
+     */
+    private static final String CHALLENGE =
+        String.format("%s realm=\"artipie\"", BasicAuthScheme.NAME);
+
+    /**
      * Authentication.
      */
     private final Authentication auth;
@@ -87,7 +93,7 @@ public final class BasicAuthScheme implements AuthScheme {
 
         @Override
         public String challenge() {
-            return BasicAuthScheme.NAME;
+            return BasicAuthScheme.CHALLENGE;
         }
     }
 
@@ -105,7 +111,7 @@ public final class BasicAuthScheme implements AuthScheme {
 
         @Override
         public String challenge() {
-            return BasicAuthScheme.NAME;
+            return BasicAuthScheme.CHALLENGE;
         }
     }
 }
