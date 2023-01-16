@@ -16,7 +16,7 @@ public interface PermissionConfig {
 
     /**
      * Permission name. The name can vary from the permission model,
-     * in {@link ArtipieBasicPermission} the name is the name of the repository.
+     * in {@link AdapterBasicPermission} the name is the name of the repository.
      * @return Permission name
      */
     String name();

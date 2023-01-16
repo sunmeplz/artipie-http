@@ -4,10 +4,8 @@
  */
 package com.artipie.http.perms;
 
+import com.artipie.ArtipieException;
 import java.security.Permission;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 import org.apache.commons.lang3.NotImplementedException;
 
 /**
@@ -21,7 +19,8 @@ import org.apache.commons.lang3.NotImplementedException;
  * @since 1.2
  * @checkstyle DesignForExtensionCheck (500 lines)
  */
-public class ArtipieBasicPermission extends Permission {
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
+public class AdapterBasicPermission extends Permission {
 
     /**
      * Required serial.
@@ -31,26 +30,16 @@ public class ArtipieBasicPermission extends Permission {
     /**
      * Actions set.
      */
-    private final Set<String> actions;
+    private final String actions;
 
     /**
      * Ctor.
      * @param repo Repository name
      * @param strings Actions set
      */
-    public ArtipieBasicPermission(final String repo, final Set<String> strings) {
+    public AdapterBasicPermission(final String repo, final String strings) {
         super(repo);
         this.actions = strings;
-    }
-
-    /**
-     * Ctor, for usage in adapters, where usually one action is required for
-     * specific operation.
-     * @param repo Repository name
-     * @param action Action
-     */
-    public ArtipieBasicPermission(final String repo, final String action) {
-        this(repo, Collections.singleton(action));
     }
 
     /**
@@ -58,8 +47,15 @@ public class ArtipieBasicPermission extends Permission {
      *
      * @param config Permission configuration
      */
-    public ArtipieBasicPermission(final PermissionConfig config) {
-        this(config.name(), config.sequence(config.name()));
+    public AdapterBasicPermission(final PermissionConfig config) {
+        this(
+            config.name(), config.sequence(config.name()).stream().reduce(String::concat)
+                .orElseThrow(
+                    () -> new ArtipieException(
+                        "Actions list for AdapterBasicPermission cannot be empty"
+                    )
+                )
+        );
     }
 
     @Override
@@ -79,7 +75,9 @@ public class ArtipieBasicPermission extends Permission {
 
     @Override
     public String getActions() {
-        return Arrays.toString(this.actions.toArray());
+        throw new NotImplementedException(
+            "Implement properly to return 'canonical string representation' of the actions"
+        );
     }
 
 }

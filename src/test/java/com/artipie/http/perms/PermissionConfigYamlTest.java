@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
  *
  * groups:
  *   java-devs:
- *     artipie_basic_permission:
+ *     adapter_basic_permission:
  *       maven-repo:
  *         - read
  *         - write
@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
  *       npm-repo:
  *         - read
  *   admins:
- *     artipie_all_permission:
+ *     adapter_all_permission:
  *
  * {@link PermissionConfig.Yaml} implementation will receive mapping for single permission
- * artipie_basic_permission instance, for example:
+ * adapter_basic_permission instance, for example:
  *
  * maven-repo:
  *   - read

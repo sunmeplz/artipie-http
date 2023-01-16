@@ -4,19 +4,18 @@
  */
 package com.artipie.http.perms;
 
-import java.security.AllPermission;
 import java.security.Permission;
 
 /**
- * Permission factory for {@link AllPermission}.
+ * Factory for {@link AdapterBasicPermission}.
  * @since 1.2
  */
-@ArtipiePermissionFactory("artipie_all_permission")
-public final class ArtipieAllPermissionFactory implements PermissionFactory {
+@ArtipiePermissionFactory("adapter_basic_permission")
+public final class AdapterBasicPermissionFactory implements PermissionFactory {
 
     @Override
     public Permission newPermission(final PermissionConfig config) {
-        return new AllPermission();
+        return new AdapterBasicPermission(config);
     }
 
 }
