@@ -15,6 +15,6 @@ public interface PolicyFactory {
      * @param config Configuration
      * @return Instance of {@link Policy}
      */
-    Policy getPolicy(PolicyConfig config);
+    Policy<?> getPolicy(PolicyConfig config);
 
 }

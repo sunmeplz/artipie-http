@@ -35,7 +35,7 @@ import java.io.UncheckedIOException;
 public final class YamlPolicyFactory implements PolicyFactory {
 
     @Override
-    public Policy getPolicy(final PolicyConfig config) {
+    public Policy<?> getPolicy(final PolicyConfig config) {
         final PolicyConfig sub = config.config("storage");
         try {
             return new YamlPolicy(
