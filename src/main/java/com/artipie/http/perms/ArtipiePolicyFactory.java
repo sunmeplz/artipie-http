@@ -10,17 +10,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark Permission implementation.
+ * Annotation to mark Policy implementation.
  * @since 1.2
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ArtipiePermissionFactory {
+public @interface ArtipiePolicyFactory {
 
     /**
-     * Permission implementation name value.
+     * Policy implementation name value.
      *
      * @return The string name
      */
     String value();
+
 }

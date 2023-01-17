@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
  * Test for {@link PermissionConfig.Yaml}.
  * Yaml permissions format example:
  *
- * groups:
+ * roles:
  *   java-devs:
  *     adapter_basic_permission:
  *       maven-repo:
