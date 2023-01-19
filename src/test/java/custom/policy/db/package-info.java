@@ -4,7 +4,7 @@
  */
 
 /**
- * Artipie permissions.
+ * Test policy package.
  * @since 1.2
  */
-package com.artipie.http.perms;
+package custom.policy.db;

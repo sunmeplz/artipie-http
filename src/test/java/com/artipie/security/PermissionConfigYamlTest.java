@@ -2,9 +2,10 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security;
 
 import com.amihaiemil.eoyaml.Yaml;
+import com.artipie.security.perms.PermissionConfig;
 import java.io.IOException;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * Test for {@link PermissionConfig.Yaml}.
  * Yaml permissions format example:
  *
- * groups:
+ * roles:
  *   java-devs:
  *     adapter_basic_permission:
  *       maven-repo:

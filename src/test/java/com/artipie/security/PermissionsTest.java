@@ -2,10 +2,13 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
+import com.artipie.security.perms.AdapterBasicPermission;
+import com.artipie.security.perms.PermissionConfig;
+import com.artipie.security.perms.PermissionsLoader;
 import java.security.AllPermission;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -14,7 +17,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link Permissions}.
+ * Test for {@link PermissionsLoader}.
  * @since 1.2
  */
 class PermissionsTest {
@@ -22,7 +25,7 @@ class PermissionsTest {
     @Test
     void createsBasicPermission() {
         MatcherAssert.assertThat(
-            new Permissions().newPermission(
+            new PermissionsLoader().newPermission(
                 "adapter_basic_permission",
                 new PermissionConfig.Yaml(
                     Yaml.createYamlMappingBuilder()
@@ -37,7 +40,7 @@ class PermissionsTest {
     @Test
     void createsAllPermission() {
         MatcherAssert.assertThat(
-            new Permissions().newPermission(
+            new PermissionsLoader().newPermission(
                 "adapter_all_permission",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             ),
@@ -49,7 +52,7 @@ class PermissionsTest {
     void throwsExceptionIfPermNotFound() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new Permissions().newPermission(
+            () -> new PermissionsLoader().newPermission(
                 "unknown_perm",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             )
@@ -60,9 +63,9 @@ class PermissionsTest {
     void throwsExceptionIfPermissionsHaveTheSameName() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new Permissions(
+            () -> new PermissionsLoader(
                 Collections.singletonMap(
-                    Permissions.SCAN_PACK, "adapter.perms.docker;adapter.perms.duplicate"
+                    PermissionsLoader.SCAN_PACK, "adapter.perms.docker;adapter.perms.duplicate"
                 )
             )
         );
@@ -70,9 +73,9 @@ class PermissionsTest {
 
     @Test
     void createsExternalPermissions() {
-        final Permissions permissions = new Permissions(
+        final PermissionsLoader permissions = new PermissionsLoader(
             Collections.singletonMap(
-                Permissions.SCAN_PACK, "adapter.perms.docker;adapter.perms.maven"
+                PermissionsLoader.SCAN_PACK, "adapter.perms.docker;adapter.perms.maven"
             )
         );
         MatcherAssert.assertThat(

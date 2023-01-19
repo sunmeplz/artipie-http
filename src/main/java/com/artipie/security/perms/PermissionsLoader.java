@@ -2,7 +2,7 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security.perms;
 
 import com.artipie.ArtipieException;
 import com.google.common.base.Strings;
@@ -18,10 +18,10 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
 /**
- * Instantiate permission factories object.
+ * Load from the packages via reflection and instantiate permission factories object.
  * @since 1.2
  */
-public final class Permissions {
+public final class PermissionsLoader {
 
     /**
      * Environment parameter to define packages to find permission factories.
@@ -32,7 +32,7 @@ public final class Permissions {
     /**
      * Default package to find permissions factories.
      */
-    private static final String DEFAULT_PACKAGE = "com.artipie.http";
+    private static final String DEFAULT_PACKAGE = "com.artipie.security";
 
     /**
      * Permissions factories: name <-> factory.
@@ -42,7 +42,7 @@ public final class Permissions {
     /**
      * Ctor to obtain factories according to env.
      */
-    public Permissions() {
+    public PermissionsLoader() {
         this(System.getenv());
     }
 
@@ -50,7 +50,7 @@ public final class Permissions {
      * Ctor.
      * @param env Environment
      */
-    public Permissions(final Map<String, String> env) {
+    public PermissionsLoader(final Map<String, String> env) {
         this.factories = init(env);
     }
 
@@ -76,8 +76,8 @@ public final class Permissions {
      * @return Map of {@link PermissionFactory}
      */
     private static Map<String, PermissionFactory> init(final Map<String, String> env) {
-        final List<String> pkgs = Lists.newArrayList(Permissions.DEFAULT_PACKAGE);
-        final String pgs = env.get(Permissions.SCAN_PACK);
+        final List<String> pkgs = Lists.newArrayList(PermissionsLoader.DEFAULT_PACKAGE);
+        final String pgs = env.get(PermissionsLoader.SCAN_PACK);
         if (!Strings.isNullOrEmpty(pgs)) {
             pkgs.addAll(Arrays.asList(pgs.split(";")));
         }
@@ -99,7 +99,7 @@ public final class Permissions {
                         if (existed != null) {
                             throw new ArtipieException(
                                 String.format(
-                                    "Storage factory with type '%s' already exists [class=%s].",
+                                    "Permission factory with type '%s' already exists [class=%s].",
                                     type, existed.getClass().getSimpleName()
                                 )
                             );
@@ -110,7 +110,7 @@ public final class Permissions {
                                 (PermissionFactory) clazz.getDeclaredConstructor().newInstance()
                             );
                             Logger.info(
-                                Permissions.class,
+                                PermissionsLoader.class,
                                 "Initiated permission factory [type=%s, class=%s]",
                                 type, clazz.getSimpleName()
                             );
