@@ -4,7 +4,7 @@
  */
 
 /**
- * Artipie permissions.
+ * Artipie permissions test.
  * @since 1.2
  */
-package com.artipie.http.perms;
+package com.artipie.security;

@@ -2,7 +2,7 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security.perms;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

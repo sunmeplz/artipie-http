@@ -2,7 +2,7 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security.policy;
 
 /**
  * Factory to create {@link Policy} instance.

@@ -4,10 +4,10 @@
  */
 package custom.policy.duplicate;
 
-import com.artipie.http.perms.ArtipiePolicyFactory;
-import com.artipie.http.perms.Policy;
-import com.artipie.http.perms.PolicyConfig;
-import com.artipie.http.perms.PolicyFactory;
+import com.artipie.security.policy.ArtipiePolicyFactory;
+import com.artipie.security.policy.Policy;
+import com.artipie.security.policy.PolicyConfig;
+import com.artipie.security.policy.PolicyFactory;
 import java.security.PermissionCollection;
 
 /**

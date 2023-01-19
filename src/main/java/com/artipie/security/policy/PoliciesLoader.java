@@ -2,7 +2,7 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security.policy;
 
 import com.artipie.ArtipieException;
 import com.google.common.base.Strings;
@@ -17,10 +17,10 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
 /**
- * Create existing instances of {@link PolicyFactory} implementations.
+ * Load via reflection and create existing instances of {@link PolicyFactory} implementations.
  * @since 1.2
  */
-public final class Policies {
+public final class PoliciesLoader {
 
     /**
      * Environment parameter to define packages to find policies factories.
@@ -31,7 +31,7 @@ public final class Policies {
     /**
      * Default package to find policies factories.
      */
-    private static final String DEFAULT_PACKAGE = "com.artipie.http";
+    private static final String DEFAULT_PACKAGE = "com.artipie.security";
 
     /**
      * Policies factories: name <-> factory.
@@ -42,14 +42,14 @@ public final class Policies {
      * Ctor.
      * @param env Environment map
      */
-    public Policies(final Map<String, String> env) {
+    public PoliciesLoader(final Map<String, String> env) {
         this.factories = init(env);
     }
 
     /**
      * Create policies from env.
      */
-    public Policies() {
+    public PoliciesLoader() {
         this(System.getenv());
     }
 
@@ -75,8 +75,8 @@ public final class Policies {
      * @return Map of {@link PolicyFactory}
      */
     private static Map<String, PolicyFactory> init(final Map<String, String> env) {
-        final List<String> pkgs = Lists.newArrayList(Policies.DEFAULT_PACKAGE);
-        final String pgs = env.get(Policies.SCAN_PACK);
+        final List<String> pkgs = Lists.newArrayList(PoliciesLoader.DEFAULT_PACKAGE);
+        final String pgs = env.get(PoliciesLoader.SCAN_PACK);
         if (!Strings.isNullOrEmpty(pgs)) {
             pkgs.addAll(Arrays.asList(pgs.split(";")));
         }
@@ -109,7 +109,7 @@ public final class Policies {
                                 (PolicyFactory) clazz.getDeclaredConstructor().newInstance()
                             );
                             Logger.info(
-                                Policies.class,
+                                PoliciesLoader.class,
                                 "Initiated policy factory [type=%s, class=%s]",
                                 type, clazz.getSimpleName()
                             );

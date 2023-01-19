@@ -2,10 +2,14 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.http.perms;
+package com.artipie.security;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
+import com.artipie.security.policy.PoliciesLoader;
+import com.artipie.security.policy.Policy;
+import com.artipie.security.policy.PolicyConfig;
+import com.artipie.security.policy.YamlPolicy;
 import java.security.Permissions;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -14,7 +18,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link Policies}.
+ * Test for {@link PoliciesLoader}.
  * @since 1.2
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
@@ -23,7 +27,7 @@ public class PoliciesTest {
     @Test
     void createsYamlPolicy() {
         MatcherAssert.assertThat(
-            new Policies().newPolicy(
+            new PoliciesLoader().newPolicy(
                 "yaml_policy",
                 new PolicyConfig.Yaml(
                     Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
@@ -42,7 +46,7 @@ public class PoliciesTest {
     void throwsExceptionIfPermNotFound() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new Policies().newPolicy(
+            () -> new PoliciesLoader().newPolicy(
                 "unknown_policy",
                 new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             )
@@ -53,9 +57,9 @@ public class PoliciesTest {
     void throwsExceptionIfPermissionsHaveTheSameName() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new Policies(
+            () -> new PoliciesLoader(
                 Collections.singletonMap(
-                    Policies.SCAN_PACK, "custom.policy.db;custom.policy.duplicate"
+                    PoliciesLoader.SCAN_PACK, "custom.policy.db;custom.policy.duplicate"
                 )
             )
         );
@@ -63,9 +67,9 @@ public class PoliciesTest {
 
     @Test
     void createsExternalPermissions() {
-        final Policies policy = new Policies(
+        final PoliciesLoader policy = new PoliciesLoader(
             Collections.singletonMap(
-                Policies.SCAN_PACK, "custom.policy.db;custom.policy.file"
+                PoliciesLoader.SCAN_PACK, "custom.policy.db;custom.policy.file"
             )
         );
         MatcherAssert.assertThat(

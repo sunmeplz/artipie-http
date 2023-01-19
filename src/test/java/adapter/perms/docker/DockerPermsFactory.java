@@ -4,9 +4,9 @@
  */
 package adapter.perms.docker;
 
-import com.artipie.http.perms.ArtipiePermissionFactory;
-import com.artipie.http.perms.PermissionConfig;
-import com.artipie.http.perms.PermissionFactory;
+import com.artipie.security.perms.ArtipiePermissionFactory;
+import com.artipie.security.perms.PermissionConfig;
+import com.artipie.security.perms.PermissionFactory;
 import java.security.AllPermission;
 import java.security.Permission;
 
