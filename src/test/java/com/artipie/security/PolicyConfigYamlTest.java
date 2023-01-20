@@ -5,7 +5,7 @@
 package com.artipie.security;
 
 import com.amihaiemil.eoyaml.Yaml;
-import com.artipie.security.policy.PolicyConfig;
+import com.artipie.security.policy.YamlPolicyConfig;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyCollection;
@@ -14,7 +14,7 @@ import org.hamcrest.core.IsInstanceOf;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link PolicyConfig.Yaml}.
+ * Test for {@link YamlPolicyConfig}.
  * @since 1.2
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
@@ -23,7 +23,7 @@ class PolicyConfigYamlTest {
     @Test
     void readsStringValue() {
         MatcherAssert.assertThat(
-            new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().add("key", "value").build())
+            new YamlPolicyConfig(Yaml.createYamlMappingBuilder().add("key", "value").build())
                 .string("key"),
             new IsEqual<>("value")
         );
@@ -32,7 +32,7 @@ class PolicyConfigYamlTest {
     @Test
     void readsSequence() {
         MatcherAssert.assertThat(
-            new PolicyConfig.Yaml(
+            new YamlPolicyConfig(
                 Yaml.createYamlMappingBuilder()
                     .add("key", Yaml.createYamlSequenceBuilder().add("one").add("two").build())
                     .build()
@@ -44,7 +44,7 @@ class PolicyConfigYamlTest {
     @Test
     void returnsEmptySequenceWhenAbsent() {
         MatcherAssert.assertThat(
-            new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().build()).sequence("key"),
+            new YamlPolicyConfig(Yaml.createYamlMappingBuilder().build()).sequence("key"),
             new IsEmptyCollection<>()
         );
     }
@@ -52,12 +52,12 @@ class PolicyConfigYamlTest {
     @Test
     void readsSubConfig() {
         MatcherAssert.assertThat(
-            new PolicyConfig.Yaml(
+            new YamlPolicyConfig(
                 Yaml.createYamlMappingBuilder().add(
                     "key", Yaml.createYamlMappingBuilder().add("sub_key", "sub_value").build()
                 ).build()
             ).config("key"),
-            new IsInstanceOf(PolicyConfig.Yaml.class)
+            new IsInstanceOf(YamlPolicyConfig.class)
         );
     }
 

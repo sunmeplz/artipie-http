@@ -4,6 +4,8 @@
  */
 package com.artipie.security.policy;
 
+import com.artipie.asto.factory.Config;
+
 /**
  * Factory to create {@link Policy} instance.
  * @since 1.2
@@ -11,10 +13,10 @@ package com.artipie.security.policy;
 public interface PolicyFactory {
 
     /**
-     * Create {@link Policy} from provided {@link PolicyConfig}.
+     * Create {@link Policy} from provided {@link YamlPolicyConfig}.
      * @param config Configuration
      * @return Instance of {@link Policy}
      */
-    Policy<?> getPolicy(PolicyConfig config);
+    Policy<?> getPolicy(Config config);
 
 }
