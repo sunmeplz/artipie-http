@@ -70,7 +70,7 @@ public class AdapterBasicPermission extends Permission {
 
     @Override
     public int hashCode() {
-        throw new NotImplementedException("Not ready yet");
+        return this.getName().hashCode();
     }
 
     @Override
