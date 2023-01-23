@@ -8,8 +8,8 @@ import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
 import com.artipie.security.policy.PoliciesLoader;
 import com.artipie.security.policy.Policy;
-import com.artipie.security.policy.PolicyConfig;
 import com.artipie.security.policy.YamlPolicy;
+import com.artipie.security.policy.YamlPolicyConfig;
 import java.security.Permissions;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -27,9 +27,9 @@ public class PoliciesTest {
     @Test
     void createsYamlPolicy() {
         MatcherAssert.assertThat(
-            new PoliciesLoader().newPolicy(
+            new PoliciesLoader().newObject(
                 "yaml_policy",
-                new PolicyConfig.Yaml(
+                new YamlPolicyConfig(
                     Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
                         .add(
                             "storage",
@@ -46,9 +46,9 @@ public class PoliciesTest {
     void throwsExceptionIfPermNotFound() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new PoliciesLoader().newPolicy(
+            () -> new PoliciesLoader().newObject(
                 "unknown_policy",
-                new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().build())
+                new YamlPolicyConfig(Yaml.createYamlMappingBuilder().build())
             )
         );
     }
@@ -74,17 +74,17 @@ public class PoliciesTest {
         );
         MatcherAssert.assertThat(
             "Db policy was created",
-            policy.newPolicy(
+            policy.newObject(
                 "db-policy",
-                new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().build())
+                new YamlPolicyConfig(Yaml.createYamlMappingBuilder().build())
             ),
             new IsInstanceOf(TestPolicy.class)
         );
         MatcherAssert.assertThat(
             "File policy was created",
-            policy.newPolicy(
+            policy.newObject(
                 "file-policy",
-                new PolicyConfig.Yaml(Yaml.createYamlMappingBuilder().build())
+                new YamlPolicyConfig(Yaml.createYamlMappingBuilder().build())
             ),
             new IsInstanceOf(TestPolicy.class)
         );
