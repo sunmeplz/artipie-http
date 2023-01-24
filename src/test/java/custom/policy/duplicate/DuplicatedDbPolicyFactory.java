@@ -4,9 +4,9 @@
  */
 package custom.policy.duplicate;
 
+import com.artipie.asto.factory.Config;
 import com.artipie.security.policy.ArtipiePolicyFactory;
 import com.artipie.security.policy.Policy;
-import com.artipie.security.policy.PolicyConfig;
 import com.artipie.security.policy.PolicyFactory;
 import java.security.PermissionCollection;
 
@@ -17,7 +17,7 @@ import java.security.PermissionCollection;
 @ArtipiePolicyFactory("db-policy")
 public final class DuplicatedDbPolicyFactory implements PolicyFactory {
     @Override
-    public Policy<?> getPolicy(final PolicyConfig config) {
+    public Policy<?> getPolicy(final Config config) {
         return (Policy<PermissionCollection>) uname -> null;
     }
 }

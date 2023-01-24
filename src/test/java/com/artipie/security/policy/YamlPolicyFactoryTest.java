@@ -5,6 +5,9 @@
 package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
+import com.artipie.security.policy.YamlPolicy;
+import com.artipie.security.policy.YamlPolicyConfig;
+import com.artipie.security.policy.YamlPolicyFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.jupiter.api.Test;
@@ -20,7 +23,7 @@ class YamlPolicyFactoryTest {
     void createsYamlPolicy() {
         MatcherAssert.assertThat(
             new YamlPolicyFactory().getPolicy(
-                new PolicyConfig.Yaml(
+                new YamlPolicyConfig(
                     Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
                         .add(
                             "storage",

@@ -22,7 +22,7 @@ class PermissionsTest {
     @Test
     void createsBasicPermission() {
         MatcherAssert.assertThat(
-            new PermissionsLoader().newPermission(
+            new PermissionsLoader().newObject(
                 "adapter_basic_permission",
                 new PermissionConfig.Yaml(
                     Yaml.createYamlMappingBuilder()
@@ -37,7 +37,7 @@ class PermissionsTest {
     @Test
     void createsAllPermission() {
         MatcherAssert.assertThat(
-            new PermissionsLoader().newPermission(
+            new PermissionsLoader().newObject(
                 "adapter_all_permission",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             ),
@@ -49,7 +49,7 @@ class PermissionsTest {
     void throwsExceptionIfPermNotFound() {
         Assertions.assertThrows(
             ArtipieException.class,
-            () -> new PermissionsLoader().newPermission(
+            () -> new PermissionsLoader().newObject(
                 "unknown_perm",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             )
@@ -77,7 +77,7 @@ class PermissionsTest {
         );
         MatcherAssert.assertThat(
             "Maven permission was created",
-            permissions.newPermission(
+            permissions.newObject(
                 "maven-perm",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             ),
@@ -85,7 +85,7 @@ class PermissionsTest {
         );
         MatcherAssert.assertThat(
             "Docker permission was created",
-            permissions.newPermission(
+            permissions.newObject(
                 "docker-perm",
                 new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
             ),
