@@ -5,7 +5,6 @@
 package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
-import com.artipie.security.policy.YamlPolicyConfig;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyCollection;

@@ -6,10 +6,6 @@ package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
-import com.artipie.security.policy.PoliciesLoader;
-import com.artipie.security.policy.Policy;
-import com.artipie.security.policy.YamlPolicy;
-import com.artipie.security.policy.YamlPolicyConfig;
 import java.security.Permissions;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
