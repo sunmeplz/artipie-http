@@ -150,14 +150,14 @@ public final class YamlPolicy implements Policy<UserPermissions> {
                 final YamlMapping perms = all.yamlMapping(type);
                 if (perms == null || perms.keys().isEmpty()) {
                     res.add(
-                        FACTORIES.newPermission(
+                        FACTORIES.newObject(
                             type, new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
                         )
                     );
                 } else {
                     perms.keys().stream().map(key -> key.asScalar().value()).forEach(
                         key -> res.add(
-                            FACTORIES.newPermission(
+                            FACTORIES.newObject(
                                 type,
                                 new PermissionConfig.Yaml(
                                     Yaml.createYamlMappingBuilder().add(
