@@ -31,17 +31,21 @@ import java.util.stream.Collectors;
  * This implementation DOES NOT CACHE anything, it simply reads and parses permissions
  * on every {@link Policy#getPermissions(String)} method call.
  * The storage itself is expected to have yaml files with permissions in the following structure:
- *
+ * <pre>
  * ..
- * ├── roles.yaml
+ * ├── roles
+ * │   ├── java-dev.yaml
+ * │   ├── admin.yaml
+ * │   ├── ...
  * ├── users
  * │   ├── david.yaml
  * │   ├── jane.yaml
  * │   ├── ...
- *
- * Roles yaml format example:
- * roles:
- *   java-devs:
+ * </pre>
+ * Roles yaml file name is the name of the group, format example:
+ * <pre>{@code
+ * java-dev:
+ *   permissions:
  *     adapter_basic_permission:
  *       maven-repo:
  *         - read
@@ -50,11 +54,17 @@ import java.util.stream.Collectors;
  *         - read
  *       npm-repo:
  *         - read
- *   admins:
- *     adapter_all_permission:
- *
- * User yaml format example:
- *
+ * }</pre>
+ * Or for admin:
+ * <pre>{@code
+ * admin:
+ *   enabled: true # optional default true
+ *   permissions:
+ *     adapter_all_permission: {}
+ * }</pre>
+ * Role can be disabled with the help of optional {@code enabled} field.
+ * <p>User yaml format example:
+ * <pre>{@code
  * david:
  *   type: plain
  *   pass: qwerty
@@ -66,7 +76,7 @@ import java.util.stream.Collectors;
  *     artipie_basic_permission:
  *       rpm-repo:
  *         - read
- *
+ * }</pre>
  * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
@@ -124,34 +134,40 @@ public final class YamlPolicy implements Policy<UserPermissions> {
     }
 
     /**
-     * Read and instantiate permissions from yaml mappring.
+     * Read and instantiate permissions from yaml mapping.
      * @param mapping Yaml mapping
      * @return Permissions set
      */
-    private static Permissions readPermissionsFromYaml(final YamlMapping mapping) {
-        final Permissions res = new Permissions();
-        for (final String type : mapping.keys().stream().map(item -> item.asScalar().value())
-            .collect(Collectors.toSet())) {
-            final YamlMapping perms = mapping.yamlMapping(type);
-            if (perms == null || perms.keys().isEmpty()) {
-                res.add(
-                    FACTORIES.newPermission(
-                        type, new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
-                    )
-                );
-            } else {
-                perms.keys().stream().map(key -> key.asScalar().value()).forEach(
-                    key -> res.add(
+    private static PermissionCollection readPermissionsFromYaml(final YamlMapping mapping) {
+        final YamlMapping all = mapping.yamlMapping("permissions");
+        final PermissionCollection res;
+        if (all == null || all.keys().isEmpty()) {
+            res = new EmptyPermissions();
+        } else {
+            res = new Permissions();
+            for (final String type : all.keys().stream().map(item -> item.asScalar().value())
+                .collect(Collectors.toSet())) {
+                final YamlMapping perms = all.yamlMapping(type);
+                if (perms == null || perms.keys().isEmpty()) {
+                    res.add(
                         FACTORIES.newPermission(
-                            type,
-                            new PermissionConfig.Yaml(
-                                Yaml.createYamlMappingBuilder().add(
-                                    key, perms.asMapping().yamlSequence(key)
-                                ).build()
+                            type, new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
+                        )
+                    );
+                } else {
+                    perms.keys().stream().map(key -> key.asScalar().value()).forEach(
+                        key -> res.add(
+                            FACTORIES.newPermission(
+                                type,
+                                new PermissionConfig.Yaml(
+                                    Yaml.createYamlMappingBuilder().add(
+                                        key, perms.asMapping().yamlSequence(key)
+                                    ).build()
+                                )
                             )
                         )
-                    )
-                );
+                    );
+                }
             }
         }
         return res;
@@ -164,9 +180,9 @@ public final class YamlPolicy implements Policy<UserPermissions> {
     public static final class Roles implements Function<String, PermissionCollection> {
 
         /**
-         * Roles string, is used as roles settings file name and yaml node name.
+         * Enable yaml field.
          */
-        private static final String ROLES_STR = "roles";
+        private static final String ENABLED = "enabled";
 
         /**
          * Storage to read roles yaml file from.
@@ -183,14 +199,15 @@ public final class YamlPolicy implements Policy<UserPermissions> {
 
         @Override
         public PermissionCollection apply(final String role) {
-            final YamlMapping all = YamlPolicy.readFile(this.asto, Roles.ROLES_STR)
-                .yamlMapping(Roles.ROLES_STR);
-            PermissionCollection res = new EmptyPermissions();
-            if (all != null) {
-                final YamlMapping mapping = all.yamlMapping(role);
-                if (mapping != null) {
-                    res = YamlPolicy.readPermissionsFromYaml(mapping);
-                }
+            final YamlMapping mapping = YamlPolicy.readFile(
+                this.asto, String.format("roles/%s", role)
+            ).yamlMapping(role);
+            final String enabled = mapping.string(Roles.ENABLED);
+            final PermissionCollection res;
+            if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
+                res = new EmptyPermissions();
+            } else {
+                res = YamlPolicy.readPermissionsFromYaml(mapping);
             }
             return res;
         }
@@ -209,14 +226,9 @@ public final class YamlPolicy implements Policy<UserPermissions> {
         private static final String FORMAT = "users/%s";
 
         /**
-         * Storage to read user yaml file from.
+         * User info yaml mapping.
          */
-        private final BlockingStorage asto;
-
-        /**
-         * The name of the user.
-         */
-        private final String username;
+        private final YamlMapping yaml;
 
         /**
          * Ctor.
@@ -224,8 +236,16 @@ public final class YamlPolicy implements Policy<UserPermissions> {
          * @param username The name of the user
          */
         User(final BlockingStorage asto, final String username) {
-            this.asto = asto;
-            this.username = username;
+            this.yaml = YamlPolicy.readFile(asto, String.format(User.FORMAT, username))
+                .yamlMapping(username);
+        }
+
+        /**
+         * Is user enabled?
+         * @return True is user is active
+         */
+        boolean enabled() {
+            return Boolean.TRUE.toString().equalsIgnoreCase(this.yaml.string(Roles.ENABLED));
         }
 
         /**
@@ -234,15 +254,13 @@ public final class YamlPolicy implements Policy<UserPermissions> {
          */
         Supplier<PermissionCollection> perms() {
             return () -> {
-                final YamlMapping user = YamlPolicy
-                    .readFile(this.asto, String.format(User.FORMAT, this.username));
-                final YamlMapping mapping = user.yamlMapping(this.username)
-                    .yamlMapping("permissions");
-                PermissionCollection perms = new EmptyPermissions();
-                if (mapping != null) {
-                    perms = YamlPolicy.readPermissionsFromYaml(mapping);
+                final PermissionCollection res;
+                if (this.enabled()) {
+                    res = YamlPolicy.readPermissionsFromYaml(this.yaml);
+                } else {
+                    res = new EmptyPermissions();
                 }
-                return perms;
+                return res;
             };
         }
 
@@ -251,14 +269,13 @@ public final class YamlPolicy implements Policy<UserPermissions> {
          * @return Roles collection
          */
         Collection<String> roles() {
-            final YamlMapping user = YamlPolicy
-                .readFile(this.asto, String.format(User.FORMAT, this.username));
-            final YamlSequence sequence = user.yamlMapping(this.username)
-                .yamlSequence(Roles.ROLES_STR);
             Set<String> roles = Collections.emptySet();
-            if (sequence != null) {
-                roles = sequence.values().stream().map(item -> item.asScalar().value())
-                    .collect(Collectors.toSet());
+            if (this.enabled()) {
+                final YamlSequence sequence = this.yaml.yamlSequence("roles");
+                if (sequence != null) {
+                    roles = sequence.values().stream().map(item -> item.asScalar().value())
+                        .collect(Collectors.toSet());
+                }
             }
             return roles;
         }

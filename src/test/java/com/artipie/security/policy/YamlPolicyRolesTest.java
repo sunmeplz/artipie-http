@@ -35,9 +35,9 @@ class YamlPolicyRolesTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"roles.yml", "roles.yaml"})
+    @ValueSource(strings = {"java-dev.yml", "java-dev.yaml"})
     void readsRolePermissions(final String key) {
-        this.asto.save(new Key.From(key), this.roles());
+        this.asto.save(new Key.From("roles", key), this.javaDev());
         MatcherAssert.assertThat(
             new YamlPolicy.Roles(this.asto).apply("java-dev"),
             new IsInstanceOf(Permissions.class)
@@ -46,27 +46,27 @@ class YamlPolicyRolesTest {
 
     @Test
     void readsAdminPermissions() {
-        this.asto.save(new Key.From("roles.yaml"), this.roles());
+        this.asto.save(new Key.From("roles/admin.yaml"), this.admin());
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("admins"),
+            new YamlPolicy.Roles(this.asto).apply("admin"),
             new IsInstanceOf(Permissions.class)
         );
     }
 
     @Test
-    void returnsEmptyPermissionsIfRoleDoesNotExist() {
-        this.asto.save(new Key.From("roles.yaml"), this.roles());
+    void returnsEmptyPermissionsIfRoleDisabled() {
+        this.asto.save(new Key.From("roles/some-role.yaml"), this.disabled());
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("unknown-role"),
+            new YamlPolicy.Roles(this.asto).apply("some-role"),
             new IsInstanceOf(EmptyPermissions.class)
         );
     }
 
-    private byte[] roles() {
+    private byte[] javaDev() {
         return String.join(
             "\n",
-            "roles:",
-            "  java-dev:",
+            "java-dev:",
+            "  permissions:",
             "    adapter_basic_permission:",
             "      maven-repo:",
             "        - read",
@@ -74,9 +74,33 @@ class YamlPolicyRolesTest {
             "      python-repo:",
             "        - read",
             "      npm-repo:",
-            "        - read",
-            "  admins:",
+            "        - read"
+        ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] admin() {
+        return String.join(
+            "\n",
+            "admin:",
+            "  permissions:",
             "    adapter_all_permission: {}"
+        ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] disabled() {
+        return String.join(
+            "\n",
+            "some-role:",
+            "  enabled: false",
+            "  permissions:",
+            "    adapter_basic_permission:",
+            "      maven-repo:",
+            "        - read",
+            "        - write",
+            "      python-repo:",
+            "        - read",
+            "      npm-repo:",
+            "        - read"
         ).getBytes(StandardCharsets.UTF_8);
     }
 

@@ -14,8 +14,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for {@link PermissionConfig.Yaml}.
  * Yaml permissions format example:
+ * <pre>{@code
+ *   # permissions for some role
  *
- * roles:
  *   java-devs:
  *     adapter_basic_permission:
  *       maven-repo:
@@ -25,16 +26,18 @@ import org.junit.jupiter.api.Test;
  *         - read
  *       npm-repo:
  *         - read
- *   admins:
- *     adapter_all_permission:
  *
+ *   # permissions for admin
+ *   admins:
+ *     adapter_all_permission: {}
+ * }</pre>
  * {@link PermissionConfig.Yaml} implementation will receive mapping for single permission
  * adapter_basic_permission instance, for example:
- *
+ * <pre>{@code
  * maven-repo:
  *   - read
  *   - write
- *
+ * }</pre>
  * @since 1.2
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")

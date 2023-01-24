@@ -7,6 +7,7 @@ package com.artipie.security.policy;
 import com.artipie.asto.Key;
 import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.security.perms.EmptyPermissions;
 import java.nio.charset.StandardCharsets;
 import java.security.Permissions;
 import org.hamcrest.MatcherAssert;
@@ -72,6 +73,24 @@ class YamlPolicyUserTest {
         );
     }
 
+    @Test
+    void returnsEmptyRolesIfDisabled() {
+        this.asto.save(new Key.From("users/john.yaml"), this.johnConfig());
+        MatcherAssert.assertThat(
+            new YamlPolicy.User(this.asto, "john").roles(),
+            Matchers.empty()
+        );
+    }
+
+    @Test
+    void returnsEmptyPermissionsIfDisabled() {
+        this.asto.save(new Key.From("users/john.yaml"), this.johnConfig());
+        MatcherAssert.assertThat(
+            new YamlPolicy.User(this.asto, "john").perms().get(),
+            new IsInstanceOf(EmptyPermissions.class)
+        );
+    }
+
     private byte[] aliceConfig() {
         return String.join(
             "\n",
@@ -104,6 +123,27 @@ class YamlPolicyUserTest {
             "    adapter_all_permission: {}",
             "  enabled: true"
             ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] johnConfig() {
+        return String.join(
+            "\n",
+            "john:",
+            "  type: plain",
+            "  pass: qwerty",
+            "  email: david@example.com",
+            "  enabled: false",
+            "  roles:",
+            "    - some-dev",
+            "    - any-role",
+            "  permissions:",
+            "    adapter_basic_permission:",
+            "      npm-repo:",
+            "        - read",
+            "      pypi-repo:",
+            "        - read",
+            "        - write"
+        ).getBytes(StandardCharsets.UTF_8);
     }
 
 }

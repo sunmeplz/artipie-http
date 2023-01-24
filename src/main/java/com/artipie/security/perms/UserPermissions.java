@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  * user permissions are represented by {@link Supplier} interface in order they can actually be
  * addressed on demand only. The same goes for permissions for role, they are represented by
  * {@link Function} interface and are addressed only on demand.
- *
+ * <p>
  * The implementations of the {@link Supplier} and {@link Function} are user's choose, it can
  * read permissions from file on each call or use some complex caches inside.
  *
