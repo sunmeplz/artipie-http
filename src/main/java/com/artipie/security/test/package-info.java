@@ -4,7 +4,7 @@
  */
 
 /**
- * Artipie security layer.
+ * Artipie security layer classes for test usages.
  * @since 1.2
  */
-package com.artipie.security;
+package com.artipie.security.test;
