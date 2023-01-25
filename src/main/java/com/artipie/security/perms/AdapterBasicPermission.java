@@ -5,10 +5,15 @@
 package com.artipie.security.perms;
 
 import java.security.Permission;
+import java.security.PermissionCollection;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Artipie basic permission. This permission takes into account repository name and
@@ -26,6 +31,11 @@ public final class AdapterBasicPermission extends Permission {
      * Required serial.
      */
     private static final long serialVersionUID = -2916496571451236071L;
+
+    /**
+     * Wildcard symbol.
+     */
+    private static final String WILDCARD = "*";
 
     /**
      * Canonical action representation. Is initialized once on request
@@ -54,7 +64,7 @@ public final class AdapterBasicPermission extends Permission {
      * @param strings Actions set
      */
     public AdapterBasicPermission(final String repo, final String strings) {
-        this(repo, Set.of(strings.split(",")));
+        this(repo, Stream.of(strings.split(",")).collect(Collectors.toSet()));
     }
 
     /**
@@ -133,6 +143,11 @@ public final class AdapterBasicPermission extends Permission {
         return this.actions;
     }
 
+    @Override
+    public PermissionCollection newPermissionCollection() {
+        return new AdapterBasicPermissionCollection();
+    }
+
     /**
      * Check if this action implies another action ignoring mask. That is true if
      * permissions names are equal or this permission has wildcard name.
@@ -141,7 +156,7 @@ public final class AdapterBasicPermission extends Permission {
      */
     private boolean impliesIgnoreMask(final AdapterBasicPermission perm) {
         final boolean res;
-        if (this.getName().equals("*")) {
+        if (this.getName().equals(AdapterBasicPermission.WILDCARD)) {
             res = true;
         } else {
             res = this.getName().equalsIgnoreCase(perm.getName());
@@ -166,5 +181,78 @@ public final class AdapterBasicPermission extends Permission {
             }
         }
         return res;
+    }
+
+    /**
+     * Collection of {@link AdapterBasicPermission} objects.
+     * @since 1.2
+     */
+    static final class AdapterBasicPermissionCollection extends PermissionCollection
+        implements java.io.Serializable {
+
+        /**
+         * Required serial.
+         */
+        private static final long serialVersionUID = 5843017424729092155L;
+
+        /**
+         * Key is name, value is permission. All permission objects in
+         * collection must be of the same type.
+         * Not serialized; see serialization section at end of class.
+         */
+        private final transient ConcurrentHashMap<String, Permission> perms;
+
+        /**
+         * This is set to {@code true} if this AdapterBasicPermissionCollection
+         * contains a AdapterBasicPermission with '*' as its permission name
+         * and {@link Action#ALL} action.
+         */
+        private boolean any;
+
+        /**
+         * Create an empty BasicPermissionCollection object.
+         * @checkstyle MagicNumberCheck (5 lines)
+         */
+        AdapterBasicPermissionCollection() {
+            this.perms = new ConcurrentHashMap<>(5);
+            this.any = false;
+        }
+
+        @Override
+        public void add(final Permission permission) {
+            if (permission instanceof AdapterBasicPermission) {
+                this.perms.put(permission.getName(), permission);
+                if (permission.getName().equals(AdapterBasicPermission.WILDCARD)
+                    && ((AdapterBasicPermission) permission).mask == Action.ALL.mask()) {
+                    this.any = true;
+                }
+            } else {
+                throw new IllegalArgumentException(
+                    String.format("Invalid permissions type %s", permission.getClass())
+                );
+            }
+        }
+
+        @Override
+        public boolean implies(final Permission permission) {
+            boolean res = false;
+            if (permission instanceof AdapterBasicPermission) {
+                if (this.any) {
+                    res = true;
+                } else {
+                    //@checkstyle NestedIfDepthCheck (5 lines)
+                    final Permission existing = this.perms.get(permission.getName());
+                    if (existing != null) {
+                        res = existing.implies(permission);
+                    }
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public Enumeration<Permission> elements() {
+            return this.perms.elements();
+        }
     }
 }

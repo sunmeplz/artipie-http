@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Artipie action.
@@ -90,7 +92,7 @@ public interface Action {
          * @param names Action names
          */
         Standard(final int value, final String... names) {
-            this(Set.of(names), value);
+            this(Stream.of(names).collect(Collectors.toSet()), value);
         }
 
         /**
