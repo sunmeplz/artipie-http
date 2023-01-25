@@ -99,12 +99,12 @@ class AdapterBasicPermissionTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "write", "delete", "delete,read", "delete,write", "write,delete", "read,delete",
+        "write", "read", "delete,read", "delete,write", "write,delete", "read,delete",
         "read,write,delete", "write,read,delete", "delete,write,read"
     })
     void permDeleteNotImpliesOtherPerms(final String actions) {
         MatcherAssert.assertThat(
-            new AdapterBasicPermission("some-name", Action.Standard.WRITE).implies(
+            new AdapterBasicPermission("some-name", Action.Standard.DELETE).implies(
                 new AdapterBasicPermission("some-name",  actions)
             ),
             new IsEqual<>(false)
