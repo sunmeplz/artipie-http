@@ -22,7 +22,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  * Test for {@link YamlPolicy.User}.
  * @since 1.2
  */
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.TooManyMethods"})
 class YamlPolicyUserTest {
 
     /**
@@ -91,6 +91,22 @@ class YamlPolicyUserTest {
         );
     }
 
+    @Test
+    void returnsEmptyGroupsIfFileNotFound() {
+        MatcherAssert.assertThat(
+            new YamlPolicy.User(this.asto, "Anyone").roles(),
+            Matchers.empty()
+        );
+    }
+
+    @Test
+    void returnsEmptyPermsIfFileNotFound() {
+        MatcherAssert.assertThat(
+            new YamlPolicy.User(this.asto, "JaneDoe").perms().get(),
+            new IsInstanceOf(EmptyPermissions.class)
+        );
+    }
+
     private byte[] aliceConfig() {
         return String.join(
             "\n",
@@ -98,7 +114,6 @@ class YamlPolicyUserTest {
             "  type: plain",
             "  pass: qwerty",
             "  email: alice@example.com",
-            "  enabled: true",
             "  roles:",
             "    - java-dev",
             "    - unknown-role",

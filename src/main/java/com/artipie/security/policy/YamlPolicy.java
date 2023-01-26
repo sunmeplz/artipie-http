@@ -14,9 +14,9 @@ import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.PermissionConfig;
 import com.artipie.security.perms.PermissionsLoader;
 import com.artipie.security.perms.UserPermissions;
+import com.jcabi.log.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.Collection;
@@ -113,9 +113,10 @@ public final class YamlPolicy implements Policy<UserPermissions> {
      * @param filename The name of the file
      * @return The value in bytes
      * @throws ValueNotFoundException If file not found
-     * @throws UncheckedIOException If yaml parsing failed
+     * @throws IOException If yaml parsing failed
      */
-    private static YamlMapping readFile(final BlockingStorage asto, final String filename) {
+    private static YamlMapping readFile(final BlockingStorage asto, final String filename)
+        throws IOException {
         final byte[] res;
         final Key yaml = new Key.From(String.format("%s.yaml", filename));
         final Key yml = new Key.From(String.format("%s.yml", filename));
@@ -126,11 +127,7 @@ public final class YamlPolicy implements Policy<UserPermissions> {
         } else {
             throw new ValueNotFoundException(yaml);
         }
-        try {
-            return Yaml.createYamlInput(new ByteArrayInputStream(res)).readYamlMapping();
-        } catch (final IOException err) {
-            throw new UncheckedIOException(err);
-        }
+        return Yaml.createYamlInput(new ByteArrayInputStream(res)).readYamlMapping();
     }
 
     /**
@@ -199,15 +196,20 @@ public final class YamlPolicy implements Policy<UserPermissions> {
 
         @Override
         public PermissionCollection apply(final String role) {
-            final YamlMapping mapping = YamlPolicy.readFile(
-                this.asto, String.format("roles/%s", role)
-            ).yamlMapping(role);
-            final String enabled = mapping.string(Roles.ENABLED);
-            final PermissionCollection res;
-            if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
+            PermissionCollection res;
+            final String filename = String.format("roles/%s", role);
+            try {
+                final YamlMapping mapping = YamlPolicy.readFile(this.asto, filename)
+                    .yamlMapping(role);
+                final String enabled = mapping.string(Roles.ENABLED);
+                if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
+                    res = new EmptyPermissions();
+                } else {
+                    res = YamlPolicy.readPermissionsFromYaml(mapping);
+                }
+            } catch (final IOException | ValueNotFoundException err) {
+                Logger.error(err, String.format("Failed to read/parse file '%s'", filename));
                 res = new EmptyPermissions();
-            } else {
-                res = YamlPolicy.readPermissionsFromYaml(mapping);
             }
             return res;
         }
@@ -236,16 +238,15 @@ public final class YamlPolicy implements Policy<UserPermissions> {
          * @param username The name of the user
          */
         User(final BlockingStorage asto, final String username) {
-            this.yaml = YamlPolicy.readFile(asto, String.format(User.FORMAT, username))
-                .yamlMapping(username);
+            this.yaml = getYamlMapping(asto, username);
         }
 
         /**
          * Is user enabled?
          * @return True is user is active
          */
-        boolean enabled() {
-            return Boolean.TRUE.toString().equalsIgnoreCase(this.yaml.string(Roles.ENABLED));
+        boolean disabled() {
+            return Boolean.FALSE.toString().equalsIgnoreCase(this.yaml.string(Roles.ENABLED));
         }
 
         /**
@@ -255,10 +256,10 @@ public final class YamlPolicy implements Policy<UserPermissions> {
         Supplier<PermissionCollection> perms() {
             return () -> {
                 final PermissionCollection res;
-                if (this.enabled()) {
-                    res = YamlPolicy.readPermissionsFromYaml(this.yaml);
-                } else {
+                if (this.disabled()) {
                     res = new EmptyPermissions();
+                } else {
+                    res = YamlPolicy.readPermissionsFromYaml(this.yaml);
                 }
                 return res;
             };
@@ -270,7 +271,7 @@ public final class YamlPolicy implements Policy<UserPermissions> {
          */
         Collection<String> roles() {
             Set<String> roles = Collections.emptySet();
-            if (this.enabled()) {
+            if (!this.disabled()) {
                 final YamlSequence sequence = this.yaml.yamlSequence("roles");
                 if (sequence != null) {
                     roles = sequence.values().stream().map(item -> item.asScalar().value())
@@ -278,6 +279,26 @@ public final class YamlPolicy implements Policy<UserPermissions> {
                 }
             }
             return roles;
+        }
+
+        /**
+         * Read yaml mapping properly handling the possible errors.
+         * @param asto Storage to read user yaml file from
+         * @param username The name of the user
+         * @return Yaml mapping
+         */
+        private static YamlMapping getYamlMapping(final BlockingStorage asto,
+            final String username) {
+            final String filename = String.format(User.FORMAT, username);
+            YamlMapping res;
+            try {
+                res = YamlPolicy.readFile(asto, filename)
+                    .yamlMapping(username);
+            } catch (final IOException | ValueNotFoundException err) {
+                Logger.error(err, String.format("Failed to read or parse file '%s'", filename));
+                res = Yaml.createYamlMappingBuilder().build();
+            }
+            return res;
         }
     }
 }

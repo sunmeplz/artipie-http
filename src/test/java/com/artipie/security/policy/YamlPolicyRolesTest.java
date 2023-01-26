@@ -62,6 +62,14 @@ class YamlPolicyRolesTest {
         );
     }
 
+    @Test
+    void returnsEmptyPermissionsIfFileDoesNotExists() {
+        MatcherAssert.assertThat(
+            new YamlPolicy.Roles(this.asto).apply("any"),
+            new IsInstanceOf(EmptyPermissions.class)
+        );
+    }
+
     private byte[] javaDev() {
         return String.join(
             "\n",
