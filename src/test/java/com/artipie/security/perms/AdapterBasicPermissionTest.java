@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  * Test for {@link AdapterBasicPermission}.
  * @since 1.2
  */
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.TooManyMethods"})
 class AdapterBasicPermissionTest {
 
     @ParameterizedTest
@@ -139,6 +139,39 @@ class AdapterBasicPermissionTest {
         MatcherAssert.assertThat(
             new AdapterBasicPermission("some-name", action).implies(
                 new AdapterBasicPermission("*",  action)
+            ),
+            new IsEqual<>(false)
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"write", "delete", "read", "*"})
+    void noActionsAreAllowedIfActionsStringIsEmpty(final String action) {
+        MatcherAssert.assertThat(
+            new AdapterBasicPermission("some-name", "").implies(
+                new AdapterBasicPermission("some-name",  action)
+            ),
+            new IsEqual<>(false)
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"write", "delete", "read", "*"})
+    void noneActionIsImplied(final String action) {
+        MatcherAssert.assertThat(
+            new AdapterBasicPermission("some-name", action).implies(
+                new AdapterBasicPermission("some-name", Action.NONE)
+            ),
+            new IsEqual<>(true)
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"write", "delete", "read", "*"})
+    void noneActionDoesNotImplyAnyAction(final String action) {
+        MatcherAssert.assertThat(
+            new AdapterBasicPermission("some-name", Action.NONE).implies(
+                new AdapterBasicPermission("some-name", action)
             ),
             new IsEqual<>(false)
         );

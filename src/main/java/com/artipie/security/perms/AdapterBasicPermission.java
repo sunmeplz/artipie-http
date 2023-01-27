@@ -171,7 +171,7 @@ public final class AdapterBasicPermission extends Permission {
      */
     private static int maskFromActions(final Set<String> actions) {
         int res = Action.NONE.mask();
-        if (actions.isEmpty()) {
+        if (actions.isEmpty() || actions.size() == 1 && actions.contains("")) {
             res = Action.NONE.mask();
         } else if (actions.contains(Action.ALL.names().iterator().next())) {
             res = Action.ALL.mask();

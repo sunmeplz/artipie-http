@@ -57,25 +57,31 @@ public final class AuthzSlice implements Slice {
         final Iterable<Map.Entry<String, String>> headers,
         final Publisher<ByteBuffer> body
     ) {
-        return new AsyncResponse(
-            this.auth.authenticate(headers, line).thenApply(
-                result -> result.user().map(this.control::allowed).map(
-                    allowed -> {
-                        final Response rsp;
-                        if (allowed) {
-                            rsp = this.origin.response(line, headers, body);
-                        } else {
-                            rsp = new RsWithStatus(RsStatus.FORBIDDEN);
+        final Response response;
+        if (this.control.allowed(Authentication.ANY_USER)) {
+            response = this.origin.response(line, headers, body);
+        } else {
+            response = new AsyncResponse(
+                this.auth.authenticate(headers, line).thenApply(
+                    result -> result.user().map(this.control::allowed).map(
+                        allowed -> {
+                            final Response rsp;
+                            if (allowed) {
+                                rsp = this.origin.response(line, headers, body);
+                            } else {
+                                rsp = new RsWithStatus(RsStatus.FORBIDDEN);
+                            }
+                            return rsp;
                         }
-                        return rsp;
-                    }
-                ).orElseGet(
-                    () -> new RsWithHeaders(
-                        new RsWithStatus(RsStatus.UNAUTHORIZED),
-                        new Headers.From(new WwwAuthenticate(result.challenge()))
+                    ).orElseGet(
+                        () -> new RsWithHeaders(
+                            new RsWithStatus(RsStatus.UNAUTHORIZED),
+                            new Headers.From(new WwwAuthenticate(result.challenge()))
+                        )
                     )
                 )
-            )
-        );
+            );
+        }
+        return response;
     }
 }

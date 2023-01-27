@@ -23,16 +23,16 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link BasicAuthSlice}.
- * @since 0.17
+ * Test for {@link BasicAuthzSlice}.
+ * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-final class BasicAuthSliceTest {
+class BasicAuthzSliceTest {
 
     @Test
     void proxyToOriginSliceIfAllowed() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
                 user -> true
@@ -47,7 +47,7 @@ final class BasicAuthSliceTest {
     @Test
     void returnsUnauthorizedErrorIfUnableToAuthenticate() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
                 user -> false
@@ -66,7 +66,7 @@ final class BasicAuthSliceTest {
     void returnsForbiddenIfNotAllowed() {
         final String name = "john";
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
                 (user, pswd) -> Optional.of(new Authentication.User(name)),
                 user -> false
@@ -85,7 +85,7 @@ final class BasicAuthSliceTest {
         final String aladdin = "Aladdin";
         final String pswd = "open sesame";
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 new Authentication.Single(aladdin, pswd),
                 user -> true
@@ -102,7 +102,7 @@ final class BasicAuthSliceTest {
     @Test
     void doesNotAuthenticateIfNotNeeded() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> {
                     throw new IllegalStateException("Should not be invoked");
@@ -117,4 +117,5 @@ final class BasicAuthSliceTest {
             )
         );
     }
+
 }

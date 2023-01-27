@@ -58,7 +58,7 @@ public final class AuthSlice implements Slice {
         final Publisher<ByteBuffer> body
     ) {
         final Response response;
-        if (this.perm.allowed(Permissions.ANY_USER)) {
+        if (this.perm.allowed(Authentication.ANY_USER)) {
             response = this.origin.response(line, headers, body);
         } else {
             response = new AsyncResponse(
