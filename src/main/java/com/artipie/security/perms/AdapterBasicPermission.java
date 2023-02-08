@@ -173,7 +173,7 @@ public final class AdapterBasicPermission extends Permission {
         int res = Action.NONE.mask();
         if (actions.isEmpty() || actions.size() == 1 && actions.contains("")) {
             res = Action.NONE.mask();
-        } else if (actions.contains(Action.ALL.names().iterator().next())) {
+        } else if (actions.contains(AdapterBasicPermission.WILDCARD)) {
             res = Action.ALL.mask();
         } else {
             for (final String item : actions) {

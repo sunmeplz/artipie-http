@@ -139,7 +139,7 @@ public final class YamlPolicy implements Policy<UserPermissions> {
         final YamlMapping all = mapping.yamlMapping("permissions");
         final PermissionCollection res;
         if (all == null || all.keys().isEmpty()) {
-            res = new EmptyPermissions();
+            res = EmptyPermissions.INSTANCE;
         } else {
             res = new Permissions();
             for (final String type : all.keys().stream().map(item -> item.asScalar().value())
@@ -203,13 +203,13 @@ public final class YamlPolicy implements Policy<UserPermissions> {
                     .yamlMapping(role);
                 final String enabled = mapping.string(Roles.ENABLED);
                 if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
-                    res = new EmptyPermissions();
+                    res = EmptyPermissions.INSTANCE;
                 } else {
                     res = YamlPolicy.readPermissionsFromYaml(mapping);
                 }
             } catch (final IOException | ValueNotFoundException err) {
                 Logger.error(err, String.format("Failed to read/parse file '%s'", filename));
-                res = new EmptyPermissions();
+                res = EmptyPermissions.INSTANCE;
             }
             return res;
         }
@@ -257,7 +257,7 @@ public final class YamlPolicy implements Policy<UserPermissions> {
             return () -> {
                 final PermissionCollection res;
                 if (this.disabled()) {
-                    res = new EmptyPermissions();
+                    res = EmptyPermissions.INSTANCE;
                 } else {
                     res = YamlPolicy.readPermissionsFromYaml(this.yaml);
                 }

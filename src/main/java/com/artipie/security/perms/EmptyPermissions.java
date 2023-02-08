@@ -19,9 +19,22 @@ import org.apache.commons.lang3.NotImplementedException;
 public final class EmptyPermissions extends PermissionCollection {
 
     /**
+     * Class instance.
+     */
+    public static final PermissionCollection INSTANCE = new EmptyPermissions();
+
+    /**
      * Required serial.
      */
     private static final long serialVersionUID = -8546496571451236952L;
+
+    /**
+     * Ctor.
+     */
+    @SuppressWarnings("PMD.ConstructorOnlyInitializesOrCallOtherConstructors")
+    private EmptyPermissions() {
+        this.setReadOnly();
+    }
 
     @Override
     public void add(final Permission permission) {

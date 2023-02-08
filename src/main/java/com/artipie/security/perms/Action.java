@@ -20,21 +20,7 @@ public interface Action {
     /**
      * Action that implies any other action.
      */
-    Action ALL = new Action() {
-        @Override
-        public Set<String> names() {
-            return Collections.singleton("*");
-        }
-
-        @Override
-        public int mask() {
-            final AtomicInteger res = new AtomicInteger();
-            Arrays.stream(Standard.values()).map(Action::mask).forEach(
-                val -> res.updateAndGet(v -> v | val)
-            );
-            return res.get();
-        }
-    };
+    Action ALL = new All();
 
     /**
      * Action that does not imply any other action.
@@ -130,6 +116,48 @@ public interface Action {
             throw new IllegalArgumentException(
                 String.format("Unknown permission action %s", name)
             );
+        }
+    }
+
+    /**
+     * Action that implies any other action.
+     * @since 1.2
+     */
+    final class All implements Action {
+
+        /**
+         * The action mask.
+         */
+        private final int mask;
+
+        /**
+         * Ctor.
+         */
+        private All() {
+            this.mask = All.calcMask();
+        }
+
+        @Override
+        public Set<String> names() {
+            return Collections.singleton("*");
+        }
+
+        @Override
+        public int mask() {
+            return this.mask;
+        }
+
+        /**
+         * Calculate action mask, the method is called only once on the first
+         * call to the {@link Action#ALL} variable.
+         * @return The mask
+         */
+        private static int calcMask() {
+            final AtomicInteger res = new AtomicInteger();
+            Arrays.stream(Standard.values()).map(Action::mask).forEach(
+                val -> res.updateAndGet(v -> v | val)
+            );
+            return res.get();
         }
     }
 

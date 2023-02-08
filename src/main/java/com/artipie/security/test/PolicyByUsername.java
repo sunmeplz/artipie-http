@@ -34,7 +34,7 @@ public final class PolicyByUsername implements Policy<PermissionCollection> {
         if (this.name.equals(uname)) {
             res = new FreePermissions();
         } else {
-            res = new EmptyPermissions();
+            res = EmptyPermissions.INSTANCE;
         }
         return res;
     }
