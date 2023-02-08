@@ -68,7 +68,7 @@ import java.util.stream.Collectors;
  * david:
  *   type: plain
  *   pass: qwerty
- *   email: jane@example.com # Optional
+ *   email: david@example.com # Optional
  *   enabled: true # optional default true
  *   roles:
  *     - java-dev
