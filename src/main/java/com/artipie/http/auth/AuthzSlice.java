@@ -36,7 +36,7 @@ public final class AuthzSlice implements Slice {
     /**
      * Access control by permission.
      */
-    private final AccessControl control;
+    private final OperationControl control;
 
     /**
      * Ctor.
@@ -45,7 +45,7 @@ public final class AuthzSlice implements Slice {
      * @param auth Authentication scheme.
      * @param control Access control by permission.
      */
-    public AuthzSlice(final Slice origin, final AuthScheme auth, final AccessControl control) {
+    public AuthzSlice(final Slice origin, final AuthScheme auth, final OperationControl control) {
         this.origin = origin;
         this.auth = auth;
         this.control = control;

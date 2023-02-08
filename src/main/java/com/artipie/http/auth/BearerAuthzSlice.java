@@ -19,7 +19,7 @@ public final class BearerAuthzSlice extends Slice.Wrap {
      * @param control Access control by permission
      */
     public BearerAuthzSlice(final Slice origin, final TokenAuthentication auth,
-        final AccessControl control) {
+        final OperationControl control) {
         super(new AuthzSlice(origin, new BearerAuthScheme(auth, ""), control));
     }
 
@@ -30,7 +30,7 @@ public final class BearerAuthzSlice extends Slice.Wrap {
      * @param control Access control by permission
      */
     public BearerAuthzSlice(final Slice origin, final BearerAuthScheme scheme,
-        final AccessControl control) {
+        final OperationControl control) {
         super(new AuthzSlice(origin, scheme, control));
     }
 }

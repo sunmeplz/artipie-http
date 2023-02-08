@@ -19,7 +19,7 @@ public final class BasicAuthzSlice extends Slice.Wrap {
      * @param control Access control
      */
     public BasicAuthzSlice(
-        final Slice origin, final Authentication auth, final AccessControl control
+        final Slice origin, final Authentication auth, final OperationControl control
     ) {
         super(new AuthzSlice(origin, new BasicAuthScheme(auth), control));
     }

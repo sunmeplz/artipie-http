@@ -17,6 +17,12 @@ import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithStatus;
 import com.artipie.http.rs.StandardRs;
 import com.artipie.http.slice.SliceSimple;
+import com.artipie.security.perms.Action;
+import com.artipie.security.perms.AdapterBasicPermission;
+import com.artipie.security.perms.EmptyPermissions;
+import com.artipie.security.policy.Policy;
+import com.artipie.security.test.FreePermissions;
+import com.artipie.security.test.PolicyByUsername;
 import java.util.Optional;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -27,6 +33,7 @@ import org.junit.jupiter.api.Test;
  * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class BasicAuthzSliceTest {
 
     @Test
@@ -35,7 +42,7 @@ class BasicAuthzSliceTest {
             new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
-                user -> true
+                new OperationControl(Policy.FREE, new AdapterBasicPermission("any", Action.ALL))
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
@@ -50,7 +57,10 @@ class BasicAuthzSliceTest {
             new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
-                user -> false
+                new OperationControl(
+                    user -> EmptyPermissions.INSTANCE,
+                    new AdapterBasicPermission("any", Action.NONE)
+                )
             ),
             new SliceHasResponse(
                 Matchers.allOf(
@@ -69,7 +79,10 @@ class BasicAuthzSliceTest {
             new BasicAuthzSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
                 (user, pswd) -> Optional.of(new Authentication.User(name)),
-                user -> false
+                new OperationControl(
+                    user -> EmptyPermissions.INSTANCE,
+                    new AdapterBasicPermission("any", Action.NONE)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.FORBIDDEN),
@@ -88,7 +101,10 @@ class BasicAuthzSliceTest {
             new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 new Authentication.Single(aladdin, pswd),
-                user -> true
+                new OperationControl(
+                    user -> new FreePermissions(),
+                    new AdapterBasicPermission("any", Action.ALL)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
@@ -107,7 +123,10 @@ class BasicAuthzSliceTest {
                 (user, pswd) -> {
                     throw new IllegalStateException("Should not be invoked");
                 },
-                user -> user.equals(Authentication.ANY_USER)
+                new OperationControl(
+                    new PolicyByUsername(Authentication.ANY_USER.name()),
+                    new AdapterBasicPermission("any", Action.ALL)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
