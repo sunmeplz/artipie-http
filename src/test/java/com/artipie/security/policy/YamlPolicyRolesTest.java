@@ -18,7 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Test for {@link YamlPolicy.Roles}.
+ * Test for {@link CachedYamlPolicy.Roles}.
  * @since 1.2
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
@@ -39,7 +39,7 @@ class YamlPolicyRolesTest {
     void readsRolePermissions(final String key) {
         this.asto.save(new Key.From("roles", key), this.javaDev());
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("java-dev"),
+            new CachedYamlPolicy.Roles(this.asto).perms("java-dev"),
             new IsInstanceOf(Permissions.class)
         );
     }
@@ -48,7 +48,7 @@ class YamlPolicyRolesTest {
     void readsAdminPermissions() {
         this.asto.save(new Key.From("roles/admin.yaml"), this.admin());
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("admin"),
+            new CachedYamlPolicy.Roles(this.asto).perms("admin"),
             new IsInstanceOf(Permissions.class)
         );
     }
@@ -57,7 +57,7 @@ class YamlPolicyRolesTest {
     void returnsEmptyPermissionsIfRoleDisabled() {
         this.asto.save(new Key.From("roles/some-role.yaml"), this.disabled());
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("some-role"),
+            new CachedYamlPolicy.Roles(this.asto).perms("some-role"),
             new IsInstanceOf(EmptyPermissions.class)
         );
     }
@@ -65,7 +65,7 @@ class YamlPolicyRolesTest {
     @Test
     void returnsEmptyPermissionsIfFileDoesNotExists() {
         MatcherAssert.assertThat(
-            new YamlPolicy.Roles(this.asto).apply("any"),
+            new CachedYamlPolicy.Roles(this.asto).perms("any"),
             new IsInstanceOf(EmptyPermissions.class)
         );
     }

@@ -29,7 +29,25 @@ class YamlPolicyFactoryTest {
                         ).build()
                 )
             ),
-            new IsInstanceOf(YamlPolicy.class)
+            new IsInstanceOf(CachedYamlPolicy.class)
+        );
+    }
+
+    @Test
+    void createsYamlPolicyWithEviction() {
+        MatcherAssert.assertThat(
+            new YamlPolicyFactory().getPolicy(
+                new YamlPolicyConfig(
+                    Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
+                        .add("eviction_millis", "50000")
+                        .add(
+                            "storage",
+                            Yaml.createYamlMappingBuilder().add("type", "fs")
+                                .add("path", "/some/path").build()
+                        ).build()
+                )
+            ),
+            new IsInstanceOf(CachedYamlPolicy.class)
         );
     }
 

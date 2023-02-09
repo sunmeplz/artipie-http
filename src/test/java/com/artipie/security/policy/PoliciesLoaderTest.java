@@ -34,7 +34,7 @@ public class PoliciesLoaderTest {
                         ).build()
                 )
             ),
-            new IsInstanceOf(YamlPolicy.class)
+            new IsInstanceOf(CachedYamlPolicy.class)
         );
     }
 

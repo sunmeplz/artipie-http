@@ -14,8 +14,8 @@ import java.util.function.Supplier;
 
 /**
  * Implementation of {@link PermissionCollection} for user. It takes into account
- * user personal permissions and his roles. The roles are stored as collection,
- * user permissions are represented by {@link Supplier} interface in order they can actually be
+ * user personal permissions and his roles. The roles and user permissions
+ * are represented by {@link Supplier} interface in order they can actually be
  * addressed on demand only. The same goes for permissions for role, they are represented by
  * {@link Function} interface and are addressed only on demand.
  * <p>
@@ -39,7 +39,7 @@ public final class UserPermissions extends PermissionCollection {
     /**
      * User roles.
      */
-    private final Collection<String> roles;
+    private final Supplier<Collection<String>> roles;
 
     /**
      * User permissions.
@@ -61,7 +61,7 @@ public final class UserPermissions extends PermissionCollection {
      */
     public UserPermissions(
         final Supplier<PermissionCollection> perms,
-        final Collection<String> roles,
+        final Supplier<Collection<String>> roles,
         final Function<String, PermissionCollection> rperms
     ) {
         this.rperms = rperms;
@@ -92,7 +92,7 @@ public final class UserPermissions extends PermissionCollection {
                 this.last.set(null);
             } else {
                 // @checkstyle NestedIfDepthCheck (5 lines)
-                for (final String role : this.roles) {
+                for (final String role : this.roles.get()) {
                     if (!role.equals(ref) && this.rperms.apply(role).implies(permission)) {
                         res = true;
                         this.last.set(role);
