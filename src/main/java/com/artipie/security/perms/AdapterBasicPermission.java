@@ -220,6 +220,11 @@ public final class AdapterBasicPermission extends Permission {
 
         @Override
         public void add(final Permission permission) {
+            if (this.isReadOnly()) {
+                throw new SecurityException(
+                    "attempt to add a Permission to a readonly PermissionCollection"
+                );
+            }
             if (permission instanceof AdapterBasicPermission) {
                 this.perms.put(permission.getName(), permission);
                 if (permission.getName().equals(AdapterBasicPermission.WILDCARD)

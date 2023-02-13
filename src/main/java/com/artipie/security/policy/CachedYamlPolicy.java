@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Cached yaml policy implementation obtains permissions from yaml files and uses
  * {@link com.google.common.cache.Cache} cache to avoid reading yamls from storage on each request.
- *
+ * <p/>
  * The storage itself is expected to have yaml files with permissions in the following structure:
  * <pre>
  * ..
@@ -92,6 +92,12 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      * Permissions factories.
      */
     private static final PermissionsLoader FACTORIES = new PermissionsLoader();
+
+    /**
+     * Empty permissions' config.
+     */
+    private static final PermissionConfig EMPTY_CONFIG =
+        new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build());
 
     /**
      * Cache for usernames and {@link UserPermissions}.
@@ -186,12 +192,13 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      * @return Callable to create {@link UserPermissions}
      */
     private Callable<UserPermissions> createUserPermissions(final String uname) {
+        final User user = new User(this.asto, uname);
         return () -> new UserPermissions(
             new UncheckedSupplier<>(
-                () -> this.users.get(uname, () -> new User(this.asto, uname).perms())
+                () -> this.users.get(uname, user::perms)
             ),
             new UncheckedSupplier<>(
-                () -> this.uroles.get(uname, () -> new User(this.asto, uname).roles())
+                () -> this.uroles.get(uname, user::roles)
             ),
             new UncheckedFunc<>(
                 role -> this.roles.get(role, () -> new Roles(this.asto).perms(role))
@@ -239,11 +246,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
                 .collect(Collectors.toSet())) {
                 final YamlMapping perms = all.yamlMapping(type);
                 if (perms == null || perms.keys().isEmpty()) {
-                    res.add(
-                        FACTORIES.newObject(
-                            type, new PermissionConfig.Yaml(Yaml.createYamlMappingBuilder().build())
-                        )
-                    );
+                    res.add(FACTORIES.newObject(type, CachedYamlPolicy.EMPTY_CONFIG));
                 } else {
                     perms.keys().stream().map(key -> key.asScalar().value()).forEach(
                         key -> res.add(

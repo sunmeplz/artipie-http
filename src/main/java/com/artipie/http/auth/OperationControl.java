@@ -10,7 +10,7 @@ import java.security.Permission;
 /**
  * Operation controller for slice. The class is meant to check
  * if required permission is granted for user.
- *
+ * <p/>
  * Instances of this class are created in the adapter with users' policies and required
  * permission for the adapter' operation.
  * @since 1.2

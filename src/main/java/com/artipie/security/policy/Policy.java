@@ -5,7 +5,7 @@
 package com.artipie.security.policy;
 
 import com.artipie.security.perms.AdapterBasicPermission;
-import com.artipie.security.test.FreePermissions;
+import com.artipie.security.perms.FreePermissions;
 import java.security.PermissionCollection;
 
 /**

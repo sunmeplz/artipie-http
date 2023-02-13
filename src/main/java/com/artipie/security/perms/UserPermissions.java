@@ -8,6 +8,7 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,9 +19,27 @@ import java.util.function.Supplier;
  * are represented by {@link Supplier} interface in order they can actually be
  * addressed on demand only. The same goes for permissions for role, they are represented by
  * {@link Function} interface and are addressed only on demand.
- * <p>
+ * <p/>
  * The implementations of the {@link Supplier} and {@link Function} are user's choose, it can
  * read permissions from file on each call or use some complex caches inside.
+ * <p/>
+ * Method {@link UserPermissions#implies(Permission)} implementation note:
+ * <p/>
+ * first, we check if the permission is implied according to the {@link UserPermissions#last}
+ * reference calling {@link UserPermissions#checkReference(String, Permission)} method.
+ * Synchronization is not required here as
+ * <p>
+ * 1) we do not change the value of {@link UserPermissions#last} field
+ * </p>
+ * <p>
+ * 2) it does not matter if the {@link UserPermissions#last} value was changed in the synchronized
+ *   section by other thread if we get positive result.
+ * </p>
+ * <p/>
+ * second, if we do not get the positive result, we enter synchronized section, get the value
+ * from {@link UserPermissions#last} and check it again if the value was changed. Then, if the
+ * result is still negative, we perform the whole check by the user's personal permissions and all
+ * the groups.
  *
  * @since 1.2
  */
@@ -76,27 +95,32 @@ public final class UserPermissions extends PermissionCollection {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     public boolean implies(final Permission permission) {
-        boolean res;
-        final String ref = this.last.get();
-        if (ref == null) {
-            res = this.perms.get().implies(permission);
-        } else {
-            res = this.rperms.apply(ref).implies(permission);
-        }
+        final String first = this.last.get();
+        boolean res = this.checkReference(first, permission);
         if (!res) {
-            if (ref != null) {
-                res = this.perms.get().implies(permission);
-            }
-            if (res) {
-                this.last.set(null);
-            } else {
-                // @checkstyle NestedIfDepthCheck (5 lines)
-                for (final String role : this.roles.get()) {
-                    if (!role.equals(ref) && this.rperms.apply(role).implies(permission)) {
-                        res = true;
-                        this.last.set(role);
-                        break;
+            synchronized (this.last) {
+                final String second = this.last.get();
+                if (!Objects.equals(first, second)) {
+                    res = this.checkReference(second, permission);
+                }
+                // @checkstyle NestedIfDepthCheck (20 lines)
+                if (!res) {
+                    if (second != null) {
+                        res = this.perms.get().implies(permission);
+                    }
+                    if (res) {
+                        this.last.set(null);
+                    } else {
+                        for (final String role : this.roles.get()) {
+                            if (!role.equals(second)
+                                && this.rperms.apply(role).implies(permission)) {
+                                res = true;
+                                this.last.set(role);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -107,5 +131,21 @@ public final class UserPermissions extends PermissionCollection {
     @Override
     public Enumeration<Permission> elements() {
         return this.perms.get().elements();
+    }
+
+    /**
+     * Check the permission according to the given reference (group or personal perms).
+     * @param ref The reference for the check
+     * @param permission The permission to check
+     * @return The result, true if according to the last ref permission is implied
+     */
+    private boolean checkReference(final String ref, final Permission permission) {
+        final boolean res;
+        if (ref == null) {
+            res = this.perms.get().implies(permission);
+        } else {
+            res = this.rperms.apply(ref).implies(permission);
+        }
+        return res;
     }
 }

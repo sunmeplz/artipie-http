@@ -2,10 +2,10 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.security.test;
+package com.artipie.security.policy;
 
 import com.artipie.security.perms.EmptyPermissions;
-import com.artipie.security.policy.Policy;
+import com.artipie.security.perms.FreePermissions;
 import java.security.PermissionCollection;
 
 /**
