@@ -51,6 +51,11 @@ public final class UserPermissions extends PermissionCollection {
     private static final long serialVersionUID = -7546496571951236695L;
 
     /**
+     * Lock object.
+     */
+    private final Object lock;
+
+    /**
      * Role permissions.
      */
     private final Function<String, PermissionCollection> rperms;
@@ -87,6 +92,7 @@ public final class UserPermissions extends PermissionCollection {
         this.roles = roles;
         this.perms = perms;
         this.last = new AtomicReference<>();
+        this.lock = new Object();
     }
 
     @Override
@@ -100,7 +106,7 @@ public final class UserPermissions extends PermissionCollection {
         final String first = this.last.get();
         boolean res = this.checkReference(first, permission);
         if (!res) {
-            synchronized (this.last) {
+            synchronized (this.lock) {
                 final String second = this.last.get();
                 if (!Objects.equals(first, second)) {
                     res = this.checkReference(second, permission);
