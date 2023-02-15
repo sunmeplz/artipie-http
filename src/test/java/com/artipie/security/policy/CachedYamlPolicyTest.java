@@ -9,12 +9,12 @@ import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.security.perms.Action;
 import com.artipie.security.perms.AdapterBasicPermission;
+import com.artipie.security.perms.User;
 import com.artipie.security.perms.UserPermissions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.nio.charset.StandardCharsets;
 import java.security.PermissionCollection;
-import java.util.Collection;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,14 +33,9 @@ class CachedYamlPolicyTest {
     private Cache<String, UserPermissions> cache;
 
     /**
-     * Cache for usernames and user roles.
+     * Cache for usernames and user roles and individual permissions.
      */
-    private Cache<String, Collection<String>> uroles;
-
-    /**
-     * Cache for username and user individual permissions.
-     */
-    private Cache<String, PermissionCollection> users;
+    private Cache<String, User> user;
 
     /**
      * Cache for role name and role permissions.
@@ -56,8 +51,7 @@ class CachedYamlPolicyTest {
     void init() {
         this.asto = new BlockingStorage(new InMemoryStorage());
         this.cache = CacheBuilder.newBuilder().build();
-        this.users = CacheBuilder.newBuilder().build();
-        this.uroles = CacheBuilder.newBuilder().build();
+        this.user = CacheBuilder.newBuilder().build();
         this.roles = CacheBuilder.newBuilder().build();
     }
 
@@ -66,7 +60,7 @@ class CachedYamlPolicyTest {
         this.asto.save(new Key.From("users/alice.yml"), this.aliceConfig());
         this.asto.save(new Key.From("roles/java-dev.yaml"), this.javaDev());
         final CachedYamlPolicy policy = new CachedYamlPolicy(
-            this.cache, this.users, this.uroles, this.roles, this.asto
+            this.cache, this.user, this.roles, this.asto
         );
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
@@ -80,13 +74,8 @@ class CachedYamlPolicyTest {
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
-            "Cache with user individual permissions has 1 item",
-            this.users.size(),
-            new IsEqual<>(1L)
-        );
-        MatcherAssert.assertThat(
-            "Cache with user roles has 1 item",
-            this.uroles.size(),
+            "Cache with user has 1 item",
+            this.user.size(),
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
@@ -94,8 +83,7 @@ class CachedYamlPolicyTest {
             this.roles.size(),
             new IsEqual<>(1L)
         );
-        this.users.invalidateAll();
-        this.uroles.invalidateAll();
+        this.user.invalidateAll();
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
             policy.getPermissions("alice")
@@ -108,13 +96,8 @@ class CachedYamlPolicyTest {
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
-            "Cache with user individual permissions has 0 items",
-            this.users.size(),
-            new IsEqual<>(0L)
-        );
-        MatcherAssert.assertThat(
-            "Cache with user roles has 0 items",
-            this.uroles.size(),
+            "Cache with user roles and individual permissions has 0 items",
+            this.user.size(),
             new IsEqual<>(0L)
         );
         MatcherAssert.assertThat(
@@ -128,7 +111,7 @@ class CachedYamlPolicyTest {
     void aliceCanReadFromRpmRepoWithIndividualPerm() {
         this.asto.save(new Key.From("users/alice.yml"), this.aliceConfig());
         final CachedYamlPolicy policy = new CachedYamlPolicy(
-            this.cache, this.users, this.uroles, this.roles, this.asto
+            this.cache, this.user, this.roles, this.asto
         );
         MatcherAssert.assertThat(
             "Alice can read from rpm repo",
@@ -142,14 +125,9 @@ class CachedYamlPolicyTest {
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
-            "Cache with user individual permissions has 1 item",
-            this.users.size(),
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
             new IsEqual<>(1L)
-        );
-        MatcherAssert.assertThat(
-            "Cache with user roles has 0 items",
-            this.uroles.size(),
-            new IsEqual<>(0L)
         );
         MatcherAssert.assertThat(
             "Cache with role permissions has 0 items",
@@ -163,7 +141,7 @@ class CachedYamlPolicyTest {
         this.asto.save(new Key.From("users/alice.yml"), this.aliceConfig());
         this.asto.save(new Key.From("roles/java-dev.yaml"), this.javaDev());
         final CachedYamlPolicy policy = new CachedYamlPolicy(
-            this.cache, this.users, this.uroles, this.roles, this.asto
+            this.cache, this.user, this.roles, this.asto
         );
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
@@ -177,13 +155,8 @@ class CachedYamlPolicyTest {
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
-            "Cache with user individual permissions has 1 item",
-            this.users.size(),
-            new IsEqual<>(1L)
-        );
-        MatcherAssert.assertThat(
-            "Cache with user roles has 1 item",
-            this.uroles.size(),
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
@@ -191,7 +164,6 @@ class CachedYamlPolicyTest {
             this.roles.size(),
             new IsEqual<>(1L)
         );
-        this.uroles.invalidateAll();
         MatcherAssert.assertThat(
             "Alice can read from rpm repo",
             policy.getPermissions("alice")
@@ -204,14 +176,9 @@ class CachedYamlPolicyTest {
             new IsEqual<>(1L)
         );
         MatcherAssert.assertThat(
-            "Cache with user individual permissions has 1 item",
-            this.users.size(),
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
             new IsEqual<>(1L)
-        );
-        MatcherAssert.assertThat(
-            "Cache with user roles has 0 items",
-            this.uroles.size(),
-            new IsEqual<>(0L)
         );
         MatcherAssert.assertThat(
             "Cache with role permissions has 1 item",

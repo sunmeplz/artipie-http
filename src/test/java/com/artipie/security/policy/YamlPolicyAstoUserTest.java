@@ -19,11 +19,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Test for {@link CachedYamlPolicy.User}.
+ * Test for {@link CachedYamlPolicy.AstoUser}.
  * @since 1.2
  */
 @SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.TooManyMethods"})
-class YamlPolicyUserTest {
+class YamlPolicyAstoUserTest {
 
     /**
      * Test storage.
@@ -40,7 +40,7 @@ class YamlPolicyUserTest {
     void readsUserRoles(final String key) {
         this.asto.save(new Key.From(key), this.aliceConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "alice").roles(),
+            new CachedYamlPolicy.AstoUser(this.asto, "alice").roles(),
             Matchers.containsInAnyOrder("java-dev", "unknown-role")
         );
     }
@@ -49,7 +49,7 @@ class YamlPolicyUserTest {
     void returnsEmptySetWhenUserDoesNotHaveRoles() {
         this.asto.save(new Key.From("users/david.yaml"), this.davidConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "david").roles(),
+            new CachedYamlPolicy.AstoUser(this.asto, "david").roles(),
             Matchers.empty()
         );
     }
@@ -59,7 +59,7 @@ class YamlPolicyUserTest {
     void readUserPerms(final String key) {
         this.asto.save(new Key.From(key), this.aliceConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "alice").perms(),
+            new CachedYamlPolicy.AstoUser(this.asto, "alice").perms(),
             new IsInstanceOf(Permissions.class)
         );
     }
@@ -68,7 +68,7 @@ class YamlPolicyUserTest {
     void readsAllPerm() {
         this.asto.save(new Key.From("users/david.yml"), this.davidConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "david").perms(),
+            new CachedYamlPolicy.AstoUser(this.asto, "david").perms(),
             new IsInstanceOf(Permissions.class)
         );
     }
@@ -77,7 +77,7 @@ class YamlPolicyUserTest {
     void returnsEmptyRolesIfDisabled() {
         this.asto.save(new Key.From("users/john.yaml"), this.johnConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "john").roles(),
+            new CachedYamlPolicy.AstoUser(this.asto, "john").roles(),
             Matchers.empty()
         );
     }
@@ -86,7 +86,7 @@ class YamlPolicyUserTest {
     void returnsEmptyPermissionsIfDisabled() {
         this.asto.save(new Key.From("users/john.yaml"), this.johnConfig());
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "john").perms(),
+            new CachedYamlPolicy.AstoUser(this.asto, "john").perms(),
             new IsInstanceOf(EmptyPermissions.class)
         );
     }
@@ -94,7 +94,7 @@ class YamlPolicyUserTest {
     @Test
     void returnsEmptyGroupsIfFileNotFound() {
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "Anyone").roles(),
+            new CachedYamlPolicy.AstoUser(this.asto, "Anyone").roles(),
             Matchers.empty()
         );
     }
@@ -102,7 +102,7 @@ class YamlPolicyUserTest {
     @Test
     void returnsEmptyPermsIfFileNotFound() {
         MatcherAssert.assertThat(
-            new CachedYamlPolicy.User(this.asto, "JaneDoe").perms(),
+            new CachedYamlPolicy.AstoUser(this.asto, "JaneDoe").perms(),
             new IsInstanceOf(EmptyPermissions.class)
         );
     }

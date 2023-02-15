@@ -6,7 +6,6 @@ package com.artipie.security.perms;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
 
 /**
  * Implementation of {@link PermissionCollection} for user. It takes into account
- * user personal permissions and his roles. The roles and user permissions
+ * user individual permissions and his roles. The roles and user permissions
  * are represented by {@link Supplier} interface in order they can actually be
  * addressed on demand only. The same goes for permissions for role, they are represented by
  * {@link Function} interface and are addressed only on demand.
@@ -61,14 +60,9 @@ public final class UserPermissions extends PermissionCollection {
     private final Function<String, PermissionCollection> rperms;
 
     /**
-     * User roles.
+     * User with his roles and individual permissions.
      */
-    private final Supplier<Collection<String>> roles;
-
-    /**
-     * User permissions.
-     */
-    private final Supplier<PermissionCollection> perms;
+    private final Supplier<User> user;
 
     /**
      * The name of the group, which implied the permission in the previous
@@ -79,25 +73,22 @@ public final class UserPermissions extends PermissionCollection {
 
     /**
      * Ctor.
-     * @param perms User permissions
-     * @param roles User roles
+     * @param user User individual permissions and roles
      * @param rperms Role permissions
      */
     public UserPermissions(
-        final Supplier<PermissionCollection> perms,
-        final Supplier<Collection<String>> roles,
+        final Supplier<User> user,
         final Function<String, PermissionCollection> rperms
     ) {
         this.rperms = rperms;
-        this.roles = roles;
-        this.perms = perms;
+        this.user = user;
         this.last = new AtomicReference<>();
         this.lock = new Object();
     }
 
     @Override
     public void add(final Permission permission) {
-        this.perms.get().add(permission);
+        this.user.get().perms().add(permission);
     }
 
     @Override
@@ -114,12 +105,12 @@ public final class UserPermissions extends PermissionCollection {
                 // @checkstyle NestedIfDepthCheck (20 lines)
                 if (!res) {
                     if (second != null) {
-                        res = this.perms.get().implies(permission);
+                        res = this.user.get().perms().implies(permission);
                     }
                     if (res) {
                         this.last.set(null);
                     } else {
-                        for (final String role : this.roles.get()) {
+                        for (final String role : this.user.get().roles()) {
                             if (!role.equals(second)
                                 && this.rperms.apply(role).implies(permission)) {
                                 res = true;
@@ -136,11 +127,11 @@ public final class UserPermissions extends PermissionCollection {
 
     @Override
     public Enumeration<Permission> elements() {
-        return this.perms.get().elements();
+        return this.user.get().perms().elements();
     }
 
     /**
-     * Check the permission according to the given reference (group or personal perms).
+     * Check the permission according to the given reference (group or individual perms).
      * @param ref The reference for the check
      * @param permission The permission to check
      * @return The result, true if according to the last ref permission is implied
@@ -148,7 +139,7 @@ public final class UserPermissions extends PermissionCollection {
     private boolean checkReference(final String ref, final Permission permission) {
         final boolean res;
         if (ref == null) {
-            res = this.perms.get().implies(permission);
+            res = this.user.get().perms().implies(permission);
         } else {
             res = this.rperms.apply(ref).implies(permission);
         }
