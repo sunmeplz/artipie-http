@@ -187,6 +187,38 @@ class CachedYamlPolicyTest {
         );
     }
 
+    @Test
+    void johnCannotWriteIntoTestRepo() {
+        this.asto.save(new Key.From("users/john.yml"), this.johnConfig());
+        this.asto.save(new Key.From("roles/java-dev.yaml"), this.javaDev());
+        this.asto.save(new Key.From("roles/tester.yaml"), this.tester());
+        final CachedYamlPolicy policy = new CachedYamlPolicy(
+            this.cache, this.user, this.roles, this.asto
+        );
+        MatcherAssert.assertThat(
+            "John cannot write into test-repo",
+            policy.getPermissions("john").implies(
+                new AdapterBasicPermission("test-repo", Action.Standard.WRITE)
+            ),
+            new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "Cache with UserPermissions has 1 item",
+            this.cache.size(),
+            new IsEqual<>(1L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
+            new IsEqual<>(1L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with role permissions has 2 items",
+            this.roles.size(),
+            new IsEqual<>(2L)
+        );
+    }
+
     private byte[] aliceConfig() {
         return String.join(
             "\n",
@@ -219,6 +251,36 @@ class CachedYamlPolicyTest {
             "        - read",
             "      npm-repo:",
             "        - read"
+        ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] johnConfig() {
+        return String.join(
+            "\n",
+            "john:",
+            "  type: plain",
+            "  pass: qwerty",
+            "  email: alice@example.com",
+            "  roles:",
+            "    - java-dev",
+            "    - tester",
+            "  permissions:",
+            "    adapter_basic_permission:",
+            "      repo1:",
+            "        - r",
+            "        - w",
+            "        - d"
+        ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] tester() {
+        return String.join(
+            "\n",
+            "tester:",
+            "  permissions:",
+            "    adapter_basic_permission:",
+            "      test-repo:",
+            "        - download"
         ).getBytes(StandardCharsets.UTF_8);
     }
 }
