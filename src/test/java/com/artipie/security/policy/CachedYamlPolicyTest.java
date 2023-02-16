@@ -9,6 +9,7 @@ import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
 import com.artipie.security.perms.Action;
 import com.artipie.security.perms.AdapterBasicPermission;
+import com.artipie.security.perms.User;
 import com.artipie.security.perms.UserPermissions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -34,7 +35,7 @@ class CachedYamlPolicyTest {
     /**
      * Cache for usernames and user roles and individual permissions.
      */
-    private Cache<String, CachedYamlPolicy.AstoUser> user;
+    private Cache<String, User> user;
 
     /**
      * Cache for role name and role permissions.

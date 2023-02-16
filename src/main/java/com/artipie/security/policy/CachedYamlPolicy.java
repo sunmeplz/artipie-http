@@ -16,6 +16,7 @@ import com.artipie.asto.misc.UncheckedSupplier;
 import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.PermissionConfig;
 import com.artipie.security.perms.PermissionsLoader;
+import com.artipie.security.perms.User;
 import com.artipie.security.perms.UserPermissions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -107,7 +108,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     /**
      * Cache for usernames and user with his roles and individual permissions.
      */
-    private final Cache<String, AstoUser> users;
+    private final Cache<String, User> users;
 
     /**
      * Cache for role name and role permissions.
@@ -129,7 +130,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      */
     CachedYamlPolicy(
         final Cache<String, UserPermissions> cache,
-        final Cache<String, AstoUser> users,
+        final Cache<String, User> users,
         final Cache<String, PermissionCollection> roles,
         final BlockingStorage asto
     ) {
@@ -173,6 +174,31 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     }
 
     /**
+     * Get role permissions.
+     * @param asto Storage to read the role permissions from
+     * @param role Role name
+     * @return Permissions of the role
+     */
+    static PermissionCollection rolePermissions(final BlockingStorage asto, final String role) {
+        PermissionCollection res;
+        final String filename = String.format("roles/%s", role);
+        try {
+            final YamlMapping mapping = CachedYamlPolicy.readFile(asto, filename)
+                .yamlMapping(role);
+            final String enabled = mapping.string(AstoUser.ENABLED);
+            if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
+                res = EmptyPermissions.INSTANCE;
+            } else {
+                res = CachedYamlPolicy.readPermissionsFromYaml(mapping);
+            }
+        } catch (final IOException | ValueNotFoundException err) {
+            Logger.error(err, String.format("Failed to read/parse file '%s'", filename));
+            res = EmptyPermissions.INSTANCE;
+        }
+        return res;
+    }
+
+    /**
      * Create instance for {@link UserPermissions} if not found in cache,
      * arguments for the {@link UserPermissions} ctor are the following:
      * 1) supplier for user individual permissions and roles
@@ -187,7 +213,9 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
                 () -> this.users.get(uname, () -> new AstoUser(this.asto, uname))
             ),
             new UncheckedFunc<>(
-                role -> this.roles.get(role, () -> new AstoRoles(this.asto).perms(role))
+                role -> this.roles.get(
+                    role, () -> CachedYamlPolicy.rolePermissions(this.asto, role)
+                )
             )
         );
     }
@@ -253,56 +281,6 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     }
 
     /**
-     * Groups from storage.
-     * @since 1.2
-     */
-    public static final class AstoRoles {
-
-        /**
-         * Enable yaml field.
-         */
-        private static final String ENABLED = "enabled";
-
-        /**
-         * Storage to read roles yaml file from.
-         */
-        private final BlockingStorage asto;
-
-        /**
-         * Ctor.
-         * @param asto Storage to read roles yaml file from
-         */
-        AstoRoles(final BlockingStorage asto) {
-            this.asto = asto;
-        }
-
-        /**
-         * Get role permissions.
-         * @param role Role name
-         * @return Permissions of the role
-         */
-        public PermissionCollection perms(final String role) {
-            PermissionCollection res;
-            final String filename = String.format("roles/%s", role);
-            try {
-                final YamlMapping mapping = CachedYamlPolicy.readFile(this.asto, filename)
-                    .yamlMapping(role);
-                final String enabled = mapping.string(AstoRoles.ENABLED);
-                if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
-                    res = EmptyPermissions.INSTANCE;
-                } else {
-                    res = CachedYamlPolicy.readPermissionsFromYaml(mapping);
-                }
-            } catch (final IOException | ValueNotFoundException err) {
-                Logger.error(err, String.format("Failed to read/parse file '%s'", filename));
-                res = EmptyPermissions.INSTANCE;
-            }
-            return res;
-        }
-
-    }
-
-    /**
      * User from storage.
      * @since 1.2
      */
@@ -310,7 +288,12 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
         "PMD.AvoidFieldNameMatchingMethodName",
         "PMD.ConstructorOnlyInitializesOrCallOtherConstructors"
     })
-    public static final class AstoUser {
+    public static final class AstoUser implements User {
+
+        /**
+         * String to format user settings file name.
+         */
+        private static final String ENABLED = "enabled";
 
         /**
          * String to format user settings file name.
@@ -338,18 +321,12 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
             this.roles = roles(yaml);
         }
 
-        /**
-         * User permissions.
-         * @return Permission collection
-         */
+        @Override
         public PermissionCollection perms() {
             return this.perms;
         }
 
-        /**
-         * User roles.
-         * @return Roles collection
-         */
+        @Override
         public Collection<String> roles() {
             return this.roles;
         }
@@ -392,7 +369,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
          * @return True is user is active
          */
         private static boolean disabled(final YamlMapping yaml) {
-            return Boolean.FALSE.toString().equalsIgnoreCase(yaml.string(AstoRoles.ENABLED));
+            return Boolean.FALSE.toString().equalsIgnoreCase(yaml.string(AstoUser.ENABLED));
         }
 
         /**
