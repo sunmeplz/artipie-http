@@ -17,25 +17,32 @@ import com.artipie.http.rs.RsStatus;
 import com.artipie.http.rs.RsWithStatus;
 import com.artipie.http.rs.StandardRs;
 import com.artipie.http.slice.SliceSimple;
+import com.artipie.security.perms.Action;
+import com.artipie.security.perms.AdapterBasicPermission;
+import com.artipie.security.perms.EmptyPermissions;
+import com.artipie.security.perms.FreePermissions;
+import com.artipie.security.policy.Policy;
+import com.artipie.security.policy.PolicyByUsername;
 import java.util.Optional;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link BasicAuthSlice}.
- * @since 0.17
+ * Test for {@link BasicAuthzSlice}.
+ * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-final class BasicAuthSliceTest {
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+class BasicAuthzSliceTest {
 
     @Test
     void proxyToOriginSliceIfAllowed() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
-                user -> true
+                new OperationControl(Policy.FREE, new AdapterBasicPermission("any", Action.ALL))
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
@@ -47,10 +54,13 @@ final class BasicAuthSliceTest {
     @Test
     void returnsUnauthorizedErrorIfUnableToAuthenticate() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> Optional.empty(),
-                user -> false
+                new OperationControl(
+                    user -> EmptyPermissions.INSTANCE,
+                    new AdapterBasicPermission("any", Action.NONE)
+                )
             ),
             new SliceHasResponse(
                 Matchers.allOf(
@@ -66,10 +76,13 @@ final class BasicAuthSliceTest {
     void returnsForbiddenIfNotAllowed() {
         final String name = "john";
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
                 (user, pswd) -> Optional.of(new Authentication.User(name)),
-                user -> false
+                new OperationControl(
+                    user -> EmptyPermissions.INSTANCE,
+                    new AdapterBasicPermission("any", Action.NONE)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.FORBIDDEN),
@@ -85,10 +98,13 @@ final class BasicAuthSliceTest {
         final String aladdin = "Aladdin";
         final String pswd = "open sesame";
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 new Authentication.Single(aladdin, pswd),
-                user -> true
+                new OperationControl(
+                    user -> new FreePermissions(),
+                    new AdapterBasicPermission("any", Action.ALL)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
@@ -102,12 +118,15 @@ final class BasicAuthSliceTest {
     @Test
     void doesNotAuthenticateIfNotNeeded() {
         MatcherAssert.assertThat(
-            new BasicAuthSlice(
+            new BasicAuthzSlice(
                 new SliceSimple(StandardRs.OK),
                 (user, pswd) -> {
                     throw new IllegalStateException("Should not be invoked");
                 },
-                user -> user.equals(Authentication.ANY_USER)
+                new OperationControl(
+                    new PolicyByUsername(Authentication.ANY_USER.name()),
+                    new AdapterBasicPermission("any", Action.ALL)
+                )
             ),
             new SliceHasResponse(
                 new RsHasStatus(RsStatus.OK),
@@ -117,4 +136,5 @@ final class BasicAuthSliceTest {
             )
         );
     }
+
 }

@@ -2,14 +2,10 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.security;
+package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
-import com.artipie.security.policy.PoliciesLoader;
-import com.artipie.security.policy.Policy;
-import com.artipie.security.policy.YamlPolicy;
-import com.artipie.security.policy.YamlPolicyConfig;
 import java.security.Permissions;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -22,7 +18,7 @@ import org.junit.jupiter.api.Test;
  * @since 1.2
  */
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
-public class PoliciesTest {
+public class PoliciesLoaderTest {
 
     @Test
     void createsYamlPolicy() {
@@ -38,7 +34,7 @@ public class PoliciesTest {
                         ).build()
                 )
             ),
-            new IsInstanceOf(YamlPolicy.class)
+            new IsInstanceOf(CachedYamlPolicy.class)
         );
     }
 

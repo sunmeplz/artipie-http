@@ -2,12 +2,9 @@
  * The MIT License (MIT) Copyright (c) 2020-2022 artipie.com
  * https://github.com/artipie/http/blob/master/LICENSE.txt
  */
-package com.artipie.security;
+package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
-import com.artipie.security.policy.YamlPolicy;
-import com.artipie.security.policy.YamlPolicyConfig;
-import com.artipie.security.policy.YamlPolicyFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.jupiter.api.Test;
@@ -32,7 +29,25 @@ class YamlPolicyFactoryTest {
                         ).build()
                 )
             ),
-            new IsInstanceOf(YamlPolicy.class)
+            new IsInstanceOf(CachedYamlPolicy.class)
+        );
+    }
+
+    @Test
+    void createsYamlPolicyWithEviction() {
+        MatcherAssert.assertThat(
+            new YamlPolicyFactory().getPolicy(
+                new YamlPolicyConfig(
+                    Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
+                        .add("eviction_millis", "50000")
+                        .add(
+                            "storage",
+                            Yaml.createYamlMappingBuilder().add("type", "fs")
+                                .add("path", "/some/path").build()
+                        ).build()
+                )
+            ),
+            new IsInstanceOf(CachedYamlPolicy.class)
         );
     }
 

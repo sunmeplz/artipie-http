@@ -5,8 +5,8 @@
 package custom.policy.db;
 
 import com.artipie.asto.factory.Config;
-import com.artipie.security.PoliciesTest;
 import com.artipie.security.policy.ArtipiePolicyFactory;
+import com.artipie.security.policy.PoliciesLoaderTest;
 import com.artipie.security.policy.Policy;
 import com.artipie.security.policy.PolicyFactory;
 import java.security.Permissions;
@@ -19,6 +19,6 @@ import java.security.Permissions;
 public final class DbPolicyFactory implements PolicyFactory {
     @Override
     public Policy<Permissions> getPolicy(final Config config) {
-        return new PoliciesTest.TestPolicy();
+        return new PoliciesLoaderTest.TestPolicy();
     }
 }

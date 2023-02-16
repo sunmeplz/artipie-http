@@ -17,11 +17,11 @@ import java.util.Map;
 import org.reactivestreams.Publisher;
 
 /**
- * Slice with HTTP authentication.
+ * Slice with authorization.
  *
- * @since 0.17
+ * @since 1.2
  */
-public final class AuthSlice implements Slice {
+public final class AuthzSlice implements Slice {
 
     /**
      * Origin.
@@ -34,21 +34,21 @@ public final class AuthSlice implements Slice {
     private final AuthScheme auth;
 
     /**
-     * Permissions.
+     * Access control by permission.
      */
-    private final Permission perm;
+    private final OperationControl control;
 
     /**
      * Ctor.
      *
      * @param origin Origin slice.
      * @param auth Authentication scheme.
-     * @param perm Permissions.
+     * @param control Access control by permission.
      */
-    public AuthSlice(final Slice origin, final AuthScheme auth, final Permission perm) {
+    public AuthzSlice(final Slice origin, final AuthScheme auth, final OperationControl control) {
         this.origin = origin;
         this.auth = auth;
-        this.perm = perm;
+        this.control = control;
     }
 
     @Override
@@ -58,12 +58,12 @@ public final class AuthSlice implements Slice {
         final Publisher<ByteBuffer> body
     ) {
         final Response response;
-        if (this.perm.allowed(Authentication.ANY_USER)) {
+        if (this.control.allowed(Authentication.ANY_USER)) {
             response = this.origin.response(line, headers, body);
         } else {
             response = new AsyncResponse(
                 this.auth.authenticate(headers, line).thenApply(
-                    result -> result.user().map(this.perm::allowed).map(
+                    result -> result.user().map(this.control::allowed).map(
                         allowed -> {
                             final Response rsp;
                             if (allowed) {

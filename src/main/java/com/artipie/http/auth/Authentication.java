@@ -25,6 +25,11 @@ public interface Authentication {
     Authentication ANONYMOUS = (name, pswd) -> Optional.of(new Authentication.User("anonymous"));
 
     /**
+     * Any user instance.
+     */
+    User ANY_USER = new User("*");
+
+    /**
      * Find user by credentials.
      * @param username Username
      * @param password Password
