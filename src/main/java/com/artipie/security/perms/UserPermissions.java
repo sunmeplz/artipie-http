@@ -4,6 +4,7 @@
  */
 package com.artipie.security.perms;
 
+import com.artipie.security.policy.CachedYamlPolicy;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Enumeration;
@@ -62,7 +63,7 @@ public final class UserPermissions extends PermissionCollection {
     /**
      * User with his roles and individual permissions.
      */
-    private final Supplier<User> user;
+    private final Supplier<CachedYamlPolicy.AstoUser> user;
 
     /**
      * The name of the group, which implied the permission in the previous
@@ -77,7 +78,7 @@ public final class UserPermissions extends PermissionCollection {
      * @param rperms Role permissions
      */
     public UserPermissions(
-        final Supplier<User> user,
+        final Supplier<CachedYamlPolicy.AstoUser> user,
         final Function<String, PermissionCollection> rperms
     ) {
         this.rperms = rperms;

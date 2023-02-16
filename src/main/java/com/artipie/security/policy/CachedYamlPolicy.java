@@ -16,7 +16,6 @@ import com.artipie.asto.misc.UncheckedSupplier;
 import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.PermissionConfig;
 import com.artipie.security.perms.PermissionsLoader;
-import com.artipie.security.perms.User;
 import com.artipie.security.perms.UserPermissions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -108,7 +107,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     /**
      * Cache for usernames and user with his roles and individual permissions.
      */
-    private final Cache<String, User> users;
+    private final Cache<String, AstoUser> users;
 
     /**
      * Cache for role name and role permissions.
@@ -130,7 +129,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      */
     CachedYamlPolicy(
         final Cache<String, UserPermissions> cache,
-        final Cache<String, User> users,
+        final Cache<String, AstoUser> users,
         final Cache<String, PermissionCollection> roles,
         final BlockingStorage asto
     ) {
@@ -185,13 +184,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     private Callable<UserPermissions> createUserPermissions(final String uname) {
         return () -> new UserPermissions(
             new UncheckedSupplier<>(
-                () -> this.users.get(
-                    uname,
-                    () -> {
-                        final User astoUser = new AstoUser(this.asto, uname);
-                        return new User.Simple(astoUser.roles(), astoUser.perms());
-                    }
-                )
+                () -> this.users.get(uname, () -> new AstoUser(this.asto, uname))
             ),
             new UncheckedFunc<>(
                 role -> this.roles.get(role, () -> new AstoRoles(this.asto).perms(role))
@@ -313,7 +306,11 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      * User from storage.
      * @since 1.2
      */
-    static final class AstoUser implements User {
+    @SuppressWarnings({
+        "PMD.AvoidFieldNameMatchingMethodName",
+        "PMD.ConstructorOnlyInitializesOrCallOtherConstructors"
+    })
+    public static final class AstoUser {
 
         /**
          * String to format user settings file name.
@@ -321,9 +318,14 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
         private static final String FORMAT = "users/%s";
 
         /**
-         * User info yaml mapping.
+         * User individual permission.
          */
-        private final YamlMapping yaml;
+        private final PermissionCollection perms;
+
+        /**
+         * User roles.
+         */
+        private final Collection<String> roles;
 
         /**
          * Ctor.
@@ -331,31 +333,51 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
          * @param username The name of the user
          */
         AstoUser(final BlockingStorage asto, final String username) {
-            this.yaml = getYamlMapping(asto, username);
+            final YamlMapping yaml = getYamlMapping(asto, username);
+            this.perms = perms(yaml);
+            this.roles = roles(yaml);
+        }
+
+        /**
+         * User permissions.
+         * @return Permission collection
+         */
+        public PermissionCollection perms() {
+            return this.perms;
+        }
+
+        /**
+         * User roles.
+         * @return Roles collection
+         */
+        public Collection<String> roles() {
+            return this.roles;
         }
 
         /**
          * Get supplier to read user permissions from storage.
+         * @param yaml Yaml to read permissions from
          * @return User permissions supplier
          */
-        public PermissionCollection perms() {
+        private static PermissionCollection perms(final YamlMapping yaml) {
             final PermissionCollection res;
-            if (this.disabled()) {
+            if (AstoUser.disabled(yaml)) {
                 res = EmptyPermissions.INSTANCE;
             } else {
-                res = CachedYamlPolicy.readPermissionsFromYaml(this.yaml);
+                res = CachedYamlPolicy.readPermissionsFromYaml(yaml);
             }
             return res;
         }
 
         /**
          * Get user roles collection.
+         * @param yaml Yaml to read roles from
          * @return Roles collection
          */
-        public Collection<String> roles() {
+        private static Collection<String> roles(final YamlMapping yaml) {
             Set<String> roles = Collections.emptySet();
-            if (!this.disabled()) {
-                final YamlSequence sequence = this.yaml.yamlSequence("roles");
+            if (!AstoUser.disabled(yaml)) {
+                final YamlSequence sequence = yaml.yamlSequence("roles");
                 if (sequence != null) {
                     roles = sequence.values().stream().map(item -> item.asScalar().value())
                         .collect(Collectors.toSet());
@@ -366,10 +388,11 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
 
         /**
          * Is user enabled?
+         * @param yaml Yaml to check disabled item from
          * @return True is user is active
          */
-        boolean disabled() {
-            return Boolean.FALSE.toString().equalsIgnoreCase(this.yaml.string(AstoRoles.ENABLED));
+        private static boolean disabled(final YamlMapping yaml) {
+            return Boolean.FALSE.toString().equalsIgnoreCase(yaml.string(AstoRoles.ENABLED));
         }
 
         /**
