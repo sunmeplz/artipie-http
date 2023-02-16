@@ -183,11 +183,14 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
      * @checkstyle LocalFinalVariableNameCheck (10 lines)
      */
     private Callable<UserPermissions> createUserPermissions(final String uname) {
-        final User astoUser = new AstoUser(this.asto, uname);
         return () -> new UserPermissions(
             new UncheckedSupplier<>(
                 () -> this.users.get(
-                    uname, () -> new User.Simple(astoUser.roles(), astoUser.perms())
+                    uname,
+                    () -> {
+                        final User astoUser = new AstoUser(this.asto, uname);
+                        return new User.Simple(astoUser.roles(), astoUser.perms());
+                    }
                 )
             ),
             new UncheckedFunc<>(
