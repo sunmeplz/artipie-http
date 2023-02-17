@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  * Test for {@link CachedYamlPolicy} and {@link UserPermissions}.
  * @since 1.2
  */
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.TooManyMethods"})
 class CachedYamlPolicyTest {
 
     /**
@@ -216,6 +216,69 @@ class CachedYamlPolicyTest {
             "Cache with role permissions has 2 items",
             this.roles.size(),
             new IsEqual<>(2L)
+        );
+    }
+
+    @Test
+    void invalidatesGroupCaches() {
+        this.asto.save(new Key.From("users/john.yml"), this.johnConfig());
+        this.asto.save(new Key.From("roles/java-dev.yaml"), this.javaDev());
+        this.asto.save(new Key.From("roles/tester.yaml"), this.tester());
+        final CachedYamlPolicy policy = new CachedYamlPolicy(
+            this.cache, this.user, this.roles, this.asto
+        );
+        MatcherAssert.assertThat(
+            "John cannot write into test-repo",
+            policy.getPermissions("john").implies(
+                new AdapterBasicPermission("test-repo", Action.Standard.WRITE)
+            ),
+            new IsEqual<>(false)
+        );
+        policy.invalidate("tester");
+        MatcherAssert.assertThat(
+            "Cache with UserPermissions has 1 item",
+            this.cache.size(),
+            new IsEqual<>(1L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
+            new IsEqual<>(1L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with role permissions has 'java-dev' group",
+            this.roles.size() == 1L && this.roles.asMap().containsKey("java-dev")
+        );
+    }
+
+    @Test
+    void invalidatesUsersCache() {
+        this.asto.save(new Key.From("users/alice.yml"), this.aliceConfig());
+        this.asto.save(new Key.From("roles/java-dev.yaml"), this.javaDev());
+        final CachedYamlPolicy policy = new CachedYamlPolicy(
+            this.cache, this.user, this.roles, this.asto
+        );
+        MatcherAssert.assertThat(
+            "Alice can read from maven repo",
+            policy.getPermissions("alice")
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
+            new IsEqual<>(true)
+        );
+        policy.invalidate("alice");
+        MatcherAssert.assertThat(
+            "Cache with UserPermissions has 1 item",
+            this.cache.size(),
+            new IsEqual<>(0L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with user individual permissions and roles has 1 item",
+            this.user.size(),
+            new IsEqual<>(0L)
+        );
+        MatcherAssert.assertThat(
+            "Cache with role permissions has 1 item",
+            this.roles.size(),
+            new IsEqual<>(1L)
         );
     }
 
