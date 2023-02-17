@@ -14,6 +14,7 @@ import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.misc.Cleanable;
 import com.artipie.asto.misc.UncheckedFunc;
 import com.artipie.asto.misc.UncheckedSupplier;
+import com.artipie.http.auth.AuthUser;
 import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.PermissionConfig;
 import com.artipie.security.perms.PermissionsLoader;
@@ -156,9 +157,9 @@ public final class CachedYamlPolicy implements Policy<UserPermissions>, Cleanabl
     }
 
     @Override
-    public UserPermissions getPermissions(final String uname) {
+    public UserPermissions getPermissions(final AuthUser user) {
         try {
-            return this.cache.get(uname, this.createUserPermissions(uname));
+            return this.cache.get(user.name(), this.createUserPermissions(user.name()));
         } catch (final ExecutionException err) {
             Logger.error(this, err.getMessage());
             throw new ArtipieException(err);

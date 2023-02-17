@@ -4,21 +4,14 @@
  */
 package com.artipie.http.auth;
 
-import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.aggregator.AggregateWith;
-import org.junit.jupiter.params.aggregator.ArgumentsAccessor;
-import org.junit.jupiter.params.aggregator.ArgumentsAggregationException;
-import org.junit.jupiter.params.aggregator.ArgumentsAggregator;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests for {@link Authentication}.
@@ -31,7 +24,7 @@ final class AuthenticationTest {
     void wrapDelegatesToOrigin() {
         final String user = "user";
         final String pass = "pass";
-        final Optional<Authentication.User> result = Optional.of(new Authentication.User("result"));
+        final Optional<AuthUser> result = Optional.of(new AuthUser("result"));
         MatcherAssert.assertThat(
             "Result is forwarded from delegate without modification",
             new TestAuthentication(
@@ -87,29 +80,16 @@ final class AuthenticationTest {
                 new Authentication.Single("Alice", "LetMeIn"),
                 new Authentication.Single("Bob", "iamgod")
             ).user(username, password),
-            new IsEqual<>(Optional.of(new Authentication.User(expected)))
+            new IsEqual<>(Optional.of(new AuthUser(expected)))
         );
     }
 
     @ParameterizedTest
-    @CsvSource({
-        "Alice,staff,admin",
-        "Bob,wheel",
-        "Jeff,wheel,vip"
-    })
-    void userHasProperToString(
-        final String username,
-        @AggregateWith(AuthenticationTest.AsCollection.class)
-        final Collection<String> groups
-    ) {
+    @ValueSource(strings = {"Alice", "Bob", "Jeff"})
+    void userHasProperToString(final String username) {
         MatcherAssert.assertThat(
-            new Authentication.User(username, groups),
-            Matchers.hasToString(
-                Matchers.allOf(
-                    Matchers.containsString(username),
-                    Matchers.stringContainsInOrder(groups)
-                )
-            )
+            new AuthUser(username),
+            Matchers.hasToString(Matchers.containsString(username))
         );
     }
 
@@ -141,19 +121,4 @@ final class AuthenticationTest {
         }
     }
 
-    /**
-     * Aggregate trailing parameters.
-     *
-     * @since 0.5.2
-     */
-    private static final class AsCollection implements ArgumentsAggregator {
-
-        @Override
-        public Object aggregateArguments(final ArgumentsAccessor accessor,
-            final ParameterContext context) throws ArgumentsAggregationException {
-            return IntStream.range(context.getIndex(), accessor.size())
-                .mapToObj(accessor::getString)
-                .collect(Collectors.toList());
-        }
-    }
 }

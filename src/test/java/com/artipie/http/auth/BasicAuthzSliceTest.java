@@ -78,7 +78,7 @@ class BasicAuthzSliceTest {
         MatcherAssert.assertThat(
             new BasicAuthzSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
-                (user, pswd) -> Optional.of(new Authentication.User(name)),
+                (user, pswd) -> Optional.of(new AuthUser(name)),
                 new OperationControl(
                     user -> EmptyPermissions.INSTANCE,
                     new AdapterBasicPermission("any", Action.NONE)

@@ -42,7 +42,7 @@ public final class OperationControl {
      * @param user User name
      * @return True if authorized
      */
-    public boolean allowed(final Authentication.User user) {
-        return this.policy.getPermissions(user.name()).implies(this.perm);
+    public boolean allowed(final AuthUser user) {
+        return this.policy.getPermissions(user).implies(this.perm);
     }
 }

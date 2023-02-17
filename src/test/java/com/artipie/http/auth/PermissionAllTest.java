@@ -38,7 +38,7 @@ class PermissionAllTest {
                 ).map(
                     str -> (Permission) user -> Boolean.parseBoolean(str)
                 ).collect(Collectors.toList())
-            ).allowed(new Authentication.User("alice")),
+            ).allowed(new AuthUser("alice")),
             new IsEqual<>(expected)
         );
     }

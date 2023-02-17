@@ -23,7 +23,7 @@ final class AuthSchemeNoneTest {
             AuthScheme.NONE.authenticate(Headers.EMPTY, "any")
                 .toCompletableFuture().join()
                 .user()
-                .map(Authentication.User::name),
+                .map(AuthUser::name),
             new IsEqual<>(Optional.of("anonymous"))
         );
     }

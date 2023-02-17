@@ -5,10 +5,7 @@
 package com.artipie.http.auth;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,12 +19,12 @@ public interface Authentication {
     /**
      * Resolve anyone as an anonymous user.
      */
-    Authentication ANONYMOUS = (name, pswd) -> Optional.of(new Authentication.User("anonymous"));
+    Authentication ANONYMOUS = (name, pswd) -> Optional.of(new AuthUser("anonymous"));
 
     /**
      * Any user instance.
      */
-    User ANY_USER = new User("*");
+    AuthUser ANY_USER = new AuthUser("*");
 
     /**
      * Find user by credentials.
@@ -35,88 +32,7 @@ public interface Authentication {
      * @param password Password
      * @return User login if found
      */
-    Optional<User> user(String username, String password);
-
-    /**
-     * User.
-     * @since 0.16
-     */
-    final class User {
-
-        /**
-         * User name.
-         */
-        private final String uname;
-
-        /**
-         * User groups.
-         */
-        private final Collection<String> ugroups;
-
-        /**
-         * Ctor.
-         * @param name Name of the user
-         * @param groups User groups
-         */
-        public User(final String name, final Collection<String> groups) {
-            this.uname = name;
-            this.ugroups = groups;
-        }
-
-        /**
-         * Ctor.
-         * @param name User name
-         */
-        public User(final String name) {
-            this(name, Collections.emptyList());
-        }
-
-        /**
-         * Ger user name.
-         * @return Name
-         */
-        public String name() {
-            return this.uname;
-        }
-
-        /**
-         * Get user groups.
-         * @return User groups
-         */
-        public Collection<String> groups() {
-            return this.ugroups;
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            final boolean res;
-            if (this == other) {
-                res = true;
-            } else if (other == null || this.getClass() != other.getClass()) {
-                res = false;
-            } else {
-                final User user = (User) other;
-                res = Objects.equals(this.uname, user.uname)
-                    && Objects.equals(this.ugroups, user.ugroups);
-            }
-            return res;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.uname, this.ugroups);
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                "%s(%s, %s)",
-                this.getClass().getSimpleName(),
-                this.uname,
-                this.ugroups
-            );
-        }
-    }
+    Optional<AuthUser> user(String username, String password);
 
     /**
      * Abstract decorator for Authentication.
@@ -140,7 +56,7 @@ public interface Authentication {
         }
 
         @Override
-        public final Optional<User> user(final String username, final String password) {
+        public final Optional<AuthUser> user(final String username, final String password) {
             return this.auth.user(username, password);
         }
     }
@@ -155,7 +71,7 @@ public interface Authentication {
         /**
          * User.
          */
-        private final User user;
+        private final AuthUser user;
 
         /**
          * Password.
@@ -169,7 +85,7 @@ public interface Authentication {
          * @param password Password.
          */
         public Single(final String user, final String password) {
-            this(new User(user), password);
+            this(new AuthUser(user), password);
         }
 
         /**
@@ -178,15 +94,15 @@ public interface Authentication {
          * @param user User
          * @param password Password
          */
-        public Single(final User user, final String password) {
+        public Single(final AuthUser user, final String password) {
             this.user = user;
             this.password = password;
         }
 
         @Override
-        public Optional<User> user(final String name, final String pass) {
+        public Optional<AuthUser> user(final String name, final String pass) {
             return Optional.of(name)
-                .filter(item -> item.equals(this.user.uname))
+                .filter(item -> item.equals(this.user.name()))
                 .filter(ignored -> this.password.equals(pass))
                 .map(ignored -> this.user);
         }
@@ -224,7 +140,7 @@ public interface Authentication {
         }
 
         @Override
-        public Optional<User> user(final String user, final String pass) {
+        public Optional<AuthUser> user(final String user, final String pass) {
             return this.origins.stream()
                 .map(auth -> auth.user(user, pass))
                 .flatMap(opt -> opt.map(Stream::of).orElseGet(Stream::empty))

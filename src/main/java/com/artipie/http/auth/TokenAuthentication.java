@@ -20,5 +20,5 @@ public interface TokenAuthentication {
      * @param token Token.
      * @return User if authenticated.
      */
-    CompletionStage<Optional<Authentication.User>> user(String token);
+    CompletionStage<Optional<AuthUser>> user(String token);
 }

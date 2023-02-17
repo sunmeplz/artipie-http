@@ -36,7 +36,7 @@ class PermissionByNameTest {
             new Permission.ByName(
                 (identity, act) -> name.equals(identity.name()) && act.equals(perm),
                 action
-            ).allowed(new Authentication.User(name)),
+            ).allowed(new AuthUser(name)),
             new IsEqual<>(true)
         );
     }
@@ -48,7 +48,7 @@ class PermissionByNameTest {
             new Permission.ByName(
                 (identity, act) -> user.equals(identity.name()) && act.equals("a"),
                 () -> Arrays.asList("b", "c")
-            ).allowed(new Authentication.User(user)),
+            ).allowed(new AuthUser(user)),
             new IsEqual<>(false)
         );
     }

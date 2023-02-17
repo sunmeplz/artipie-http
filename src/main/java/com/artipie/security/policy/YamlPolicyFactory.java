@@ -17,7 +17,7 @@ import java.io.UncheckedIOException;
  * Configuration format is the following:
  *
  * policy:
- *   type: yaml_policy
+ *   type: artipie_policy
  *   eviction_millis: 60000 # not required, default 3 min
  *   storage:
  *     type: fs
@@ -37,7 +37,7 @@ import java.io.UncheckedIOException;
  *
  * @since 1.2
  */
-@ArtipiePolicyFactory("yaml_policy")
+@ArtipiePolicyFactory("artipie_policy")
 public final class YamlPolicyFactory implements PolicyFactory {
 
     @Override

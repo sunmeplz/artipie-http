@@ -56,7 +56,7 @@ public final class BasicAuthScheme implements AuthScheme {
      * @param headers Headers
      * @return User if authorised
      */
-    private Optional<Authentication.User> user(final Iterable<Map.Entry<String, String>> headers) {
+    private Optional<AuthUser> user(final Iterable<Map.Entry<String, String>> headers) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()
             .map(Authorization::new)
@@ -75,19 +75,19 @@ public final class BasicAuthScheme implements AuthScheme {
         /**
          * Authenticated user.
          */
-        private final Authentication.User usr;
+        private final AuthUser usr;
 
         /**
          * Ctor.
          *
          * @param user Authenticated user.
          */
-        Success(final Authentication.User user) {
+        Success(final AuthUser user) {
             this.usr = user;
         }
 
         @Override
-        public Optional<Authentication.User> user() {
+        public Optional<AuthUser> user() {
             return Optional.of(this.usr);
         }
 
@@ -105,7 +105,7 @@ public final class BasicAuthScheme implements AuthScheme {
     private static class Failure implements Result {
 
         @Override
-        public Optional<Authentication.User> user() {
+        public Optional<AuthUser> user() {
             return Optional.empty();
         }
 

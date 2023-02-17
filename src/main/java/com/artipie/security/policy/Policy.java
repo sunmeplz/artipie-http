@@ -4,6 +4,7 @@
  */
 package com.artipie.security.policy;
 
+import com.artipie.http.auth.AuthUser;
 import com.artipie.security.perms.AdapterBasicPermission;
 import com.artipie.security.perms.FreePermissions;
 import java.security.PermissionCollection;
@@ -11,15 +12,15 @@ import java.security.PermissionCollection;
 /**
  * Security policy.
  *
- * @param <C> Implementation of {@link PermissionCollection}
+ * @param <P> Implementation of {@link PermissionCollection}
  * @since 1.2
  */
-public interface Policy<C extends PermissionCollection> {
+public interface Policy<P extends PermissionCollection> {
 
     /**
      * Free policy for any user returns {@link FreePermissions} which implies any permission.
      */
-    Policy<PermissionCollection> FREE = uname -> new FreePermissions();
+    Policy<PermissionCollection> FREE = user -> new FreePermissions();
 
     /**
      * Get collection of permissions {@link PermissionCollection} for user by username.
@@ -28,9 +29,9 @@ public interface Policy<C extends PermissionCollection> {
      * list of {@link AdapterBasicPermission} for adapter with basic permissions and
      * another permissions' implementation for docker adapter.
      *
-     * @param uname User name
+     * @param user User
      * @return Set of {@link PermissionCollection}
      */
-    C getPermissions(String uname);
+    P getPermissions(AuthUser user);
 
 }

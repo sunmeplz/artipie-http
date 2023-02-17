@@ -6,6 +6,7 @@ package com.artipie.security.policy;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.artipie.ArtipieException;
+import com.artipie.http.auth.AuthUser;
 import java.security.Permissions;
 import java.util.Collections;
 import org.hamcrest.MatcherAssert;
@@ -24,9 +25,9 @@ public class PoliciesLoaderTest {
     void createsYamlPolicy() {
         MatcherAssert.assertThat(
             new PoliciesLoader().newObject(
-                "yaml_policy",
+                "artipie_policy",
                 new YamlPolicyConfig(
-                    Yaml.createYamlMappingBuilder().add("type", "yaml_policy")
+                    Yaml.createYamlMappingBuilder().add("type", "artipie_policy")
                         .add(
                             "storage",
                             Yaml.createYamlMappingBuilder().add("type", "fs")
@@ -93,7 +94,7 @@ public class PoliciesLoaderTest {
     public static final class TestPolicy implements Policy<Permissions> {
 
         @Override
-        public Permissions getPermissions(final String uname) {
+        public Permissions getPermissions(final AuthUser uname) {
             return new Permissions();
         }
     }

@@ -29,7 +29,7 @@ public final class PermissionsTest {
                     MatcherAssert.assertThat(
                         "Username is forwarded to delegate without modification",
                         identity,
-                        new IsEqual<>(new Authentication.User(name))
+                        new IsEqual<>(new AuthUser(name))
                     );
                     MatcherAssert.assertThat(
                         "Action is forwarded to delegate without modification",
@@ -38,7 +38,7 @@ public final class PermissionsTest {
                     );
                     return result;
                 }
-            ).allowed(new Authentication.User(name), act),
+            ).allowed(new AuthUser(name), act),
             new IsEqual<>(result)
         );
     }
@@ -56,7 +56,7 @@ public final class PermissionsTest {
     ) {
         MatcherAssert.assertThat(
             new Permissions.Single("Aladdin", "read")
-                .allowed(new Authentication.User(username), action),
+                .allowed(new AuthUser(username), action),
             new IsEqual<>(allow)
         );
     }

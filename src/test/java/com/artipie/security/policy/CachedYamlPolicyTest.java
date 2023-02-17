@@ -7,6 +7,7 @@ package com.artipie.security.policy;
 import com.artipie.asto.Key;
 import com.artipie.asto.blocking.BlockingStorage;
 import com.artipie.asto.memory.InMemoryStorage;
+import com.artipie.http.auth.AuthUser;
 import com.artipie.security.perms.Action;
 import com.artipie.security.perms.AdapterBasicPermission;
 import com.artipie.security.perms.User;
@@ -64,7 +65,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );
@@ -86,7 +87,7 @@ class CachedYamlPolicyTest {
         this.user.invalidateAll();
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );
@@ -115,7 +116,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "Alice can read from rpm repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("rpm-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );
@@ -145,7 +146,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );
@@ -166,7 +167,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "Alice can read from rpm repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("rpm-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );
@@ -197,7 +198,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "John cannot write into test-repo",
-            policy.getPermissions("john").implies(
+            policy.getPermissions(new AuthUser("john")).implies(
                 new AdapterBasicPermission("test-repo", Action.Standard.WRITE)
             ),
             new IsEqual<>(false)
@@ -229,7 +230,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "John cannot write into test-repo",
-            policy.getPermissions("john").implies(
+            policy.getPermissions(new AuthUser("john")).implies(
                 new AdapterBasicPermission("test-repo", Action.Standard.WRITE)
             ),
             new IsEqual<>(false)
@@ -260,7 +261,7 @@ class CachedYamlPolicyTest {
         );
         MatcherAssert.assertThat(
             "Alice can read from maven repo",
-            policy.getPermissions("alice")
+            policy.getPermissions(new AuthUser("alice"))
                 .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
             new IsEqual<>(true)
         );

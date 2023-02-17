@@ -22,8 +22,8 @@ public interface AuthScheme {
     AuthScheme NONE = (hdrs, line)  -> CompletableFuture.completedFuture(
         new AuthScheme.Result() {
             @Override
-            public Optional<Authentication.User> user() {
-                return Optional.of(new Authentication.User("anonymous"));
+            public Optional<AuthUser> user() {
+                return Optional.of(new AuthUser("anonymous"));
             }
 
             @Override
@@ -64,7 +64,7 @@ public interface AuthScheme {
          *
          * @return Authenticated user, empty if not authenticated.
          */
-        Optional<Authentication.User> user();
+        Optional<AuthUser> user();
 
         /**
          * Get authentication challenge that is provided in response WWW-Authenticate header value.
@@ -88,7 +88,7 @@ public interface AuthScheme {
         /**
          * Optional of User.
          */
-        private final Optional<Authentication.User> usr;
+        private final Optional<AuthUser> usr;
 
         /**
          * Challenge.
@@ -100,7 +100,7 @@ public interface AuthScheme {
          * @param usr User
          * @param chllng Challenge
          */
-        public Fake(final Optional<Authentication.User> usr, final String chllng) {
+        public Fake(final Optional<AuthUser> usr, final String chllng) {
             this.usr = usr;
             this.chllng = chllng;
         }
@@ -110,7 +110,7 @@ public interface AuthScheme {
          * @param name User name
          */
         public Fake(final String name) {
-            this(Optional.of(new Authentication.User(name)), Fake.FAKE_CHLLNG);
+            this(Optional.of(new AuthUser(name)), Fake.FAKE_CHLLNG);
         }
 
         /**
@@ -128,7 +128,7 @@ public interface AuthScheme {
             return CompletableFuture.completedFuture(
                 new AuthScheme.Result() {
                     @Override
-                    public Optional<Authentication.User> user() {
+                    public Optional<AuthUser> user() {
                         return Fake.this.usr;
                     }
 

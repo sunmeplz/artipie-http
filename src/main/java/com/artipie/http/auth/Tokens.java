@@ -21,5 +21,5 @@ public interface Tokens {
      * @param user User to issue token for
      * @return String token
      */
-    String generate(Authentication.User user);
+    String generate(AuthUser user);
 }
