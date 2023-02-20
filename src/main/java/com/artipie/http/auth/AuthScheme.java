@@ -23,7 +23,7 @@ public interface AuthScheme {
         new AuthScheme.Result() {
             @Override
             public Optional<AuthUser> user() {
-                return Optional.of(new AuthUser("anonymous", type));
+                return Optional.of(new AuthUser("anonymous", "unknown"));
             }
 
             @Override
@@ -110,7 +110,7 @@ public interface AuthScheme {
          * @param name User name
          */
         public Fake(final String name) {
-            this(Optional.of(new AuthUser(name, type)), Fake.FAKE_CHLLNG);
+            this(Optional.of(new AuthUser(name)), Fake.FAKE_CHLLNG);
         }
 
         /**
