@@ -19,12 +19,12 @@ public interface Authentication {
     /**
      * Resolve anyone as an anonymous user.
      */
-    Authentication ANONYMOUS = (name, pswd) -> Optional.of(new AuthUser("anonymous"));
+    Authentication ANONYMOUS = (name, pswd) -> Optional.of(new AuthUser("anonymous", "unknown"));
 
     /**
      * Any user instance.
      */
-    AuthUser ANY_USER = new AuthUser("*");
+    AuthUser ANY_USER = new AuthUser("*", "any");
 
     /**
      * Find user by credentials.
@@ -85,7 +85,7 @@ public interface Authentication {
          * @param password Password.
          */
         public Single(final String user, final String password) {
-            this(new AuthUser(user), password);
+            this(new AuthUser(user, "single"), password);
         }
 
         /**

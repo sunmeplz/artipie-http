@@ -21,7 +21,7 @@ public interface Identities {
     /**
      * Resolve any request as anonymous user.
      */
-    Identities ANONYMOUS = (line, headers) -> Optional.of(new AuthUser("anonymous"));
+    Identities ANONYMOUS = (line, headers) -> Optional.of(new AuthUser("anonymous", "unknown"));
 
     /**
      * Try to find a user by request head.

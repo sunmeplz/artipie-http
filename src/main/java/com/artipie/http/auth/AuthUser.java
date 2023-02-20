@@ -10,9 +10,8 @@ import java.util.Objects;
  * Authenticated user.
  *
  * @since 0.16
- * @checkstyle DesignForExtensionCheck (500 lines)
  */
-public class AuthUser {
+public final class AuthUser {
 
     /**
      * User name.
@@ -20,12 +19,28 @@ public class AuthUser {
     private final String uname;
 
     /**
+     * Authentication context.
+     */
+    private final String context;
+
+    /**
      * Ctor.
      *
      * @param name Name of the user
+     * @param context Authentication context
      */
-    public AuthUser(final String name) {
+    public AuthUser(final String name, final String context) {
         this.uname = name;
+        this.context = context;
+    }
+
+    /**
+     * Ctor with test context for usages in tests.
+     *
+     * @param name Name of the user
+     */
+    AuthUser(final String name) {
+        this(name, "test");
     }
 
     /**
@@ -33,12 +48,20 @@ public class AuthUser {
      *
      * @return Name
      */
-    public final String name() {
+    public String name() {
         return this.uname;
     }
 
+    /**
+     * Returns authentication context.
+     * @return Context string
+     */
+    public String authContext() {
+        return this.context;
+    }
+
     @Override
-    public final boolean equals(final Object other) {
+    public boolean equals(final Object other) {
         final boolean res;
         if (this == other) {
             res = true;
@@ -52,7 +75,7 @@ public class AuthUser {
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return Objects.hash(this.uname);
     }
 
