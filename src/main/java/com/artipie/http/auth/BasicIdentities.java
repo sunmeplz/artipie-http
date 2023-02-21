@@ -41,7 +41,7 @@ public final class BasicIdentities implements Identities {
 
     @Override
     @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
-    public Optional<Authentication.User> user(final String line,
+    public Optional<AuthUser> user(final String line,
         final Iterable<Map.Entry<String, String>> headers) {
         return new RqHeaders(headers, Authorization.NAME).stream()
             .findFirst()

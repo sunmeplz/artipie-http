@@ -38,7 +38,7 @@ class PermissionAnyTest {
                 ).map(
                     str -> (Permission) user -> Boolean.parseBoolean(str)
                 ).collect(Collectors.toList())
-            ).allowed(new Authentication.User("aladdin")),
+            ).allowed(new AuthUser("aladdin")),
             new IsEqual<>(expected)
         );
     }

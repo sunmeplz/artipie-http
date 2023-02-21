@@ -4,6 +4,7 @@
  */
 package com.artipie.security.policy;
 
+import com.artipie.http.auth.AuthUser;
 import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.FreePermissions;
 import java.security.PermissionCollection;
@@ -29,9 +30,9 @@ public final class PolicyByUsername implements Policy<PermissionCollection> {
     }
 
     @Override
-    public PermissionCollection getPermissions(final String uname) {
+    public PermissionCollection getPermissions(final AuthUser user) {
         final PermissionCollection res;
-        if (this.name.equals(uname)) {
+        if (this.name.equals(user.name())) {
             res = new FreePermissions();
         } else {
             res = EmptyPermissions.INSTANCE;

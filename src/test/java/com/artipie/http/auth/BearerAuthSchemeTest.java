@@ -35,7 +35,7 @@ final class BearerAuthSchemeTest {
             tkn -> {
                 capture.set(tkn);
                 return CompletableFuture.completedFuture(
-                    Optional.of(new Authentication.User("alice"))
+                    Optional.of(new AuthUser("alice"))
                 );
             },
             "realm=\"artipie.com\""
@@ -53,9 +53,9 @@ final class BearerAuthSchemeTest {
     @ValueSource(strings = {"bob"})
     @NullSource
     void shouldReturnUserInResult(final String name) {
-        final Optional<Authentication.User> user = Optional.ofNullable(name)
-            .map(Authentication.User::new);
-        final Optional<Authentication.User> result = new BearerAuthScheme(
+        final Optional<AuthUser> user = Optional.ofNullable(name)
+            .map(AuthUser::new);
+        final Optional<AuthUser> result = new BearerAuthScheme(
             tkn -> CompletableFuture.completedFuture(user),
             "whatever"
         ).authenticate(

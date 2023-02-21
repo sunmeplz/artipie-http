@@ -39,7 +39,7 @@ public final class JoinedPermissions implements Permissions {
     }
 
     @Override
-    public boolean allowed(final Authentication.User user, final String action) {
+    public boolean allowed(final AuthUser user, final String action) {
         final boolean result;
         if (this.origins.isEmpty()) {
             result = true;

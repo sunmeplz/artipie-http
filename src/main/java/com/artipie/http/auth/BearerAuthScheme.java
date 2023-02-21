@@ -58,7 +58,7 @@ public final class BearerAuthScheme implements AuthScheme {
      * @param headers Headers
      * @return User, empty if not authenticated
      */
-    private CompletionStage<Optional<Authentication.User>> user(
+    private CompletionStage<Optional<AuthUser>> user(
         final Iterable<Map.Entry<String, String>> headers
     ) {
         return new RqHeaders(headers, Authorization.NAME).stream()
@@ -89,19 +89,19 @@ public final class BearerAuthScheme implements AuthScheme {
         /**
          * Authenticated user.
          */
-        private final Authentication.User usr;
+        private final AuthUser usr;
 
         /**
          * Ctor.
          *
          * @param user Authenticated user.
          */
-        Success(final Authentication.User user) {
+        Success(final AuthUser user) {
             this.usr = user;
         }
 
         @Override
-        public Optional<Authentication.User> user() {
+        public Optional<AuthUser> user() {
             return Optional.of(this.usr);
         }
 
@@ -119,7 +119,7 @@ public final class BearerAuthScheme implements AuthScheme {
     private class Failure implements Result {
 
         @Override
-        public Optional<Authentication.User> user() {
+        public Optional<AuthUser> user() {
             return Optional.empty();
         }
 

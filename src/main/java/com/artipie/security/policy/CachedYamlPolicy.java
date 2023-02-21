@@ -11,8 +11,10 @@ import com.artipie.ArtipieException;
 import com.artipie.asto.Key;
 import com.artipie.asto.ValueNotFoundException;
 import com.artipie.asto.blocking.BlockingStorage;
+import com.artipie.asto.misc.Cleanable;
 import com.artipie.asto.misc.UncheckedFunc;
 import com.artipie.asto.misc.UncheckedSupplier;
+import com.artipie.http.auth.AuthUser;
 import com.artipie.security.perms.EmptyPermissions;
 import com.artipie.security.perms.PermissionConfig;
 import com.artipie.security.perms.PermissionsLoader;
@@ -87,7 +89,7 @@ import java.util.stream.Collectors;
  * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
  */
-public final class CachedYamlPolicy implements Policy<UserPermissions> {
+public final class CachedYamlPolicy implements Policy<UserPermissions>, Cleanable<String> {
 
     /**
      * Permissions factories.
@@ -155,22 +157,30 @@ public final class CachedYamlPolicy implements Policy<UserPermissions> {
     }
 
     @Override
-    public UserPermissions getPermissions(final String uname) {
+    public UserPermissions getPermissions(final AuthUser user) {
         try {
-            return this.cache.get(uname, this.createUserPermissions(uname));
+            return this.cache.get(user.name(), this.createUserPermissions(user.name()));
         } catch (final ExecutionException err) {
             Logger.error(this, err.getMessage());
             throw new ArtipieException(err);
         }
     }
 
-    /**
-     * Invalidate caches of this policy.
-     */
-    public void invalidate() {
+    @Override
+    public void invalidate(final String key) {
+        if (this.cache.asMap().containsKey(key)) {
+            this.cache.invalidate(key);
+            this.users.invalidate(key);
+        } else if (this.roles.asMap().containsKey(key)) {
+            this.roles.invalidate(key);
+        }
+    }
+
+    @Override
+    public void invalidateAll() {
         this.cache.invalidateAll();
-        this.roles.invalidateAll();
         this.users.invalidateAll();
+        this.roles.invalidateAll();
     }
 
     /**

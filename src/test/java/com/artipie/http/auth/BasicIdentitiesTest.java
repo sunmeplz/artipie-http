@@ -25,7 +25,7 @@ public final class BasicIdentitiesTest {
      * Stub for interface.
      */
     private final Authentication auth =
-        (username, password) -> Optional.of(new Authentication.User(username));
+        (username, password) -> Optional.of(new AuthUser(username));
 
     @Test
     void userWithEmptyHeaders() {
@@ -50,7 +50,7 @@ public final class BasicIdentitiesTest {
         );
         MatcherAssert.assertThat(
             new BasicIdentities(this.auth).user("", headers),
-            new IsEqual<>(Optional.of(new Authentication.User("Aladdin")))
+            new IsEqual<>(Optional.of(new AuthUser("Aladdin")))
         );
     }
 }

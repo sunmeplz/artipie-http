@@ -18,7 +18,7 @@ public interface Permission {
      * @param user User name
      * @return True if authorized
      */
-    boolean allowed(Authentication.User user);
+    boolean allowed(AuthUser user);
 
     /**
      * Permission by name.
@@ -56,7 +56,7 @@ public interface Permission {
         }
 
         @Override
-        public boolean allowed(final Authentication.User user) {
+        public boolean allowed(final AuthUser user) {
             boolean res = false;
             for (final String synonym : this.action.names()) {
                 if (this.perm.allowed(user, synonym)) {
@@ -100,7 +100,7 @@ public interface Permission {
         }
 
         @Override
-        public boolean allowed(final Authentication.User user) {
+        public boolean allowed(final AuthUser user) {
             return StreamSupport.stream(this.origin.spliterator(), false).allMatch(
                 perm -> perm.allowed(user)
             );
@@ -140,7 +140,7 @@ public interface Permission {
         }
 
         @Override
-        public boolean allowed(final Authentication.User user) {
+        public boolean allowed(final AuthUser user) {
             return StreamSupport.stream(this.origin.spliterator(), false).anyMatch(
                 perm -> perm.allowed(user)
             );

@@ -68,7 +68,7 @@ final class BasicAuthSliceTest {
         MatcherAssert.assertThat(
             new BasicAuthSlice(
                 new SliceSimple(new RsWithStatus(RsStatus.OK)),
-                (user, pswd) -> Optional.of(new Authentication.User(name)),
+                (user, pswd) -> Optional.of(new AuthUser(name)),
                 user -> false
             ),
             new SliceHasResponse(

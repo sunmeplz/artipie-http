@@ -32,7 +32,7 @@ final class JoinedPermissionsTest {
         MatcherAssert.assertThat(
             new JoinedPermissions(
                 Streams.concat(fake(one), fake(two)).collect(Collectors.toList())
-            ).allowed(new Authentication.User("some name"), "some action"),
+            ).allowed(new AuthUser("some name"), "some action"),
             new IsEqual<>(allow)
         );
     }
