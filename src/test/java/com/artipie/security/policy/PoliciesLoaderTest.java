@@ -25,9 +25,9 @@ public class PoliciesLoaderTest {
     void createsYamlPolicy() {
         MatcherAssert.assertThat(
             new PoliciesLoader().newObject(
-                "artipie_policy",
+                "artipie",
                 new YamlPolicyConfig(
-                    Yaml.createYamlMappingBuilder().add("type", "artipie_policy")
+                    Yaml.createYamlMappingBuilder().add("type", "artipie")
                         .add(
                             "storage",
                             Yaml.createYamlMappingBuilder().add("type", "fs")

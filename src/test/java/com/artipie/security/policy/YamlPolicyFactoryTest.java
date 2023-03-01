@@ -21,7 +21,7 @@ class YamlPolicyFactoryTest {
         MatcherAssert.assertThat(
             new YamlPolicyFactory().getPolicy(
                 new YamlPolicyConfig(
-                    Yaml.createYamlMappingBuilder().add("type", "artipie_policy")
+                    Yaml.createYamlMappingBuilder().add("type", "artipie")
                         .add(
                             "storage",
                             Yaml.createYamlMappingBuilder().add("type", "fs")
@@ -38,7 +38,7 @@ class YamlPolicyFactoryTest {
         MatcherAssert.assertThat(
             new YamlPolicyFactory().getPolicy(
                 new YamlPolicyConfig(
-                    Yaml.createYamlMappingBuilder().add("type", "artipie_policy")
+                    Yaml.createYamlMappingBuilder().add("type", "artipie")
                         .add("eviction_millis", "50000")
                         .add(
                             "storage",
