@@ -28,14 +28,14 @@ import java.util.stream.Stream;
 public final class AdapterBasicPermission extends Permission {
 
     /**
+     * Wildcard symbol.
+     */
+    static final String WILDCARD = "*";
+
+    /**
      * Required serial.
      */
     private static final long serialVersionUID = -2916496571451236071L;
-
-    /**
-     * Wildcard symbol.
-     */
-    private static final String WILDCARD = "*";
 
     /**
      * Canonical action representation. Is initialized once on request
@@ -245,10 +245,16 @@ public final class AdapterBasicPermission extends Permission {
                 if (this.any) {
                     res = true;
                 } else {
-                    //@checkstyle NestedIfDepthCheck (5 lines)
-                    final Permission existing = this.perms.get(permission.getName());
+                    //@checkstyle NestedIfDepthCheck (10 lines)
+                    Permission existing = this.perms.get(permission.getName());
                     if (existing != null) {
                         res = existing.implies(permission);
+                    }
+                    if (!res) {
+                        existing = this.perms.get(AdapterBasicPermission.WILDCARD);
+                        if (existing != null) {
+                            res = existing.implies(permission);
+                        }
                     }
                 }
             }

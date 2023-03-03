@@ -73,42 +73,39 @@ class YamlPolicyAstoRolesTest {
     private byte[] javaDev() {
         return String.join(
             "\n",
-            "java-dev:",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      maven-repo:",
-            "        - read",
-            "        - write",
-            "      python-repo:",
-            "        - read",
-            "      npm-repo:",
-            "        - read"
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    maven-repo:",
+            "      - read",
+            "      - write",
+            "    python-repo:",
+            "      - read",
+            "    npm-repo:",
+            "      - read"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] admin() {
         return String.join(
             "\n",
-            "admin:",
-            "  permissions:",
-            "    adapter_all_permission: {}"
+            "permissions:",
+            "  adapter_all_permission: {}"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] disabled() {
         return String.join(
             "\n",
-            "some-role:",
-            "  enabled: false",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      maven-repo:",
-            "        - read",
-            "        - write",
-            "      python-repo:",
-            "        - read",
-            "      npm-repo:",
-            "        - read"
+            "enabled: false",
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    maven-repo:",
+            "      - read",
+            "      - write",
+            "    python-repo:",
+            "      - read",
+            "    npm-repo:",
+            "      - read"
         ).getBytes(StandardCharsets.UTF_8);
     }
 

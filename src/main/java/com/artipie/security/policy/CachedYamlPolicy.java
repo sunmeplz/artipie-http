@@ -51,40 +51,37 @@ import java.util.stream.Collectors;
  * │   ├── jane.yaml
  * │   ├── ...
  * </pre>
- * Roles yaml file name is the name of the group, format example:
+ * Roles yaml file name is the name of the role, format example for `java-dev.yaml`:
  * <pre>{@code
- * java-dev:
- *   permissions:
- *     adapter_basic_permission:
- *       maven-repo:
- *         - read
- *         - write
- *       python-repo:
- *         - read
- *       npm-repo:
- *         - read
+ * permissions:
+ *   adapter_basic_permission:
+ *     maven-repo:
+ *       - read
+ *       - write
+ *     python-repo:
+ *       - read
+ *     npm-repo:
+ *       - read
  * }</pre>
- * Or for admin:
+ * Or for `admin.yaml`:
  * <pre>{@code
- * admin:
- *   enabled: true # optional default true
- *   permissions:
- *     adapter_all_permission: {}
+ * enabled: true # optional default true
+ * permissions:
+ *   adapter_all_permission: {}
  * }</pre>
  * Role can be disabled with the help of optional {@code enabled} field.
- * <p>User yaml format example:
+ * <p>User yaml format example, file name is the name of the user:
  * <pre>{@code
- * david:
- *   type: plain
- *   pass: qwerty
- *   email: david@example.com # Optional
- *   enabled: true # optional default true
- *   roles:
- *     - java-dev
- *   permissions:
- *     artipie_basic_permission:
- *       rpm-repo:
- *         - read
+ * type: plain
+ * pass: qwerty
+ * email: david@example.com # Optional
+ * enabled: true # optional default true
+ * roles:
+ *   - java-dev
+ * permissions:
+ *   artipie_basic_permission:
+ *     rpm-repo:
+ *       - read
  * }</pre>
  * @since 1.2
  * @checkstyle ClassDataAbstractionCouplingCheck (500 lines)
@@ -193,8 +190,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions>, Cleanabl
         PermissionCollection res;
         final String filename = String.format("roles/%s", role);
         try {
-            final YamlMapping mapping = CachedYamlPolicy.readFile(asto, filename)
-                .yamlMapping(role);
+            final YamlMapping mapping = CachedYamlPolicy.readFile(asto, filename);
             final String enabled = mapping.string(AstoUser.ENABLED);
             if (Boolean.FALSE.toString().equalsIgnoreCase(enabled)) {
                 res = EmptyPermissions.INSTANCE;
@@ -393,7 +389,7 @@ public final class CachedYamlPolicy implements Policy<UserPermissions>, Cleanabl
             final String filename = String.format(AstoUser.FORMAT, username);
             YamlMapping res;
             try {
-                res = CachedYamlPolicy.readFile(asto, filename).yamlMapping(username);
+                res = CachedYamlPolicy.readFile(asto, filename);
             } catch (final IOException | ValueNotFoundException err) {
                 Logger.error(err, String.format("Failed to read or parse file '%s'", filename));
                 res = Yaml.createYamlMappingBuilder().build();

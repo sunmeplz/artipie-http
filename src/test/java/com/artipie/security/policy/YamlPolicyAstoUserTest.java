@@ -110,54 +110,51 @@ class YamlPolicyAstoUserTest {
     private byte[] aliceConfig() {
         return String.join(
             "\n",
-            "alice:",
-            "  type: plain",
-            "  pass: qwerty",
-            "  email: alice@example.com",
-            "  roles:",
-            "    - java-dev",
-            "    - unknown-role",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      rpm-repo:",
-            "        - read",
-            "      binary-test-repo:",
-            "        - read",
-            "        - write"
+            "type: plain",
+            "pass: qwerty",
+            "email: alice@example.com",
+            "roles:",
+            "  - java-dev",
+            "  - unknown-role",
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    rpm-repo:",
+            "      - read",
+            "    binary-test-repo:",
+            "      - read",
+            "      - write"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] davidConfig() {
         return String.join(
             "\n",
-            "david:",
-            "  type: plain",
-            "  pass: qwerty",
-            "  email: david@example.com",
-            "  permissions:",
-            "    adapter_all_permission: {}",
-            "  enabled: true"
+            "type: plain",
+            "pass: qwerty",
+            "email: david@example.com",
+            "permissions:",
+            "  adapter_all_permission: {}",
+            "enabled: true"
             ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] johnConfig() {
         return String.join(
             "\n",
-            "john:",
-            "  type: plain",
-            "  pass: qwerty",
-            "  email: david@example.com",
-            "  enabled: false",
-            "  roles:",
-            "    - some-dev",
-            "    - any-role",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      npm-repo:",
-            "        - read",
-            "      pypi-repo:",
-            "        - read",
-            "        - write"
+            "type: plain",
+            "pass: qwerty",
+            "email: david@example.com",
+            "enabled: false",
+            "roles:",
+            "  - some-dev",
+            "  - any-role",
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    npm-repo:",
+            "      - read",
+            "    pypi-repo:",
+            "      - read",
+            "      - write"
         ).getBytes(StandardCharsets.UTF_8);
     }
 

@@ -283,68 +283,133 @@ class CachedYamlPolicyTest {
         );
     }
 
+    @Test
+    void anyRepoTest() {
+        this.asto.save(new Key.From("users/bob.yml"), this.configForAnyRepo("\"*\""));
+        this.asto.save(new Key.From("users/marat.yml"), this.configForAnyRepo("'*'"));
+        this.asto.save(new Key.From("users/nataly.yml"), this.configForAnyRepo("\\*"));
+        this.asto.save(new Key.From("users/anton.yml"), this.configForAnyRepo("*"));
+        final CachedYamlPolicy policy = new CachedYamlPolicy(
+            this.cache, this.user, this.roles, this.asto
+        );
+        MatcherAssert.assertThat(
+            "Bob can read from maven repo",
+            policy.getPermissions(new AuthUser("bob", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
+            new IsEqual<>(true)
+        );
+        MatcherAssert.assertThat(
+            "Bob cannot write to maven repo",
+            policy.getPermissions(new AuthUser("bob", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.WRITE)),
+            new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "marat can read from maven repo",
+            policy.getPermissions(new AuthUser("marat", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
+            new IsEqual<>(true)
+        );
+        MatcherAssert.assertThat(
+            "marat cannot write to maven repo",
+            policy.getPermissions(new AuthUser("marat", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.WRITE)),
+            new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "nataly can read from maven repo",
+            policy.getPermissions(new AuthUser("nataly", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
+            new IsEqual<>(true)
+        );
+        MatcherAssert.assertThat(
+            "nataly cannot write to maven repo",
+            policy.getPermissions(new AuthUser("nataly", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.WRITE)),
+            new IsEqual<>(false)
+        );
+        MatcherAssert.assertThat(
+            "anton can read from maven repo",
+            policy.getPermissions(new AuthUser("anton", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.READ)),
+            new IsEqual<>(true)
+        );
+        MatcherAssert.assertThat(
+            "anton cannot write to maven repo",
+            policy.getPermissions(new AuthUser("anton", "test"))
+                .implies(new AdapterBasicPermission("maven-repo", Action.Standard.WRITE)),
+            new IsEqual<>(false)
+        );
+    }
+
     private byte[] aliceConfig() {
         return String.join(
             "\n",
-            "alice:",
-            "  type: plain",
-            "  pass: qwerty",
-            "  email: alice@example.com",
-            "  roles:",
-            "    - java-dev",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      rpm-repo:",
-            "        - read",
-            "      binary-test-repo:",
-            "        - read",
-            "        - write"
+            "type: plain",
+            "pass: qwerty",
+            "email: alice@example.com",
+            "roles:",
+            "  - java-dev",
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    rpm-repo:",
+            "      - read",
+            "    binary-test-repo:",
+            "      - read",
+            "      - write"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] javaDev() {
         return String.join(
             "\n",
-            "java-dev:",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      maven-repo:",
-            "        - read",
-            "        - write",
-            "      python-repo:",
-            "        - read",
-            "      npm-repo:",
-            "        - read"
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    maven-repo:",
+            "      - read",
+            "      - write",
+            "    python-repo:",
+            "      - read",
+            "    npm-repo:",
+            "      - read"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] johnConfig() {
         return String.join(
             "\n",
-            "john:",
-            "  type: plain",
-            "  pass: qwerty",
-            "  email: alice@example.com",
-            "  roles:",
-            "    - java-dev",
-            "    - tester",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      repo1:",
-            "        - r",
-            "        - w",
-            "        - d"
+            "type: plain",
+            "pass: qwerty",
+            "email: alice@example.com",
+            "roles:",
+            "  - java-dev",
+            "  - tester",
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    repo1:",
+            "      - r",
+            "      - w",
+            "      - d"
         ).getBytes(StandardCharsets.UTF_8);
     }
 
     private byte[] tester() {
         return String.join(
             "\n",
-            "tester:",
-            "  permissions:",
-            "    adapter_basic_permission:",
-            "      test-repo:",
-            "        - download"
+            "permissions:",
+            "  adapter_basic_permission:",
+            "    test-repo:",
+            "      - download"
+        ).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] configForAnyRepo(final String wildcard) {
+        return String.join(
+            "\n",
+            "permissions:",
+            "  adapter_basic_permission:",
+            String.format("    %s:", wildcard),
+            "      - download"
         ).getBytes(StandardCharsets.UTF_8);
     }
 }
