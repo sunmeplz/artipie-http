@@ -77,4 +77,14 @@ class AcceptTest {
             )
         );
     }
+
+    @Test
+    void returnEmptyValuesIfNoAcceptHeader() {
+        MatcherAssert.assertThat(
+            new Accept(
+                Headers.EMPTY
+            ).values(),
+            Matchers.hasSize(0)
+        );
+    }
 }
